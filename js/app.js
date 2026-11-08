@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '44';
+  var APP_VER = '46';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -88,6 +88,60 @@
   }
 
   /* đọc tiếng Nhật bằng giọng có sẵn của máy */
+  /* ---------------- cài app lên màn hình chính ---------------- */
+  var deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    var b = document.getElementById('installBtn');
+    if (b) { b.style.display = ''; }
+  });
+  window.addEventListener('appinstalled', function () {
+    deferredPrompt = null;
+    var b = document.getElementById('installBtn');
+    if (b) { b.style.display = 'none'; }
+    toast('Đã cài app lên màn hình chính.');
+  });
+
+  function isStandalone() {
+    try {
+      return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+
+  function updateInstallBtn() {
+    var b = document.getElementById('installBtn');
+    if (!b) { return; }
+    var ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+    b.style.display = (!isStandalone() && (deferredPrompt || ios)) ? '' : 'none';
+  }
+
+  function openInstallGuide() {
+    var body = document.getElementById('sheetBody');
+    if (!body) { return; }
+    var ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+    body.innerHTML =
+      '<div class="w-term">Cài app lên điện thoại</div>' +
+      (ios
+        ? '<p class="w-mean">Trên iPhone, chỉ Safari mới cài được:</p>' +
+          '<ol class="w-steps">' +
+            '<li>Mở trang này bằng <b>Safari</b> (không dùng Chrome, Zalo hay Facebook)</li>' +
+            '<li>Bấm nút <b>Chia sẻ</b> ở thanh dưới (hình vuông có mũi tên)</li>' +
+            '<li>Chọn <b>Thêm vào Màn hình chính</b> → <b>Thêm</b></li>' +
+          '</ol>'
+        : '<p class="w-mean">Trên Android (Chrome):</p>' +
+          '<ol class="w-steps">' +
+            '<li>Mở trang này bằng <b>Chrome</b></li>' +
+            '<li>Bấm nút <b>⋮</b> ở góc phải</li>' +
+            '<li>Chọn <b>Cài đặt ứng dụng</b> hoặc <b>Thêm vào màn hình chính</b></li>' +
+          '</ol>') +
+      '<p class="w-note">Nếu đang mở trong Zalo/Facebook, hãy bấm “Mở bằng trình duyệt” trước — các app đó chặn cài đặt.</p>' +
+      '<button class="btn btn-ghost sheet-close" data-act="close-sheet">Đóng</button>';
+    document.getElementById('sheet').classList.add('open');
+    document.getElementById('sheetBack').classList.add('open');
+  }
+
   function speak(text) {
     if (!text) { return; }
     if (!('speechSynthesis' in window)) { toast('Máy này không hỗ trợ đọc tiếng Nhật.'); return; }
@@ -663,7 +717,9 @@
       '<header class="topbar">' +
         '<div class="brand"><span class="brand-mark">原</span>' +
           '<span class="brand-text"><b>原付免許</b><i>50cc · luyện thi</i></span></div>' +
-        '<div class="topbar-actions">' + themeBtn() + '</div>' +
+        '<div class="topbar-actions">' +
+          '<button class="icon-btn" id="installBtn" data-act="install" aria-label="Cài đặt app" style="display:none">⬇️</button>' +
+          themeBtn() + '</div>' +
       '</header>' +
       '<main class="wrap">' +
         '<section class="hero">' +
@@ -1295,6 +1351,17 @@
           'Không sao chép văn bản từ trang luyện thi nào.</p>' +
         '</section>' +
         '<section class="panel">' +
+          '<h2>Quét QR để cài app</h2>' +
+          '<p class="muted">Đưa điện thoại quét mã này, hoặc gửi cho bạn bè cùng học.</p>' +
+          '<div class="qrbox"><img src="assets/qr.png" alt="Mã QR mở app 原付 50cc" width="240" height="240" loading="lazy"></div>' +
+          '<p class="qrurl">tranthenghiem27892-afk.github.io/50cc</p>' +
+          '<ol class="w-steps">' +
+            '<li><b>Android:</b> quét xong mở bằng Chrome → bấm nút ⬇️ trên app để cài</li>' +
+            '<li><b>iPhone:</b> mở bằng Safari → nút Chia sẻ → <b>Thêm vào Màn hình chính</b></li>' +
+            '<li>Nếu đang trong Zalo/Facebook: bấm “Mở bằng trình duyệt” trước</li>' +
+          '</ol>' +
+        '</section>' +
+        '<section class="panel">' +
           '<h2>Cộng đồng & góp ý</h2>' +
           '<p>Thấy câu nào sai nghĩa, giải thích khó hiểu, hay muốn góp thêm câu hỏi? ' +
             'Nhắn tin cho tác giả — mọi báo lỗi đều được xem lại và sửa trong bản cập nhật.</p>' +
@@ -1557,6 +1624,7 @@
       stopQuoteRotate();
     }
     if (screen === 'quiz' && S && S.mode === 'exam') { paintTimer(); }
+    if (screen === 'home') { updateInstallBtn(); }
     navSync();
   }
 
@@ -1609,6 +1677,15 @@
       if (cnt) {
         var done = CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length;
         cnt.textContent = done + '/' + CHECKLIST.length + ' mục đã xong — lưu trên máy này.';
+      }
+      return;
+    }
+    if (act === 'install') {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+      } else {
+        openInstallGuide();
       }
       return;
     }

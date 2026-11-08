@@ -1,6 +1,6 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const CACHE = 'gentsuki-v44';
+const CACHE = 'gentsuki-v46';
 
 const ASSETS = [
   './',
@@ -37,6 +37,7 @@ const ASSETS = [
   './data/author.js',
   './data/quotes.js',
   './assets/avatar.jpg',
+  './assets/qr.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-512.png',
