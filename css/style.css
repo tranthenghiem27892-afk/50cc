@@ -1368,3 +1368,22 @@ html.furi .w rt { visibility: visible; }
   text-align: center; font-size: 11.5px; color: var(--muted);
   letter-spacing: .02em; margin-bottom: 4px; word-break: break-all;
 }
+
+/* 8 ô — dải sắc độ: cam → vàng → mint → teal → xanh → tím → violet → hồng */
+.tiles .tile:nth-child(1) { background: linear-gradient(155deg, #fff0e0, #ffd8b8); border-color: #ffc7a0; }
+.tiles .tile:nth-child(2) { background: linear-gradient(155deg, #fff9dd, #ffe9a3); border-color: #f2d067; }
+.tiles .tile:nth-child(3) { background: linear-gradient(155deg, #eafaf1, #ccefdd); border-color: #afe4c8; }
+.tiles .tile:nth-child(4) { background: linear-gradient(155deg, #e6f7f8, #c6ebef); border-color: #a3dbe0; }
+.tiles .tile:nth-child(5) { background: linear-gradient(155deg, #eef6ff, #d3e4ff); border-color: #b9d2ff; }
+.tiles .tile:nth-child(6) { background: linear-gradient(155deg, #f5edff, #e0d0ff); border-color: #cbb5ff; }
+.tiles .tile:nth-child(7) { background: linear-gradient(155deg, #fbefff, #f0d9ff); border-color: #dfb8ff; }
+.tiles .tile:nth-child(8) { background: linear-gradient(155deg, #fff1f6, #ffdcea); border-color: #ffc4dd; }
+
+[data-theme="dark"] .tiles .tile:nth-child(1) { background: linear-gradient(155deg, #33261c, #211b17); border-color: #4a3425; }
+[data-theme="dark"] .tiles .tile:nth-child(2) { background: linear-gradient(155deg, #2e2a15, #1e1b18); border-color: #4a4222; }
+[data-theme="dark"] .tiles .tile:nth-child(3) { background: linear-gradient(155deg, #1b2b24, #1b1a18); border-color: #2c4738; }
+[data-theme="dark"] .tiles .tile:nth-child(4) { background: linear-gradient(155deg, #16292c, #1b1a18); border-color: #264a4f; }
+[data-theme="dark"] .tiles .tile:nth-child(5) { background: linear-gradient(155deg, #1e2937, #1b1a18); border-color: #31415a; }
+[data-theme="dark"] .tiles .tile:nth-child(6) { background: linear-gradient(155deg, #281f36, #1b1a18); border-color: #3d3157; }
+[data-theme="dark"] .tiles .tile:nth-child(7) { background: linear-gradient(155deg, #2f1f38, #1b1a18); border-color: #492f56; }
+[data-theme="dark"] .tiles .tile:nth-child(8) { background: linear-gradient(155deg, #2b1f26, #1b1a18); border-color: #452c3a; }

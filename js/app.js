@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '46';
+  var APP_VER = '47';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -759,6 +759,11 @@
             '<span class="tile-body"><h3>Tiến độ</h3><p>' + o.n + ' lượt trả lời · đúng ' + o.rate + '%</p></span>' +
             '<span class="chev">›</span>' +
           '</button>' +
+          '<button class="tile" data-act="go-law">' +
+            '<span class="tile-icon">⚖️</span>' +
+            '<span class="tile-body"><h3>Luật mới & khác biệt</h3><p>新基準原付 · Việt Nam vs Nhật</p></span>' +
+            '<span class="chev">›</span>' +
+          '</button>' +
           '<button class="tile" data-act="go-info">' +
             '<span class="tile-icon">🇯🇵</span>' +
             '<span class="tile-body"><h3>Thủ tục & mẹo thi</h3><p>Giấy tờ, lệ phí, 原付講習</p></span>' +
@@ -774,6 +779,11 @@
           '<button class="tile" data-act="go-sos">' +
             '<span class="tile-icon">📕</span>' +
             '<span class="tile-body"><h3>Sổ tay tình huống</h3><p>' + SITS.length + ' tình huống · câu tiếng Nhật</p></span>' +
+            '<span class="chev">›</span>' +
+          '</button>' +
+          '<button class="tile" data-act="go-connect">' +
+            '<span class="tile-icon">📲</span>' +
+            '<span class="tile-body"><h3>Cài app & góp ý</h3><p>Quét QR · báo lỗi câu hỏi</p></span>' +
             '<span class="chev">›</span>' +
           '</button>' +
         '</div>' +
@@ -1292,17 +1302,10 @@
       '</main>';
   }
 
-  function viewInfo() {
-    return topbar('Thủ tục & mẹo thi') +
+  function viewLaw() {
+    return topbar('Luật mới & khác biệt') +
       '<main class="wrap info">' +
-        '<section class="panel">' +
-          '<h2>Thi lý thuyết 原付 (50cc)</h2>' +
-          '<p>Đề gồm <b>46 câu chữ ○×</b> (1 điểm/câu) và <b>2 câu hình 危険予測</b> (2 điểm/câu, mỗi câu có 3 tiểu hỏi — ' +
-          'đúng cả 3 mới được 2 điểm). Tổng <b>48 câu, 50 điểm, 45 điểm là đỗ</b>, làm trong <b>30 phút</b>.</p>' +
-          '<p>Không có thi thực hành — chỉ lý thuyết tại 運転免許試験場. Tỷ lệ đỗ toàn quốc khoảng <b>58,7%</b> (năm 2025).</p>' +
-          '<p class="muted">Nguồn tham khảo: trang 学科試験 của 高知県警察 (30 phút, 50 điểm, 45 điểm đỗ).</p>' +
-        '</section>' +
-        '<section class="panel">' +
+'<section class="panel">' +
           '<h2>Luật mới cần biết</h2>' +
           '<ul>' +
             '<li><b>新基準原付 (từ 1/4/2025):</b> xe 125cc trở xuống, công suất tối đa <b>4.0kW</b> — lái được bằng bằng 原付. ' +
@@ -1313,6 +1316,55 @@
           '</ul>' +
           '<p class="muted">Nguồn: 道路交通法施行規則第1条の2, 道路交通法第23条・第71条の4, 警察庁 (2025).</p>' +
         '</section>' +
+'<section class="panel">' +
+          '<h2>Thói quen Việt Nam vs Nhật Bản</h2>' +
+          '<p class="muted">Những phản xạ ở Việt Nam sẽ làm bạn trượt hoặc bị phạt ở Nhật.</p>' +
+          '<div class="cmp">' +
+            '<div class="cmp-row cmp-head"><span>Ở Việt Nam</span><span>Ở Nhật</span></div>' +
+            COMPARE.map(function (x) {
+              return '<div class="cmp-row"><span>' + esc(x.vi) + '</span>' +
+                '<span><b>' + esc(x.jp) + '</b><i>' + esc(x.note) + '</i></span></div>';
+            }).join('') +
+          '</div>' +
+        '</section>' +
+      '</main>';
+  }
+
+  function viewConnect() {
+    return topbar('Cài app & góp ý') +
+      '<main class="wrap info">' +
+'<section class="panel">' +
+          '<h2>Quét QR để cài app</h2>' +
+          '<p class="muted">Đưa điện thoại quét mã này, hoặc gửi cho bạn bè cùng học.</p>' +
+          '<div class="qrbox"><img src="assets/qr.png" alt="Mã QR mở app 原付 50cc" width="240" height="240" loading="lazy"></div>' +
+          '<p class="qrurl">tranthenghiem27892-afk.github.io/50cc</p>' +
+          '<ol class="w-steps">' +
+            '<li><b>Android:</b> quét xong mở bằng Chrome → bấm nút ⬇️ trên app để cài</li>' +
+            '<li><b>iPhone:</b> mở bằng Safari → nút Chia sẻ → <b>Thêm vào Màn hình chính</b></li>' +
+            '<li>Nếu đang trong Zalo/Facebook: bấm “Mở bằng trình duyệt” trước</li>' +
+          '</ol>' +
+        '</section>' +
+'<section class="panel">' +
+          '<h2>Cộng đồng & góp ý</h2>' +
+          '<p>Thấy câu nào sai nghĩa, giải thích khó hiểu, hay muốn góp thêm câu hỏi? ' +
+            'Nhắn tin cho tác giả — mọi báo lỗi đều được xem lại và sửa trong bản cập nhật.</p>' +
+          '<p class="muted">Khi báo lỗi, gửi kèm mã câu (ví dụ <b>s23</b>) hoặc chụp màn hình để sửa nhanh hơn.</p>' +
+          '<a class="btn btn-ghost" href="https://www.facebook.com/Gimichan92" target="_blank" rel="noopener noreferrer" data-fb="1">Nhắn tin qua Facebook</a>' +
+        '</section>' +
+      '</main>';
+  }
+
+  function viewInfo() {
+    return topbar('Thủ tục & mẹo thi') +
+      '<main class="wrap info">' +
+        '<section class="panel">' +
+          '<h2>Thi lý thuyết 原付 (50cc)</h2>' +
+          '<p>Đề gồm <b>46 câu chữ ○×</b> (1 điểm/câu) và <b>2 câu hình 危険予測</b> (2 điểm/câu, mỗi câu có 3 tiểu hỏi — ' +
+          'đúng cả 3 mới được 2 điểm). Tổng <b>48 câu, 50 điểm, 45 điểm là đỗ</b>, làm trong <b>30 phút</b>.</p>' +
+          '<p>Không có thi thực hành — chỉ lý thuyết tại 運転免許試験場. Tỷ lệ đỗ toàn quốc khoảng <b>58,7%</b> (năm 2025).</p>' +
+          '<p class="muted">Nguồn tham khảo: trang 学科試験 của 高知県警察 (30 phút, 50 điểm, 45 điểm đỗ).</p>' +
+        '</section>' +
+        
         '<section class="panel">' +
           '<h2>Điều kiện & thủ tục</h2>' +
           '<ul>' +
@@ -1334,40 +1386,14 @@
             '<li>Không bỏ trống câu nào — sai không bị trừ điểm.</li>' +
           '</ul>' +
         '</section>' +
-        '<section class="panel">' +
-          '<h2>Thói quen Việt Nam vs Nhật Bản</h2>' +
-          '<p class="muted">Những phản xạ ở Việt Nam sẽ làm bạn trượt hoặc bị phạt ở Nhật.</p>' +
-          '<div class="cmp">' +
-            '<div class="cmp-row cmp-head"><span>Ở Việt Nam</span><span>Ở Nhật</span></div>' +
-            COMPARE.map(function (x) {
-              return '<div class="cmp-row"><span>' + esc(x.vi) + '</span>' +
-                '<span><b>' + esc(x.jp) + '</b><i>' + esc(x.note) + '</i></span></div>';
-            }).join('') +
-          '</div>' +
-        '</section>' +
+        
         '<section class="panel">' +
           '<h2>Về bộ câu hỏi này</h2>' +
           '<p>Toàn bộ câu hỏi được biên soạn lại bằng tiếng Nhật từ nội dung luật (道路交通法), có giải thích tiếng Việt. ' +
           'Không sao chép văn bản từ trang luyện thi nào.</p>' +
         '</section>' +
-        '<section class="panel">' +
-          '<h2>Quét QR để cài app</h2>' +
-          '<p class="muted">Đưa điện thoại quét mã này, hoặc gửi cho bạn bè cùng học.</p>' +
-          '<div class="qrbox"><img src="assets/qr.png" alt="Mã QR mở app 原付 50cc" width="240" height="240" loading="lazy"></div>' +
-          '<p class="qrurl">tranthenghiem27892-afk.github.io/50cc</p>' +
-          '<ol class="w-steps">' +
-            '<li><b>Android:</b> quét xong mở bằng Chrome → bấm nút ⬇️ trên app để cài</li>' +
-            '<li><b>iPhone:</b> mở bằng Safari → nút Chia sẻ → <b>Thêm vào Màn hình chính</b></li>' +
-            '<li>Nếu đang trong Zalo/Facebook: bấm “Mở bằng trình duyệt” trước</li>' +
-          '</ol>' +
-        '</section>' +
-        '<section class="panel">' +
-          '<h2>Cộng đồng & góp ý</h2>' +
-          '<p>Thấy câu nào sai nghĩa, giải thích khó hiểu, hay muốn góp thêm câu hỏi? ' +
-            'Nhắn tin cho tác giả — mọi báo lỗi đều được xem lại và sửa trong bản cập nhật.</p>' +
-          '<p class="muted">Khi báo lỗi, gửi kèm mã câu (ví dụ <b>s23</b>) hoặc chụp màn hình để sửa nhanh hơn.</p>' +
-          '<a class="btn btn-ghost" href="https://www.facebook.com/Gimichan92" target="_blank" rel="noopener noreferrer" data-fb="1">Nhắn tin qua Facebook</a>' +
-        '</section>' +
+        
+        
       '</main>';
   }
 
@@ -1612,6 +1638,8 @@
     else if (screen === 'cards') { html = viewCards(); }
     else if (screen === 'checklist') { html = viewChecklist(); }
     else if (screen === 'sos') { html = viewSos(); }
+    else if (screen === 'law') { html = viewLaw(); }
+    else if (screen === 'connect') { html = viewConnect(); }
     else { html = viewHome(); }
     app.innerHTML = html;
     window.scrollTo(0, 0);
@@ -1667,6 +1695,8 @@
     if (act === 'go-info') { go('info'); return; }
     if (act === 'go-checklist') { go('checklist'); return; }
     if (act === 'go-sos') { go('sos'); return; }
+    if (act === 'go-law') { go('law'); return; }
+    if (act === 'go-connect') { go('connect'); return; }
     if (act === 'check') {
       var ck = t.dataset.k;
       db.checklist[ck] = !db.checklist[ck];
@@ -1821,6 +1851,8 @@
   } else if (demo === 'stats') { go('stats'); }
   else if (demo === 'gram') { go('gram'); }
   else if (demo === 'check') { go('checklist'); }
+  else if (demo === 'law') { go('law'); }
+  else if (demo === 'connect') { go('connect'); }
   else if (demo === 'sos') { go('sos'); }
   else if (demo === 'cards') { startCards(); }
   else if (demo === 'info') { go('info'); }
