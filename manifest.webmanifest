@@ -1,0 +1,18 @@
+{
+  "name": "原付免許 50cc — Luyện thi bằng lái xe 50cc",
+  "short_name": "原付 50cc",
+  "description": "278 câu hỏi ○× tiếng Nhật, giải thích tiếng Việt, thi thử 50 câu trong 30 phút.",
+  "lang": "vi",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f2ec",
+  "theme_color": "#f5f2ec",
+  "categories": ["education"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
