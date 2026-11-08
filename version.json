@@ -1,0 +1,20 @@
+{
+  "version": "56",
+  "cache": "gentsuki-v56",
+  "questionCount": 619,
+  "translations": 681,
+  "illustrations": 12,
+  "updateFiles": {
+    "index.html": 4.1,
+    "js/app.js": 83.3,
+    "css/style.css": 54.0,
+    "sw.js": 3.1,
+    "data/vi.js": 69.3,
+    "data/vi2.js": 19.0,
+    "data/vi3.js": 12.9,
+    "data/vi4.js": 9.9,
+    "data/vi5.js": 10.0,
+    "data/vi6.js": 9.4
+  },
+  "note": "Mở file này trên trang đã deploy để biết bản đang chạy. Nếu không thấy version mới nhất thì file chưa được upload."
+}
