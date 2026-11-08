@@ -589,6 +589,44 @@
     }, VROT_MS);
   }
 
+  /* ---------------- mở app Facebook thay vì trình duyệt ---------------- */
+  function openFacebook(url) {
+    var ua = navigator.userAgent || '';
+    var isAndroid = /Android/i.test(ua);
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+    function watch() {
+      /* nếu app mở được thì tab bị ẩn; nếu không, sau 1.5s quay về web */
+      var done = false;
+      var tmr = setTimeout(function () { if (!done) { window.location.href = url; } }, 1500);
+      document.addEventListener('visibilitychange', function onVis() {
+        if (document.hidden) {
+          done = true;
+          clearTimeout(tmr);
+          document.removeEventListener('visibilitychange', onVis);
+        }
+      });
+    }
+
+    if (isAndroid) {
+      var bare = url.replace(/^https?:\/\//, '');
+      watch();
+      window.location.href = 'intent://' + bare +
+        '#Intent;scheme=https;package=com.facebook.katana;' +
+        'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+      return;
+    }
+
+    if (isIOS) {
+      watch();
+      window.location.href = 'fb://facewebmodal/f?href=' + encodeURIComponent(url);
+      return;
+    }
+
+    var win = window.open(url, '_blank', 'noopener');
+    if (!win) { window.location.href = url; }
+  }
+
   function viewHome() {
     var o = overall();
     var wrongN = db.wrong.filter(function (id) { return qById[id]; }).length;
@@ -597,8 +635,7 @@
       '<header class="topbar">' +
         '<div class="brand"><span class="brand-mark">原</span>' +
           '<span class="brand-text"><b>原付免許</b><i>50cc · luyện thi</i></span></div>' +
-        '<div class="topbar-actions">' + themeBtn() +
-          '<button class="icon-btn" data-act="go-stats" aria-label="Tiến độ">📈</button></div>' +
+        '<div class="topbar-actions">' + themeBtn() + '</div>' +
       '</header>' +
       '<main class="wrap">' +
         '<section class="hero">' +
