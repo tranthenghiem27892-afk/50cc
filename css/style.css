@@ -295,7 +295,11 @@ svg { display: block; }
 .progress { height: 3px; background: #e9e2d8; }
 .progress i { display: block; height: 100%; background: var(--red); transition: width .3s ease; }
 
-.quizwrap { padding-top: 16px; }
+.quizwrap {
+  /* đẩy khối câu hỏi xuống khoảng giữa màn hình, nhưng cố định —
+     không đổi vị trí khi phần giải thích xuất hiện bên dưới */
+  padding-top: clamp(28px, 13vh, 150px);
+}
 
 .qcard {
   background: var(--card);
@@ -438,10 +442,20 @@ svg { display: block; }
   color: #9d958c;
   padding: 0;
   font-variant-numeric: tabular-nums;
+  display: grid;
+  place-items: center;
+  line-height: 1;
 }
 .dot.done { background: var(--green-soft); border-color: #d5e9de; color: var(--green); }
 .dot.cur { border-color: var(--red); color: var(--red); font-weight: 700; }
-.examnav-btns { display: grid; grid-template-columns: 1fr 1.4fr; gap: 9px; margin-top: 12px; }
+.examnav-btns {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 9px;
+  margin-top: 12px;
+}
+.examnav-btns .btn { width: 100%; white-space: nowrap; }
+.linkbtn.inv { visibility: hidden; }
 
 /* ---------- result ---------- */
 .result { text-align: center; padding: 14px 0 4px; }
@@ -990,8 +1004,8 @@ body {
 }
 .ill-sub {
   border-top: 1px solid #f2ede5;
-  padding: 12px 0 2px;
-  margin-top: 6px;
+  padding: 10px 0 2px;
+  margin-top: 4px;
 }
 .ill-sub:first-of-type { border-top: none; }
 .ill-q { font-size: 14px; line-height: 1.7; color: var(--ink); }
@@ -1424,4 +1438,4 @@ html.furi .w rt { visibility: visible; }
   letter-spacing: .03em;
   color: var(--muted);
 }
-.qtext-vi { font-size: 14.5px; line-height: 1.8; color: var(--ink); }
+.qtext-vi { color: var(--ink); }   /* dùng chung cỡ chữ với câu hỏi gốc */
