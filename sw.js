@@ -1,6 +1,6 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const CACHE = 'gentsuki-v62';
+const CACHE = 'gentsuki-v63';
 
 const ASSETS = [
   './',
@@ -78,7 +78,8 @@ self.addEventListener('fetch', (e) => {
   /* Trang HTML: ưu tiên mạng → luôn nhận bản mới khi có mạng, offline thì lấy cache */
   if (req.mode === 'navigate' || req.destination === 'document') {
     e.respondWith(
-      fetch(req)
+      /* bỏ qua cả cache HTTP của CDN (GitHub Pages giữ HTML 10 phút) */
+      fetch(req, { cache: 'no-store' })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put(req, copy));
