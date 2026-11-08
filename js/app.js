@@ -13,6 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
+  var APP_VER = '44';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -728,7 +729,8 @@
         creditBlock() +
         '<p class="terms"><b>© 2026 Nghiệm Trần</b>' +
           'Đây là dự án miễn phí vì cộng đồng. Vui lòng chỉ dùng cá nhân, ' +
-          'không sao chép/tái bản, không dùng để kiếm tiền.</p>' +
+          'không sao chép/tái bản, không dùng để kiếm tiền. ' +
+          '<span class="ver">v' + APP_VER + '</span></p>' +
       '</main>';
   }
 

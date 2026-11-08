@@ -1193,8 +1193,15 @@ body {
 .w-hv { font-size: 11.5px; font-weight: 600; letter-spacing: .08em; color: var(--muted); margin-left: 9px; vertical-align: middle; text-transform: uppercase; }
 
 /* ---------- phiên âm (furigana) ---------- */
-.w rt { display: none; font-size: .5em; font-weight: 500; color: var(--muted); letter-spacing: 0; }
-html.furi .w rt { display: inline; }
+.w rt {
+  visibility: hidden;          /* giữ chỗ sẵn để bật/tắt không xô lệch dòng */
+  font-size: .5em;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0;
+  line-height: 1;
+}
+html.furi .w rt { visibility: visible; }
 
 /* ---------- nút đọc / phiên âm ---------- */
 .qctl { display: flex; gap: 8px; margin: 10px 0 2px; }
@@ -1343,3 +1350,5 @@ html.furi .w rt { display: inline; }
   letter-spacing: .04em;
   color: var(--ink-soft);
 }
+
+.ver { color: var(--line); font-size: 9.5px; letter-spacing: .04em; }

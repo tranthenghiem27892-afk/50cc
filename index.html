@@ -69,7 +69,19 @@
     /* Chỉ đăng ký service worker khi chạy qua http(s) — mở file:// sẽ bỏ qua */
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js').catch(function () { /* bỏ qua */ });
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) {
+          reg.update();
+        }).catch(function () { /* bỏ qua */ });
+        var swReloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (swReloaded) { return; }
+          swReloaded = true;
+          try {
+            if (sessionStorage.getItem('gentsuki.reloaded') === '1') { return; }
+            sessionStorage.setItem('gentsuki.reloaded', '1');
+          } catch (err) { }
+          location.reload();
+        });
       });
     }
   </script>

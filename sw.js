@@ -1,6 +1,6 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const CACHE = 'gentsuki-v41';
+const CACHE = 'gentsuki-v44';
 
 const ASSETS = [
   './',
@@ -44,9 +44,10 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
+  /* Thêm từng file một: một file lỗi 404 không làm hỏng cả bản cập nhật */
   e.waitUntil(
     caches.open(CACHE)
-      .then((c) => c.addAll(ASSETS))
+      .then((c) => Promise.all(ASSETS.map((u) => c.add(u).catch(() => null))))
       .then(() => self.skipWaiting())
   );
 });
@@ -63,6 +64,21 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') { return; }
 
+  /* Trang HTML: ưu tiên mạng → luôn nhận bản mới khi có mạng, offline thì lấy cache */
+  if (req.mode === 'navigate' || req.destination === 'document') {
+    e.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then((hit) => hit || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  /* Tài nguyên tĩnh: cache-first cho nhanh, tự cập nhật khi SW đổi phiên bản */
   e.respondWith(
     caches.match(req).then((hit) => {
       if (hit) { return hit; }
