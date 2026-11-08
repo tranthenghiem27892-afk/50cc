@@ -164,10 +164,10 @@ window.QUESTIONS.push(
     exp: 'Sai. 横断 là cắt ngang đường, không phải rẽ phải. Rẽ phải bị cấm là biển 指定方向外進行禁止.',
     ref: '' },
 
-  { id: 's91', cat: 'sign', a: 1, img: 'minspeed',
-    q: '「最低速度」の標識がある道路では、指定された速度より遅く走ってはいけない。',
-    exp: 'Đúng. Đây là tốc độ tối thiểu, buộc phải chạy nhanh hơn hoặc bằng.',
-    ref: '道路交通法第22条' },
+  { id: 's91', cat: 'sign', a: 0, img: 'minspeed',
+    q: '「最低速度」の標識がある道路では、原付も指定された速度より遅く走ってはいけない。',
+    exp: 'Sai. Nghĩa vụ giữ tốc độ tối thiểu chỉ áp dụng cho 自動車 (法23条); 原付 không thuộc nhóm 自動車 nên không bị ràng buộc.',
+    ref: '道路交通法第23条' },
 
   { id: 's92', cat: 'sign', a: 0, img: 'minspeed',
     q: '「最低速度」の標識は、その道路の最高速度を示している。',

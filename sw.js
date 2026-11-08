@@ -1,11 +1,20 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const CACHE = 'gentsuki-v6';
+const CACHE = 'gentsuki-v12';
 
 const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './css/fonts.css',
+  './fonts/be-vietnam-400-latin.woff2',
+  './fonts/be-vietnam-400-vietnamese.woff2',
+  './fonts/be-vietnam-500-latin.woff2',
+  './fonts/be-vietnam-500-vietnamese.woff2',
+  './fonts/be-vietnam-600-latin.woff2',
+  './fonts/be-vietnam-600-vietnamese.woff2',
+  './fonts/be-vietnam-700-latin.woff2',
+  './fonts/be-vietnam-700-vietnamese.woff2',
   './css/style.css',
   './js/app.js',
   './data/signs.js',
@@ -14,6 +23,10 @@ const ASSETS = [
   './data/q3.js',
   './data/q4.js',
   './data/q5.js',
+  './data/q7.js',
+  './data/q8.js',
+  './data/q9.js',
+  './data/illustrations.js',
   './data/vocab.js',
   './data/vocab2.js',
   './data/traps.js',

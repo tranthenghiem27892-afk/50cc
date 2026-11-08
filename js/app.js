@@ -9,11 +9,15 @@
   var SIGNS = window.SIGNS || {};
   var STORE = 'gentsuki.v1';
   var EXAM_TIME = 30 * 60 * 1000;
-  var EXAM_LEN = 50;
+  var EXAM_TEXT = 46;
+  var EXAM_ILL = 2;
   var PASS = 45;
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
+  var ILLS = window.ILLUSTRATIONS || [];
+  var illById = {};
+  ILLS.forEach(function (x) { illById[x.id] = x; });
   var catById = {};
   CATS.forEach(function (c) { catById[c.id] = c; });
   var byCat = {};
@@ -197,7 +201,15 @@
       '<div class="credit-main">' +
         '<div class="credit-name">' + esc(name) +
           (a.handle ? '<span>' + esc(a.handle) + '</span>' : '') + '</div>' +
-        (a.bio ? '<p class="credit-bio">' + esc(a.bio) + '</p>' : '') +
+        (a.bio || a.bioLink
+          ? '<p class="credit-bio">' + esc(a.bio || '') +
+            (a.bioLink
+              ? '<a class="credit-bio-link" href="' + esc(a.bioLink) + '" target="_blank" rel="noopener noreferrer">' +
+                esc(a.bioLinkText || 'tại đây') + '</a>'
+              : '') +
+            (a.bio ? '.' : '') +
+            '</p>'
+          : '') +
         (linksHtml ? '<div class="credit-links">' + linksHtml + '</div>' : '') +
       '</div>' +
       '</footer>';
@@ -239,11 +251,11 @@
       '</header>' +
       '<main class="wrap">' +
         '<section class="hero">' +
-          '<div class="hero-eyebrow">学科試験 · ○× 50 câu</div>' +
+          '<div class="hero-eyebrow">学科試験 · 46 câu + 2 câu hình</div>' +
           '<h1>Đỗ bằng lái<br>xe 50cc tại Nhật</h1>' +
-          '<p class="hero-sub">Luyện từng nhóm kiến thức, rồi thi thử đúng 50 câu trong 30 phút.</p>' +
+          '<p class="hero-sub">Luyện từng nhóm kiến thức, rồi thi thử đúng 48 câu trong 30 phút.</p>' +
           '<div class="facts">' +
-            '<div class="fact"><b>50</b><span>câu hỏi</span></div>' +
+            '<div class="fact"><b>48</b><span>câu hỏi</span></div>' +
             '<div class="fact"><b>30′</b><span>thời gian</span></div>' +
             '<div class="fact"><b>45</b><span>điểm đỗ</span></div>' +
           '</div>' +
@@ -315,6 +327,7 @@
 
   function viewQuiz() {
     if (!S) { return viewHome(); }
+    if (S.mode === 'exam' && S.phase === 'ill') { return viewIll(); }
     var q = qById[S.ids[S.i]];
     var cat = catById[q.cat] || { vi: '', ja: '', icon: '' };
     var total = S.ids.length;
@@ -352,7 +365,7 @@
       '<div class="progress"><i style="width:' + (((S.i + (answered ? 1 : 0)) / total) * 100) + '%"></i></div>' +
       '<main class="wrap quizwrap">' +
         '<article class="qcard">' +
-          '<span class="qtag">' + cat.icon + ' ' + cat.vi + '</span>' +
+          '<span class="qtag cat-' + q.cat + '">' + cat.icon + ' ' + cat.vi + '</span>' +
           sign +
           '<p class="qtext">' + mark(esc(q.q)) + '</p>' +
           '<p class="qhint">' + (isExam ? 'Chọn ○ nếu đúng, × nếu sai' : 'Câu này đúng hay sai?') +
@@ -361,6 +374,42 @@
         '</article>' +
         (showFb ? feedback(q, picked) : '') +
         (isExam ? examFooter() : '') +
+      '</main>';
+  }
+
+  function viewIll() {
+    var set = illById[S.ills[S.j]];
+    if (!set) { return viewHome(); }
+    var picks = S.illPicks[S.j];
+    var totalQ = S.ids.length + S.ills.length;
+
+    var subs = set.subs.map(function (s, k) {
+      var p = picks[k];
+      return '<div class="ill-sub">' +
+        '<p class="ill-q"><b>' + (k + 1) + '.</b> ' + mark(esc(s.q)) + '</p>' +
+        '<div class="ill-ans">' +
+          '<button class="pill-ans' + (p === 1 ? ' sel' : '') + '" data-act="ill" data-k="' + k + '" data-v="1">○ Đúng</button>' +
+          '<button class="pill-ans' + (p === 0 ? ' sel' : '') + '" data-act="ill" data-k="' + k + '" data-v="0">× Sai</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    return '' +
+      '<header class="quizbar">' +
+        '<button class="icon-btn" data-act="quit" aria-label="Thoát">✕</button>' +
+        '<div class="qmeta"><b>Câu ' + (S.ids.length + S.j + 1) + '<span>/' + totalQ + '</span></b>' +
+          '<i>Câu hình · 危険予測 · 2 điểm</i></div>' +
+        '<div class="timer" id="timer">30:00</div>' +
+      '</header>' +
+      '<div class="progress"><i style="width:' + (((S.ids.length + S.j) / totalQ) * 100) + '%"></i></div>' +
+      '<main class="wrap quizwrap">' +
+        '<article class="qcard">' +
+          '<span class="qtag cat-bike">🎬 ' + esc(set.title) + '</span>' +
+          '<p class="ill-scene">' + mark(esc(set.scene)) + '</p>' +
+          '<p class="qhint">Ba nhận định dưới đây đúng hay sai? Đúng cả 3 mới được 2 điểm.</p>' +
+          subs +
+        '</article>' +
+        examFooter() +
       '</main>';
   }
 
@@ -395,19 +444,35 @@
   }
 
   function examFooter() {
-    var dots = S.ids.map(function (id, i) {
-      var cls = 'dot' + (S.picks[i] !== undefined ? ' done' : '') + (i === S.i ? ' cur' : '');
-      return '<button class="' + cls + '" data-act="jump" data-i="' + i + '">' + (i + 1) + '</button>';
-    }).join('');
-    var allDone = S.picks.every(function (p) { return p !== undefined; });
+    var dots = '';
+    S.ids.forEach(function (id, i) {
+      var cls = 'dot' + (S.picks[i] !== undefined ? ' done' : '') +
+        (S.phase === 'text' && i === S.i ? ' cur' : '');
+      dots += '<button class="' + cls + '" data-act="jump" data-i="' + i + '">' + (i + 1) + '</button>';
+    });
+    S.ills.forEach(function (id, j) {
+      var ok = S.illPicks[j].every(function (p) { return p !== undefined; });
+      var cls = 'dot ill' + (ok ? ' done' : '') + (S.phase === 'ill' && j === S.j ? ' cur' : '');
+      dots += '<span class="' + cls + '">' + (S.ids.length + j + 1) + '</span>';
+    });
+
+    var allText = S.picks.every(function (p) { return p !== undefined; });
+    var allIll = S.illPicks.every(function (arr) {
+      return arr.every(function (p) { return p !== undefined; });
+    });
+    var btns;
+    if (S.phase === 'text') {
+      btns = '<button class="btn btn-ghost" data-act="prev"' + (S.i === 0 ? ' disabled' : '') + '>← Trước</button>' +
+        '<button class="btn btn-primary" data-act="' + (allText ? 'to-ill' : 'next') + '">' +
+          (allText ? 'Câu hình →' : 'Tiếp →') + '</button>';
+    } else {
+      btns = '<button class="btn btn-ghost" data-act="to-text">← Trước</button>' +
+        '<button class="btn btn-primary" data-act="submit"' + (allIll ? '' : ' disabled') + '>Nộp bài</button>';
+    }
     return '<div class="examnav">' +
       '<div class="dots">' + dots + '</div>' +
-      '<div class="examnav-btns">' +
-        '<button class="btn btn-ghost" data-act="prev"' + (S.i === 0 ? ' disabled' : '') + '>← Trước</button>' +
-        '<button class="btn btn-primary" data-act="' + (allDone ? 'submit' : 'next') + '">' +
-          (allDone ? 'Nộp bài' : 'Tiếp →') + '</button>' +
-      '</div>' +
-      (allDone ? '' : '<button class="linkbtn" data-act="submit">Nộp bài sớm</button>') +
+      '<div class="examnav-btns">' + btns + '</div>' +
+      (allText && allIll ? '' : '<button class="linkbtn" data-act="submit">Nộp bài sớm</button>') +
       '</div>';
   }
 
@@ -419,8 +484,22 @@
     });
     var score = details.filter(function (d) { return d.correct; }).length;
     var total = details.length;
-    var pass = total >= EXAM_LEN ? score >= PASS : score / total >= 0.9;
-    return { details: details, score: score, total: total, pass: pass };
+    var ill = null;
+    var pass;
+    if (S.mode === 'exam') {
+      ill = S.ills.map(function (id, j) {
+        var set = illById[id];
+        var picks = S.illPicks[j] || [];
+        var okAll = set.subs.every(function (s, k) { return picks[k] === s.a; });
+        return { id: id, picks: picks, ok: okAll };
+      });
+      score += ill.filter(function (x) { return x.ok; }).length * 2;
+      total = EXAM_TEXT + EXAM_ILL * 2;
+      pass = score >= PASS;
+    } else {
+      pass = score / total >= 0.9;
+    }
+    return { details: details, score: score, total: total, pass: pass, ill: ill };
   }
 
   function viewResult() {
@@ -467,6 +546,17 @@
       sub = 'Số câu đúng trong lượt luyện này.';
     }
 
+    var illHtml = '';
+    if (r.ill && r.ill.length) {
+      illHtml = '<section class="panel"><h3 class="panel-title">Câu hình · 危険予測</h3>' +
+        r.ill.map(function (x) {
+          var set = illById[x.id];
+          return '<div class="illres ' + (x.ok ? 'ok' : 'ng') + '">' +
+            '<div class="illres-head">' + (x.ok ? '✓ +2 điểm' : '✗ 0 điểm') + ' · ' + esc(set.title) + '</div>' +
+            '<p>' + esc(set.exp) + '</p></div>';
+        }).join('') + '</section>';
+    }
+
     return '<header class="topbar simple"><div class="topbar-title">' +
         (isExam ? 'Kết quả thi thử' : 'Kết quả luyện tập') + '</div></header>' +
       '<main class="wrap">' +
@@ -478,6 +568,7 @@
           '<p class="verdict-sub">' + sub + '</p>' +
         '</section>' +
         '<section class="panel"><h3 class="panel-title">Theo nhóm kiến thức</h3>' + bdRows + '</section>' +
+        illHtml +
         '<section class="panel"><h3 class="panel-title">Câu sai (' + wrong.length + ')</h3>' + wrongHtml + '</section>' +
         '<div class="btnrow">' +
           '<button class="btn btn-primary" data-act="' + (isExam ? 'start-exam' : 'again') + '">' +
@@ -577,15 +668,27 @@
       '<main class="wrap info">' +
         '<section class="panel">' +
           '<h2>Thi lý thuyết 原付 (50cc)</h2>' +
-          '<p>Đề thi gồm <b>50 câu ○×</b>, làm trong <b>30 phút</b>, mỗi câu 1 điểm, <b>45/50 là đỗ</b>. ' +
-          'Không có thi thực hành — chỉ lý thuyết tại 運転免許試験場 (trung tâm cấp bằng của tỉnh).</p>' +
+          '<p>Đề gồm <b>46 câu chữ ○×</b> (1 điểm/câu) và <b>2 câu hình 危険予測</b> (2 điểm/câu, mỗi câu có 3 tiểu hỏi — ' +
+          'đúng cả 3 mới được 2 điểm). Tổng <b>48 câu, 50 điểm, 45 điểm là đỗ</b>, làm trong <b>30 phút</b>.</p>' +
+          '<p>Không có thi thực hành — chỉ lý thuyết tại 運転免許試験場. Tỷ lệ đỗ toàn quốc khoảng <b>58,7%</b> (năm 2025).</p>' +
           '<p class="muted">Nguồn tham khảo: trang 学科試験 của 高知県警察 (30 phút, 50 điểm, 45 điểm đỗ).</p>' +
+        '</section>' +
+        '<section class="panel">' +
+          '<h2>Luật mới cần biết</h2>' +
+          '<ul>' +
+            '<li><b>新基準原付 (từ 1/4/2025):</b> xe 125cc trở xuống, công suất tối đa <b>4.0kW</b> — lái được bằng bằng 原付. ' +
+              'Vẫn 30km/h, vẫn 二段階右折, vẫn 1 người, biển số trắng. Xe 125cc không giới hạn công suất vẫn cần bằng 普通二輪.</li>' +
+            '<li><b>特定小型原付 (từ 1/7/2023):</b> xe điện tối đa 20km/h, từ 16 tuổi, <b>không cần bằng</b>, ' +
+              'đội mũ là <b>努力義務</b> (không bắt buộc như 原付 thường), đi dưới lòng đường là nguyên tắc.</li>' +
+            '<li><b>最低速度</b> chỉ áp dụng cho 自動車 — 原付 không bị ràng buộc bởi biển tốc độ tối thiểu.</li>' +
+          '</ul>' +
+          '<p class="muted">Nguồn: 道路交通法施行規則第1条の2, 道路交通法第23条・第71条の4, 警察庁 (2025).</p>' +
         '</section>' +
         '<section class="panel">' +
           '<h2>Điều kiện & thủ tục</h2>' +
           '<ul>' +
             '<li>Đủ <b>16 tuổi</b> trở lên.</li>' +
-            '<li>Học <b>原付講習</b> (khoảng 3 giờ) tại trường dạy lái — bắt buộc, thường 5.000–8.000 yên. ' +
+            '<li>Học <b>原付講習</b> (khoảng 3 giờ) tại trường dạy lái — bắt buộc, lệ phí tham khảo <b>5.250 yên</b>. ' +
               'Nhiều tỉnh cho phép học trước hoặc sau khi thi, nhưng phải có giấy chứng nhận mới được cấp bằng.</li>' +
             '<li>Thi 学科 tại 免許センター: lệ phí thi khoảng <b>1.600 yên</b>, lệ phí cấp bằng khoảng <b>2.350 yên</b> (khác nhau theo tỉnh).</li>' +
             '<li>Giấy tờ: 住民票 (có 本籍), 在留カード, ảnh 3×2,4cm, tiền mặt.</li>' +
@@ -622,9 +725,12 @@
   }
 
   function startExam() {
-    var ids = shuffle(Q).slice(0, Math.min(EXAM_LEN, Q.length)).map(function (q) { return q.id; });
-    S = { mode: 'exam', ids: ids, i: 0,
+    var ids = shuffle(Q).slice(0, Math.min(EXAM_TEXT, Q.length)).map(function (q) { return q.id; });
+    var ills = shuffle(ILLS).slice(0, EXAM_ILL).map(function (x) { return x.id; });
+    S = { mode: 'exam', phase: 'text', ids: ids, i: 0,
           picks: ids.map(function () { return undefined; }),
+          ills: ills, j: 0,
+          illPicks: ills.map(function () { return [undefined, undefined, undefined]; }),
           startedAt: Date.now(), deadline: Date.now() + EXAM_TIME };
     go('quiz');
     startTimer();
@@ -652,8 +758,13 @@
 
   function next() {
     if (!S) { return; }
+    if (S.mode === 'exam' && S.phase === 'ill') {
+      if (S.j + 1 < S.ills.length) { S.j++; render(); }
+      return;
+    }
     if (S.i + 1 >= S.ids.length) {
-      if (S.mode === 'exam') { submitExam(false); } else { finishPractice(); }
+      if (S.mode === 'exam') { S.phase = 'ill'; S.j = 0; render(); return; }
+      finishPractice();
       return;
     }
     S.i++;
@@ -661,7 +772,13 @@
   }
 
   function prev() {
-    if (!S || S.i === 0) { return; }
+    if (!S) { return; }
+    if (S.mode === 'exam' && S.phase === 'ill') {
+      if (S.j > 0) { S.j--; } else { S.phase = 'text'; S.i = S.ids.length - 1; }
+      render();
+      return;
+    }
+    if (S.i === 0) { return; }
     S.i--;
     render();
   }
@@ -748,12 +865,32 @@
     if (act === 'start-exam') { startExam(); return; }
     if (act === 'start-review') { startReview(); return; }
     if (act === 'answer') { answer(Number(t.dataset.v)); return; }
+    if (act === 'ill') {
+      if (!S || S.phase !== 'ill') { return; }
+      S.illPicks[S.j][Number(t.dataset.k)] = Number(t.dataset.v);
+      render();
+      return;
+    }
     if (act === 'next') { next(); return; }
     if (act === 'prev') { prev(); return; }
-    if (act === 'jump') { S.i = Number(t.dataset.i); render(); return; }
+    if (act === 'to-ill') { S.phase = 'ill'; S.j = 0; render(); return; }
+    if (act === 'to-text') { S.phase = 'text'; S.i = S.ids.length - 1; render(); return; }
+    if (act === 'jump') {
+      if (S.mode === 'exam' && S.phase !== 'text') { return; }
+      S.i = Number(t.dataset.i); render(); return;
+    }
     if (act === 'submit') {
-      var left = S.ids.length - S.picks.filter(function (p) { return p !== undefined; }).length;
-      if (left > 0 && !confirm('Còn ' + left + ' câu chưa trả lời. Vẫn nộp bài?')) { return; }
+      var left = S.ids.filter(function (id, i) { return S.picks[i] === undefined; }).length;
+      var leftIll = 0;
+      if (S.mode === 'exam') {
+        S.illPicks.forEach(function (arr) {
+          if (arr.some(function (p) { return p === undefined; })) { leftIll++; }
+        });
+      }
+      var msg = '';
+      if (left > 0) { msg = 'Còn ' + left + ' câu chữ'; }
+      if (leftIll > 0) { msg += (msg ? ' và ' : 'Còn ') + leftIll + ' câu hình'; }
+      if (msg && !confirm(msg + ' chưa trả lời. Vẫn nộp bài?')) { return; }
       submitExam(false);
       return;
     }
@@ -791,6 +928,7 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { closeSheet(); return; }
     if (screen !== 'quiz' || !S) { return; }
+    if (S.mode === 'exam' && S.phase === 'ill') { return; }
     var k = e.key;
     if (k === '1' || k === 'o' || k === 'O') { answer(1); }
     else if (k === '2' || k === 'x' || k === 'X') { answer(0); }
@@ -817,6 +955,21 @@
     S.picks = S.ids.map(function (id, i) { return i % 3 === 0 ? (qById[id].a === 1 ? 0 : 1) : qById[id].a; });
     finishPractice();
   } else if (demo === 'stats') { go('stats'); }
+  else if (demo === 'practice') { go('practice'); }
+  else if (demo === 'ill') {
+    startExam();
+    S.picks = S.picks.map(function (x, i) { return i % 2 === 0 ? 1 : 0; });
+    S.illPicks[0] = [1, 0, 1];
+    S.phase = 'ill'; S.j = 0; render();
+  }
+  else if (demo === 'examresult') {
+    startExam();
+    S.picks = S.ids.map(function (id, i) { return i % 6 === 0 ? 0 : qById[id].a; });
+    S.illPicks = S.ills.map(function (id, j) {
+      return illById[id].subs.map(function (s) { return j === 0 ? s.a : 1 - s.a; });
+    });
+    submitExam(false);
+  }
   else if (demo === 'ready') {
     db.exams = [50, 47, 49, 48, 47].map(function (s, i) {
       return { t: Date.now() - i * 86400000, score: s, total: 50, pass: s >= 45 };

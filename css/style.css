@@ -819,6 +819,71 @@ svg { display: block; }
 }
 
 /* ============================================================
+   V2 — FONT & MÀU SẮC
+   ============================================================ */
+body {
+  font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "YuGothic", Meiryo, sans-serif;
+  background-image:
+    radial-gradient(circle at 6% -8%, #ffe8d4 0%, rgba(255, 232, 212, 0) 42%),
+    radial-gradient(circle at 98% 2%, #e4eeff 0%, rgba(228, 238, 255, 0) 38%),
+    radial-gradient(circle at 50% 108%, #e6f8ef 0%, rgba(230, 248, 239, 0) 42%);
+  background-attachment: fixed;
+}
+
+.hero h1, .brand-text b, .tile-body h3, .catrow-main h3, .verdict, .ready-top b {
+  letter-spacing: -.02em;
+}
+
+/* ánh sáng màu trong hero */
+.hero::before {
+  content: "";
+  position: absolute;
+  left: -50px; bottom: -90px;
+  width: 230px; height: 230px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, .40), rgba(99, 102, 241, 0) 70%);
+}
+.hero-eyebrow { color: #ffb4a2; }
+
+/* CTA gradient cam đỏ */
+.cta { background: linear-gradient(135deg, #ff5f3d 0%, #e11d48 55%, #be123c 100%); }
+
+/* icon từng nhóm */
+.catrow[data-cat="basic"] .catrow-icon { background: #fff1e3; }
+.catrow[data-cat="sign"]  .catrow-icon { background: #fff8db; }
+.catrow[data-cat="cross"] .catrow-icon { background: #e8f1ff; }
+.catrow[data-cat="road"]  .catrow-icon { background: #e3f7f3; }
+.catrow[data-cat="safe"]  .catrow-icon { background: #f1ecff; }
+.catrow[data-cat="emg"]   .catrow-icon { background: #ffe9e9; }
+.catrow[data-cat="mark"]  .catrow-icon { background: #ffe8f4; }
+.catrow[data-cat="bike"]  .catrow-icon { background: #e6f6ff; }
+
+/* màu tag nhóm */
+.qtag.cat-basic { background: #fff1e3; color: #c2410c; }
+.qtag.cat-sign  { background: #fff8db; color: #a16207; }
+.qtag.cat-cross { background: #e8f1ff; color: #1d4ed8; }
+.qtag.cat-road  { background: #e3f7f3; color: #0f766e; }
+.qtag.cat-safe  { background: #f1ecff; color: #6d28d9; }
+.qtag.cat-emg   { background: #ffe9e9; color: #b91c1c; }
+.qtag.cat-mark  { background: #ffe8f4; color: #be185d; }
+.qtag.cat-bike  { background: #e6f6ff; color: #0369a1; }
+
+/* tile trang chủ */
+.tiles .tile:nth-child(1) .tile-icon { background: #fff1e3; }
+.tiles .tile:nth-child(2) .tile-icon { background: #e8f1ff; }
+.tiles .tile:nth-child(3) .tile-icon { background: #e3f7f3; }
+.tiles .tile:nth-child(4) .tile-icon { background: #f1ecff; }
+
+/* thanh tiến độ nhiều màu */
+.progress i { background: linear-gradient(90deg, #fb923c, #ef4444); }
+.catrow .bar i { background: linear-gradient(90deg, #fbbf24, #f97316); }
+
+/* bo góc mềm hơn */
+:root { --radius: 22px; }
+.qcard, .panel, .credit, .quote { border-radius: 22px; }
+
+/* ============================================================
    DARK MODE
    ============================================================ */
 [data-theme="dark"] {
@@ -912,3 +977,146 @@ svg { display: block; }
 
 [data-theme="dark"] .qtext,
 [data-theme="dark"] .verdict { color: var(--ink); }
+
+/* ---------- câu hình (イラスト問題) ---------- */
+.ill-scene {
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+  background: #f8f4ee;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 14px 0 6px;
+}
+.ill-sub {
+  border-top: 1px solid #f2ede5;
+  padding: 12px 0 2px;
+  margin-top: 6px;
+}
+.ill-sub:first-of-type { border-top: none; }
+.ill-q { font-size: 14px; line-height: 1.7; color: var(--ink); }
+.ill-ans { display: flex; gap: 8px; margin-top: 9px; }
+.pill-ans {
+  flex: 1;
+  padding: 9px 0;
+  border-radius: 11px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all .15s;
+}
+.pill-ans.sel { border-color: var(--ink); background: #f7f3ec; color: var(--ink); }
+.dot.ill { background: #eef4fb; border-style: dashed; }
+.illres {
+  border-radius: 14px;
+  padding: 11px 12px;
+  margin-bottom: 8px;
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+.illres.ok { background: var(--green-soft); }
+.illres.ng { background: var(--red-soft); }
+.illres-head { font-weight: 700; margin-bottom: 4px; }
+.illres.ok .illres-head { color: var(--green); }
+.illres.ng .illres-head { color: var(--red); }
+.illres p { color: var(--ink-soft); }
+
+[data-theme="dark"] .ill-scene { background: #262220; }
+[data-theme="dark"] .pill-ans { background: #1e1b18; }
+[data-theme="dark"] .pill-ans.sel { background: #2b2621; }
+[data-theme="dark"] .ill-sub { border-color: #2a2622; }
+[data-theme="dark"] .dot.ill { background: #1c2632; }
+
+/* ============================================================
+   PASTEL — ô chọn lớn + chữ to hơn
+   ============================================================ */
+
+/* --- 4 ô trang chủ --- */
+.tiles .tile { border-width: 1px; }
+.tiles .tile:nth-child(1) { background: linear-gradient(155deg, #fff7ef, #ffe8d4); border-color: #ffdcc2; }
+.tiles .tile:nth-child(2) { background: linear-gradient(155deg, #f3f8ff, #e2eeff); border-color: #cfe0ff; }
+.tiles .tile:nth-child(3) { background: linear-gradient(155deg, #f1fbf6, #dff5e9); border-color: #c8ecd8; }
+.tiles .tile:nth-child(4) { background: linear-gradient(155deg, #f8f3ff, #ece2ff); border-color: #ddd0ff; }
+.tiles .tile .tile-icon { background: rgba(255, 255, 255, .7); }
+.tiles .tile-body h3 { font-size: 15.5px; }
+.tiles .tile-body p { font-size: 12px; }
+.tiles .tile-icon { width: 40px; height: 40px; font-size: 19px; }
+
+/* --- danh sách nhóm --- */
+.catrow { padding: 17px 16px; }
+.catrow-main h3 { font-size: 16px; }
+.catrow-main p { font-size: 12.5px; }
+.catrow[data-cat="basic"] { background: linear-gradient(100deg, #fff7f0, #ffffff 55%); }
+.catrow[data-cat="sign"]  { background: linear-gradient(100deg, #fffbe8, #ffffff 55%); }
+.catrow[data-cat="cross"] { background: linear-gradient(100deg, #f2f7ff, #ffffff 55%); }
+.catrow[data-cat="road"]  { background: linear-gradient(100deg, #eefaf7, #ffffff 55%); }
+.catrow[data-cat="safe"]  { background: linear-gradient(100deg, #f7f2ff, #ffffff 55%); }
+.catrow[data-cat="emg"]   { background: linear-gradient(100deg, #fff1f1, #ffffff 55%); }
+.catrow[data-cat="mark"]  { background: linear-gradient(100deg, #fff0f8, #ffffff 55%); }
+.catrow[data-cat="bike"]  { background: linear-gradient(100deg, #eff8ff, #ffffff 55%); }
+
+/* --- nút ○ / × --- */
+.answers:not(.done) .ans:first-child { background: #f3fbf7; border-color: #d4ece0; }
+.answers:not(.done) .ans:last-child { background: #fdf4f5; border-color: #f2d9dd; }
+.answers:not(.done) .ans:first-child:hover { background: #e8f7ef; border-color: #bfe3d1; }
+.answers:not(.done) .ans:last-child:hover { background: #fcebED; border-color: #eec5cb; }
+.answers:not(.done) .ans .glyph { font-size: 48px; }
+.answers:not(.done) .ans .lbl { font-size: 13.5px; letter-spacing: 0; }
+.answers:not(.done) .ans.sel { border-color: var(--ink); background: #eef6f1; }
+.answers:not(.done) .ans:last-child.sel { background: #fbebed; }
+
+/* --- nút nhỏ trong câu hình --- */
+.pill-ans { font-size: 14px; padding: 11px 0; }
+.ill-q { font-size: 14.5px; }
+
+/* --- dark --- */
+[data-theme="dark"] .tiles .tile:nth-child(1) { background: linear-gradient(155deg, #2b211a, #1e1b18); border-color: #3d2d22; }
+[data-theme="dark"] .tiles .tile:nth-child(2) { background: linear-gradient(155deg, #1d2530, #1e1b18); border-color: #2b3748; }
+[data-theme="dark"] .tiles .tile:nth-child(3) { background: linear-gradient(155deg, #1b2621, #1e1b18); border-color: #273a30; }
+[data-theme="dark"] .tiles .tile:nth-child(4) { background: linear-gradient(155deg, #241f2e, #1e1b18); border-color: #332b45; }
+[data-theme="dark"] .tiles .tile .tile-icon { background: rgba(255, 255, 255, .07); }
+[data-theme="dark"] .catrow[data-cat] { background: var(--card); }
+[data-theme="dark"] .answers:not(.done) .ans:first-child { background: #18241d; border-color: #2a4034; }
+[data-theme="dark"] .answers:not(.done) .ans:last-child { background: #241a1c; border-color: #402a2e; }
+[data-theme="dark"] .answers:not(.done) .ans:first-child:hover { background: #1e2e25; }
+[data-theme="dark"] .answers:not(.done) .ans:last-child:hover { background: #2c2023; }
+[data-theme="dark"] .answers:not(.done) .ans.sel { background: #24322a; border-color: var(--ink); }
+[data-theme="dark"] .answers:not(.done) .ans:last-child.sel { background: #332327; }
+
+/* ============================================================
+   PASTEL v2 — đậm hơn một nấc
+   ============================================================ */
+.tiles .tile:nth-child(1) { background: linear-gradient(155deg, #fff0e0, #ffd8b8); border-color: #ffc7a0; }
+.tiles .tile:nth-child(2) { background: linear-gradient(155deg, #eef6ff, #d3e4ff); border-color: #b9d2ff; }
+.tiles .tile:nth-child(3) { background: linear-gradient(155deg, #eafaf1, #ccefdd); border-color: #afe4c8; }
+.tiles .tile:nth-child(4) { background: linear-gradient(155deg, #f5edff, #e0d0ff); border-color: #cbb5ff; }
+
+.catrow[data-cat="basic"] { background: linear-gradient(100deg, #ffeedd, #ffffff 60%); }
+.catrow[data-cat="sign"]  { background: linear-gradient(100deg, #fff3c9, #ffffff 60%); }
+.catrow[data-cat="cross"] { background: linear-gradient(100deg, #e4eeff, #ffffff 60%); }
+.catrow[data-cat="road"]  { background: linear-gradient(100deg, #dcf5ee, #ffffff 60%); }
+.catrow[data-cat="safe"]  { background: linear-gradient(100deg, #efe4ff, #ffffff 60%); }
+.catrow[data-cat="emg"]   { background: linear-gradient(100deg, #ffe3e3, #ffffff 60%); }
+.catrow[data-cat="mark"]  { background: linear-gradient(100deg, #ffddec, #ffffff 60%); }
+.catrow[data-cat="bike"]  { background: linear-gradient(100deg, #dff0ff, #ffffff 60%); }
+
+.answers:not(.done) .ans:first-child { background: #e9f7f0; border-color: #c0e4d2; }
+.answers:not(.done) .ans:last-child { background: #fce6e9; border-color: #eec0c8; }
+.answers:not(.done) .ans:first-child:hover { background: #dcf2e6; border-color: #a9d9c1; }
+.answers:not(.done) .ans:last-child:hover { background: #fad9de; border-color: #e7adb8; }
+.answers:not(.done) .ans.sel { background: #dff1e7; }
+.answers:not(.done) .ans:last-child.sel { background: #f9d9de; }
+
+[data-theme="dark"] .tiles .tile:nth-child(1) { background: linear-gradient(155deg, #33261c, #211b17); border-color: #4a3425; }
+[data-theme="dark"] .tiles .tile:nth-child(2) { background: linear-gradient(155deg, #1e2937, #1b1a18); border-color: #31415a; }
+[data-theme="dark"] .tiles .tile:nth-child(3) { background: linear-gradient(155deg, #1b2b24, #1b1a18); border-color: #2c4738; }
+[data-theme="dark"] .tiles .tile:nth-child(4) { background: linear-gradient(155deg, #281f36, #1b1a18); border-color: #3d3157; }
+[data-theme="dark"] .answers:not(.done) .ans:first-child { background: #1b2d24; border-color: #2f4d3d; }
+[data-theme="dark"] .answers:not(.done) .ans:last-child { background: #2b1d20; border-color: #4b2f36; }
+[data-theme="dark"] .answers:not(.done) .ans:first-child:hover { background: #213a2d; }
+[data-theme="dark"] .answers:not(.done) .ans:last-child:hover { background: #372528; }
+
+.credit-bio-link { color: var(--red); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.credit-bio-link:hover { color: #a00d25; }

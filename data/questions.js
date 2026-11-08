@@ -28,7 +28,9 @@ window.CATEGORIES = [
   { id: 'emg',   vi: 'Sự cố & tai nạn', ja: '事故・緊急時', icon: '🚨',
     desc: 'Xử lý tai nạn, hỏng xe, uống rượu' },
   { id: 'mark',  vi: 'Vạch kẻ đường', ja: '道路標示', icon: '🟨',
-    desc: 'Vạch dừng, vạch qua đường, dải dẫn hướng' }
+    desc: 'Vạch dừng, vạch qua đường, dải dẫn hướng' },
+  { id: 'bike',  vi: 'Cách đi xe 2 bánh', ja: '二輪車の乗り方', icon: '🏍️',
+    desc: 'Vào cua, phanh, đường xấu, gió, chở hàng' }
 ];
 
 window.QUESTIONS = [

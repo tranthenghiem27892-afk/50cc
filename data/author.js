@@ -5,7 +5,9 @@
 window.AUTHOR = {
   name: 'Nghiệm Trần',
   handle: '',
-  bio: 'Người biên soạn bộ câu hỏi luyện thi 原付 50cc.',
+  bio: 'Vui lòng liên hệ với tác giả biên tập ',
+  bioLink: 'https://www.facebook.com/Gimichan92',
+  bioLinkText: 'tại đây',
   avatar: 'assets/avatar.jpg',
   links: [
     { label: 'Facebook', url: 'https://www.facebook.com/Gimichan92' }
