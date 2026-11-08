@@ -1124,3 +1124,25 @@ body {
 /* gạch chân từ vựng nhẹ hơn khi mật độ dày */
 .w { border-bottom-color: rgba(200, 16, 46, .38); }
 [data-theme="dark"] .w { border-bottom-color: rgba(232, 70, 92, .50); }
+
+/* ---------- tỷ giá ---------- */
+.fx { margin-top: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px 12px; }
+.fx-head { display: flex; align-items: center; justify-content: space-between; }
+.fx-head b { font-size: 12.5px; letter-spacing: .01em; }
+.fx-refresh { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 13px; display: grid; place-items: center; }
+.fx-refresh:hover { background: #fbf8f3; color: var(--ink); }
+.fx-top { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+.fx-rate { font-size: 27px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.fx-rate small { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 4px; letter-spacing: 0; }
+.fx-chg { font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.fx-up { color: var(--green); }
+.fx-down { color: var(--red); }
+.fx-spark { width: 100%; height: 62px; display: block; margin: 4px 0 0; }
+.fx-table { margin-top: 4px; border-top: 1px dashed var(--line); }
+.fx-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12.5px; border-bottom: 1px solid #f3eee6; }
+.fx-row:last-child { border-bottom: none; }
+.fx-row span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.fx-row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.fx-note { font-size: 10.5px; color: var(--muted); margin-top: 7px; line-height: 1.5; }
+[data-theme="dark"] .fx-row { border-color: #2a2622; }
+[data-theme="dark"] .fx-refresh:hover { background: #262220; }

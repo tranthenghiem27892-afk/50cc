@@ -192,7 +192,8 @@
       av = esc((name || '?').trim().charAt(0));
     }
     var linksHtml = links.map(function (l) {
-      return '<a class="credit-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer">' +
+      var fb = /facebook\.com/i.test(l.url) ? ' data-fb="1"' : '';
+      return '<a class="credit-link" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer"' + fb + '>' +
         esc(l.label || l.url) + '</a>';
     }).join('');
 
@@ -204,7 +205,8 @@
         (a.bio || a.bioLink
           ? '<p class="credit-bio">' + esc(a.bio || '') +
             (a.bioLink
-              ? '<a class="credit-bio-link" href="' + esc(a.bioLink) + '" target="_blank" rel="noopener noreferrer">' +
+              ? '<a class="credit-bio-link" href="' + esc(a.bioLink) + '" target="_blank" rel="noopener noreferrer"' +
+                (/facebook\.com/i.test(a.bioLink) ? ' data-fb="1"' : '') + '>' +
                 esc(a.bioLinkText || 'tại đây') + '</a>'
               : '') +
             (a.bio ? '.' : '') +
@@ -236,6 +238,163 @@
       '</div>' +
       '<button class="quote-next" data-act="quote" aria-label="Câu khác" title="Câu khác">↻</button>' +
       '</section>';
+  }
+
+  /* ---------------- tỷ giá JPY → VND ---------------- */
+  var FX_KEY = 'gentsuki.fx';
+  var FX_API = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@';
+  var FX_TTL = 30 * 60 * 1000;
+  var FX_FALLBACK = { rate: 161.5, date: '2026-11-08', series: [] };
+
+  function fxRead() {
+    try { return JSON.parse(localStorage.getItem(FX_KEY)); } catch (e) { return null; }
+  }
+  function fxWrite(d) {
+    try { localStorage.setItem(FX_KEY, JSON.stringify(d)); } catch (e) { }
+  }
+  function fxTemp(ts) { return ts < 0 ? 'fx-down' : ts > 0 ? 'fx-up' : ''; }
+
+  function fxSpark(series) {
+    if (!series || series.length < 2) { return ''; }
+    var w = 300, h = 84, pad = 8;
+    var vs = series.map(function (s) { return s.v; });
+    var min = Math.min.apply(null, vs), max = Math.max.apply(null, vs);
+    var span = (max - min) || max * 0.01 || 1;
+    var pts = series.map(function (s, i) {
+      var x = pad + i * (w - 2 * pad) / (series.length - 1);
+      var y = h - pad - ((s.v - min) / span) * (h - 2 * pad);
+      return [x, y];
+    });
+    var line = pts.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
+    var area = 'M' + pts[0][0].toFixed(1) + ',' + (h - pad) + ' L' + line.replace(/ /g, ' L') +
+      ' L' + pts[pts.length - 1][0].toFixed(1) + ',' + (h - pad) + ' Z';
+    var last = pts[pts.length - 1];
+    return '<svg class="fx-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" role="img" aria-label="Biểu đồ tỷ giá">' +
+      '<defs><linearGradient id="fxg" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#e8465c" stop-opacity="0.28"/>' +
+      '<stop offset="100%" stop-color="#e8465c" stop-opacity="0"/>' +
+      '</linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#fxg)"/>' +
+      '<polyline points="' + line + '" fill="none" stroke="#e8465c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+      '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="3.2" fill="#e8465c"/>' +
+      '</svg>';
+  }
+
+  function fxCard() {
+    var d = fxRead();
+    if (!d || !d.rate) {
+      return '<section class="fx" id="fxBox">' +
+        '<div class="fx-head"><b>Tỷ giá JPY → VND</b></div>' +
+        '<p class="fx-note">Đang tải tỷ giá…</p></section>';
+    }
+    var series = d.series || [];
+    var chg = series.length > 1 ? (d.rate - series[0].v) : 0;
+    var pct = series.length > 1 ? (chg / series[0].v) * 100 : 0;
+    var sign = chg > 0 ? '+' : '';
+    var amounts = [1, 100, 1000, 10000, 100000];
+    var rows = amounts.map(function (a) {
+      return '<div class="fx-row"><span>' + a.toLocaleString('vi-VN') + ' ¥</span>' +
+        '<b>' + Math.round(a * d.rate).toLocaleString('vi-VN') + ' ₫</b></div>';
+    }).join('');
+    return '<section class="fx" id="fxBox">' +
+      '<div class="fx-head"><b>Tỷ giá JPY → VND</b>' +
+      '<button class="fx-refresh" data-act="fx" aria-label="Cập nhật tỷ giá">↻</button></div>' +
+      '<div class="fx-top"><div class="fx-rate">' + Math.round(d.rate).toLocaleString('vi-VN') +
+      '<small>₫ / 1 ¥</small></div>' +
+      (series.length > 1
+        ? '<div class="fx-chg ' + fxTemp(chg) + '">' + sign + pct.toFixed(2) + '% · 30 ngày</div>'
+        : '') +
+      '</div>' +
+      fxSpark(series) +
+      '<div class="fx-table">' + rows + '</div>' +
+      '<p class="fx-note">Cập nhật ' + esc(d.updatedLabel || '') + ' · nguồn: currency-api (jsDelivr)' +
+      (d.stale ? ' · số liệu lưu sẵn' : '') + '</p>' +
+      '</section>';
+  }
+
+  function fxReplace() {
+    var el = document.getElementById('fxBox');
+    if (el) { el.outerHTML = fxCard(); }
+  }
+
+  function fxLoad(force) {
+    var d = fxRead();
+    if (!force && d && d.rate && (Date.now() - (d.ts || 0) < FX_TTL)) { return; }
+
+    var dates = [];
+    for (var i = 6; i >= 0; i--) {
+      var dt = new Date(Date.now() - i * 5 * 86400000);
+      dates.push({
+        y: dt.getFullYear(), m: dt.getMonth() + 1, d: dt.getDate(),
+        iso: dt.getFullYear() + '-' + ('0' + (dt.getMonth() + 1)).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
+      });
+    }
+
+    var jobs = dates.map(function (x) {
+      var ver = x.y + '.' + x.m + '.' + x.d;
+      var url = FX_API + '@' + ver + '/v1/currencies/jpy.json';
+      return fetch(url, { mode: 'cors' }).then(function (r) { return r.json(); }).then(function (j) {
+        var v = j && j.jpy && j.jpy.vnd;
+        return v ? { d: x.iso, v: v } : null;
+      }).catch(function () { return null; });
+    });
+
+    Promise.all(jobs).then(function (arr) {
+      var series = arr.filter(Boolean).sort(function (a, b) { return a.d < b.d ? -1 : 1; });
+      if (!series.length) { throw new Error('empty'); }
+      var last = series[series.length - 1];
+      var now = new Date();
+      fxWrite({
+        rate: last.v, date: last.d, series: series, ts: Date.now(),
+        updatedLabel: ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) +
+          ' ' + ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2)
+      });
+      fxReplace();
+    }).catch(function () {
+      var old = fxRead();
+      if (!old) {
+        fxWrite({
+          rate: FX_FALLBACK.rate, date: FX_FALLBACK.date, series: [], ts: 0,
+          updatedLabel: FX_FALLBACK.date, stale: true
+        });
+        fxReplace();
+      }
+    });
+  }
+
+  /* ---------------- mở app Facebook thay vì trình duyệt ---------------- */
+  function openFacebook(url) {
+    var ua = navigator.userAgent || '';
+    var isAndroid = /Android/i.test(ua);
+    var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+    if (isAndroid) {
+      /* Android: intent mở app nếu có, tự fallback về web nếu không */
+      var bare = url.replace(/^https?:\/\//, '');
+      window.location.href = 'intent://' + bare +
+        '#Intent;scheme=https;package=com.facebook.katana;' +
+        'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+      return;
+    }
+
+    if (isIOS) {
+      /* iOS: thử scheme fb:// rồi fallback sau 1.2s nếu app không mở */
+      var opened = false;
+      var timer = setTimeout(function () {
+        if (!opened) { window.location.href = url; }
+      }, 1200);
+      document.addEventListener('visibilitychange', function onVis() {
+        if (document.hidden) {
+          opened = true;
+          clearTimeout(timer);
+          document.removeEventListener('visibilitychange', onVis);
+        }
+      });
+      window.location.href = 'fb://facewebmodal/f?href=' + encodeURIComponent(url);
+      return;
+    }
+
+    window.open(url, '_blank', 'noopener');
   }
 
   function viewHome() {
@@ -295,8 +454,9 @@
         '</div>' +
 
         '<p class="footnote">Bộ câu hỏi tự biên soạn từ luật, không sao chép từ trang khác. Luôn đối chiếu với 免許センター nơi bạn thi.</p>' +
-        creditBlock() +
         quoteBlock() +
+        fxCard() +
+        creditBlock() +
       '</main>';
   }
 
@@ -833,11 +993,15 @@
     else { html = viewHome(); }
     app.innerHTML = html;
     window.scrollTo(0, 0);
+    if (screen === 'home') { fxLoad(false); }
     if (screen === 'quiz' && S && S.mode === 'exam') { paintTimer(); }
   }
 
   /* ---------------- events ---------------- */
   document.addEventListener('click', function (e) {
+    var fbLink = e.target.closest('a[data-fb]');
+    if (fbLink) { e.preventDefault(); openFacebook(fbLink.getAttribute('href')); return; }
+
     var w = e.target.closest('.w');
     if (w) { openWord(w.getAttribute('data-w')); return; }
 
@@ -846,6 +1010,7 @@
     var act = t.dataset.act;
 
     if (act === 'close-sheet') { closeSheet(); return; }
+    if (act === 'fx') { fxLoad(true); return; }
     if (act === 'quote') {
       var qb = document.getElementById('quoteBox');
       if (qb) { qb.outerHTML = quoteBlock(); }
@@ -969,6 +1134,19 @@
       return illById[id].subs.map(function (s) { return j === 0 ? s.a : 1 - s.a; });
     });
     submitExam(false);
+  }
+  else if (demo === 'fx') {
+    var ser = [];
+    for (var fi = 6; fi >= 0; fi--) {
+      var fdt = new Date(Date.now() - fi * 5 * 86400000);
+      ser.push({
+        d: fdt.getFullYear() + '-' + ('0' + (fdt.getMonth() + 1)).slice(-2) + '-' + ('0' + fdt.getDate()).slice(-2),
+        v: 158.4 + Math.sin(fi * 1.1) * 2.6 + fi * 0.55
+      });
+    }
+    fxWrite({ rate: ser[ser.length - 1].v, date: ser[ser.length - 1].d, series: ser,
+      ts: Date.now(), updatedLabel: '22:30 08/11' });
+    go('home');
   }
   else if (demo === 'ready') {
     db.exams = [50, 47, 49, 48, 47].map(function (s, i) {
