@@ -1120,3 +1120,7 @@ body {
 
 .credit-bio-link { color: var(--red); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
 .credit-bio-link:hover { color: #a00d25; }
+
+/* gạch chân từ vựng nhẹ hơn khi mật độ dày */
+.w { border-bottom-color: rgba(200, 16, 46, .38); }
+[data-theme="dark"] .w { border-bottom-color: rgba(232, 70, 92, .50); }

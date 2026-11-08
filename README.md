@@ -48,7 +48,7 @@ gentsuki-app/
    ├─ q8.js, q9.js       # mở rộng lên 503 câu
    ├─ illustrations.js   # 6 bộ câu hình 危険予測
    ├─ traps.js           # "vì sao sai" cho từng câu
-   ├─ vocab.js, vocab2.js  # từ điển tra cứu (128 từ)
+   ├─ vocab.js … vocab3.js  # từ điển tra cứu (273 từ)
    ├─ author.js          # credit tác giả
    ├─ quotes.js          # 201 câu động lực
    └─ signs.js           # 24 SVG biển báo
