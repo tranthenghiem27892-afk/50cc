@@ -7,7 +7,8 @@
   var Q = window.QUESTIONS || [];
   var CATS = window.CATEGORIES || [];
   var SIGNS = window.SIGNS || {};
-  var STORE = 'gentsuki.v1';
+  var STORE = 'gentsuki.v2';
+  var STORE_OLD = ['gentsuki.v1'];
   var EXAM_TIME = 30 * 60 * 1000;
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
@@ -15,11 +16,36 @@
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
+  /* bẫy ngôn ngữ: không nằm trong Q nên không lẫn vào đề thi thử */
+  var GQ = window.GRAMMAR || [];
+  GQ.forEach(function (q) { q.cat = 'gram'; qById[q.id] = q; });
+  var byPat = {};
+  GQ.forEach(function (q) { (byPat[q.pat] || (byPat[q.pat] = [])).push(q); });
+  var PATS = Object.keys(byPat);
+
+  var SITS = window.SITUATIONS || [];
+  var COMPARE = window.COMPARE || [];
+  var CHECKLIST = [
+    'Đủ 16 tuổi',
+    'Đã đăng ký 原付講習 ở trường dạy lái',
+    'Có 住民票 bản có 本籍 (xin ở 市役所)',
+    'Có 在留カード còn hạn',
+    'Ảnh 3×2,4cm (2 tấm)',
+    'Tiền mặt ~1.600 yên thi + ~2.350 yên cấp bằng',
+    'Đã luyện đủ kho câu và thi thử đạt ≥ 45 điểm',
+    'Biết đường và giờ mở cửa của 免許センター',
+    'Sau khi có bằng: mua 自賠責 bảo hiểm bắt buộc',
+    'Đăng ký biển số 原付 ở 市役所',
+    'Có mũ bảo hiểm đạt chuẩn, vừa đầu',
+    'Đã nắm 30km/h và 二段階右折'
+  ];
+
   var ILLS = window.ILLUSTRATIONS || [];
   var illById = {};
   ILLS.forEach(function (x) { illById[x.id] = x; });
   var catById = {};
   CATS.forEach(function (c) { catById[c.id] = c; });
+  catById['gram'] = { id: 'gram', vi: 'Bẫy ngôn ngữ', ja: '表現', icon: '🔤' };
   var byCat = {};
   CATS.forEach(function (c) { byCat[c.id] = []; });
   Q.forEach(function (q) { (byCat[q.cat] || (byCat[q.cat] = [])).push(q); });
@@ -53,8 +79,35 @@
   function mark(html) {
     if (!VOCAB_RE) { return html; }
     return html.replace(VOCAB_RE, function (m) {
-      return '<button type="button" class="w" data-w="' + m + '">' + m + '</button>';
+      var key = VOCAB_ALIAS[m] || m;
+      var v = VOCAB[key];
+      var inner = (v && v.r) ? '<ruby>' + m + '<rt>' + v.r + '</rt></ruby>' : m;
+      return '<button type="button" class="w" data-w="' + m + '">' + inner + '</button>';
     });
+  }
+
+  /* đọc tiếng Nhật bằng giọng có sẵn của máy */
+  function speak(text) {
+    if (!text) { return; }
+    if (!('speechSynthesis' in window)) { toast('Máy này không hỗ trợ đọc tiếng Nhật.'); return; }
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP';
+    u.rate = 0.95;
+    var vs = window.speechSynthesis.getVoices() || [];
+    for (var i = 0; i < vs.length; i++) {
+      if (/^ja/i.test(vs[i].lang)) { u.voice = vs[i]; break; }
+    }
+    window.speechSynthesis.speak(u);
+  }
+
+  function furiOn() { return document.documentElement.classList.contains('furi'); }
+
+  function toggleFuri() {
+    var on = document.documentElement.classList.toggle('furi');
+    try { localStorage.setItem('gentsuki.furi', on ? '1' : '0'); } catch (e) { }
+    var btn = document.querySelector('[data-act="furi"]');
+    if (btn) { btn.classList.toggle('on', on); }
   }
 
   function openWord(term) {
@@ -64,7 +117,8 @@
     var body = document.getElementById('sheetBody');
     if (!body) { return; }
     body.innerHTML =
-      '<div class="w-term">' + esc(key) + '</div>' +
+      '<div class="w-term">' + esc(key) +
+        (hanViet(key) ? '<span class="w-hv">' + esc(hanViet(key)) + '</span>' : '') + '</div>' +
       '<div class="w-read">' + esc(v.r) + '</div>' +
       (term !== key ? '<div class="w-form">dạng trong câu: ' + esc(term) + '</div>' : '') +
       '<p class="w-mean">' + esc(v.m) + '</p>' +
@@ -89,11 +143,16 @@
 
   /* ---------------- storage ---------------- */
   function loadDB() {
+    /* dọn dữ liệu làm bài của phiên bản cũ — đưa app về trạng thái ban đầu */
+    try { STORE_OLD.forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { }
     var d = {};
     try { d = JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { d = {}; }
     d.answers = d.answers || {};
     d.wrong = Array.isArray(d.wrong) ? d.wrong : [];
     d.exams = Array.isArray(d.exams) ? d.exams : [];
+    d.checklist = d.checklist || {};
+    d.cards = d.cards || {};
+    d.streak = d.streak || { last: '', n: 0 };
     return d;
   }
   function saveDB() {
@@ -129,6 +188,26 @@
     });
     return { n: n, ok: ok, rate: n ? Math.round(ok / n * 100) : 0 };
   }
+  function isoDay(offset) {
+    var d = new Date(Date.now() - (offset || 0) * 86400000);
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  }
+  function touchStreak() {
+    var today = isoDay(0);
+    var s = db.streak || { last: '', n: 0 };
+    if (s.last === today) { return; }
+    s.n = (s.last === isoDay(1)) ? (s.n + 1) : 1;
+    s.last = today;
+    db.streak = s;
+  }
+  function streakChip() {
+    var s = db.streak || { last: '', n: 0 };
+    var alive = (s.last === isoDay(0)) || (s.last === isoDay(1));
+    var n = alive ? s.n : 0;
+    return '<div class="streak">🔥 <b>' + n + '</b> ngày liên tiếp' +
+      (n ? '' : ' — làm một câu để bắt đầu chuỗi') + '</div>';
+  }
+
   function record(id, ok) {
     var a = db.answers[id] || (db.answers[id] = { n: 0, ok: 0 });
     a.n++; if (ok) { a.ok++; }
@@ -137,6 +216,7 @@
     var i = db.wrong.indexOf(id);
     if (!ok && i < 0) { db.wrong.push(id); }
     if (ok && i >= 0) { db.wrong.splice(i, 1); }
+    touchStreak();
     saveDB();
   }
   function toast(msg) {
@@ -241,9 +321,11 @@
   }
 
   /* ---------------- tỷ giá JPY → VND ---------------- */
-  var FX_KEY = 'gentsuki.fx.v2';
+  var FX_KEY = 'gentsuki.fx.v3';
   var FX_TTL = 30 * 60 * 1000;
-  /* chuỗi tỷ giá lưu sẵn (nguồn currency-api) — dùng khi không gọi được API */
+  var FX_HIST_TTL = 12 * 60 * 60 * 1000;
+  var FX_DAYS = 90;
+  /* chuỗi dự phòng (giá đóng cửa hằng tuần) khi không gọi được API */
   var FX_DEFAULT = [
     ['2026-08-16', 164.09], ['2026-08-23', 164.18], ['2026-08-30', 162.91],
     ['2026-09-06', 166.90], ['2026-09-13', 168.82], ['2026-09-20', 165.85],
@@ -258,6 +340,9 @@
   function fxWrite(d) {
     try { localStorage.setItem(FX_KEY, JSON.stringify(d)); } catch (e) { }
   }
+  function fxPad(n) { return ('0' + n).slice(-2); }
+  function fxIso(dt) { return dt.getFullYear() + '-' + fxPad(dt.getMonth() + 1) + '-' + fxPad(dt.getDate()); }
+  function fxVer(dt) { return dt.getFullYear() + '.' + (dt.getMonth() + 1) + '.' + dt.getDate(); }
   function fxDefaultSeries() {
     return FX_DEFAULT.map(function (p) { return { d: p[0], v: p[1] }; });
   }
@@ -265,51 +350,70 @@
     var map = {};
     FX_DEFAULT.forEach(function (p) { map[p[0]] = p[1]; });
     if (d && d.series) { d.series.forEach(function (p) { map[p.d] = p.v; }); }
-    var arr = Object.keys(map).sort().map(function (k) { return { d: k, v: map[k] }; });
-    return arr.length >= 2 ? arr : fxDefaultSeries();
-  }
-  function fxToday() {
-    var n = new Date();
-    return n.getFullYear() + '-' + ('0' + (n.getMonth() + 1)).slice(-2) + '-' + ('0' + n.getDate()).slice(-2);
+    return Object.keys(map).sort().map(function (k) { return { d: k, v: map[k] }; });
   }
 
-  function fxSpark(series) {
-    if (!series || series.length < 2) { return ''; }
-    var w = 300, h = 84, pad = 8;
+  function fxLine(series) {
+    if (series.length < 2) { return ''; }
+    var w = 340, h = 112, pl = 4, pr = 34, pt = 8, pb = 20;
+    var pw = w - pl - pr, ph = h - pt - pb;
     var vs = series.map(function (s) { return s.v; });
     var min = Math.min.apply(null, vs), max = Math.max.apply(null, vs);
     var span = (max - min) || max * 0.01 || 1;
-    var pts = series.map(function (s, i) {
-      var x = pad + i * (w - 2 * pad) / (series.length - 1);
-      var y = h - pad - ((s.v - min) / span) * (h - 2 * pad);
-      return [x, y];
+    function X(i) { return pl + i * pw / (series.length - 1); }
+    function Y(v) { return pt + ph - ((v - min) / span) * ph; }
+
+    /* thang giá: 3 mốc bên phải */
+    var grid = '';
+    [max, (max + min) / 2, min].forEach(function (v) {
+      var yy = Y(v);
+      grid += '<line x1="' + pl + '" y1="' + yy.toFixed(1) + '" x2="' + (pl + pw).toFixed(1) + '" y2="' + yy.toFixed(1) +
+        '" stroke="rgba(128,128,128,.18)" stroke-width="1" stroke-dasharray="2 3"/>';
+      grid += '<text x="' + (pl + pw + 5).toFixed(1) + '" y="' + (yy + 2.7).toFixed(1) +
+        '" font-size="8" fill="currentColor" opacity=".6">' + Math.round(v) + '</text>';
     });
+
+    /* thang thời gian: đầu, giữa, cuối */
+    var idxs = [0, Math.floor((series.length - 1) / 2), series.length - 1];
+    var xlab = idxs.map(function (i) {
+      var mmdd = series[i].d.slice(5).split('-');
+      var txt = Number(mmdd[1]) + '/' + Number(mmdd[0]);
+      var anchor = i === 0 ? 'start' : (i === series.length - 1 ? 'end' : 'middle');
+      return '<text x="' + X(i).toFixed(1) + '" y="' + (h - 5) + '" font-size="8" text-anchor="' + anchor +
+        '" fill="currentColor" opacity=".6">' + txt + '</text>';
+    }).join('');
+
+    var pts = series.map(function (s, i) { return [X(i), Y(s.v)]; });
     var line = pts.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' ');
-    var area = 'M' + pts[0][0].toFixed(1) + ',' + (h - pad) + ' L' + line.replace(/ /g, ' L') +
-      ' L' + pts[pts.length - 1][0].toFixed(1) + ',' + (h - pad) + ' Z';
+    var area = 'M' + pts[0][0].toFixed(1) + ',' + (pt + ph) + ' L' + line.replace(/ /g, ' L') +
+      ' L' + pts[pts.length - 1][0].toFixed(1) + ',' + (pt + ph) + ' Z';
     var last = pts[pts.length - 1];
-    return '<svg class="fx-spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" role="img" aria-label="Biểu đồ tỷ giá">' +
+
+    return '<svg class="fx-chart" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Biểu đồ tỷ giá">' +
       '<defs><linearGradient id="fxg" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0%" stop-color="#e8465c" stop-opacity="0.28"/>' +
+      '<stop offset="0%" stop-color="#e8465c" stop-opacity="0.26"/>' +
       '<stop offset="100%" stop-color="#e8465c" stop-opacity="0"/>' +
       '</linearGradient></defs>' +
+      grid +
       '<path d="' + area + '" fill="url(#fxg)"/>' +
-      '<polyline points="' + line + '" fill="none" stroke="#e8465c" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
-      '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="3.2" fill="#e8465c"/>' +
+      '<polyline points="' + line + '" fill="none" stroke="#e8465c" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>' +
+      '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="2.6" fill="#e8465c"/>' +
+      xlab +
       '</svg>';
   }
 
   function fxCard() {
     var d = fxRead();
     var all = fxSeriesOf(d);
-    /* chỉ lấy các điểm trong 90 ngày gần nhất */
-    var cut = new Date(Date.now() - 92 * 86400000);
-    var cutIso = cut.getFullYear() + '-' + ('0' + (cut.getMonth() + 1)).slice(-2) + '-' + ('0' + cut.getDate()).slice(-2);
-    var series = all.filter(function (p) { return p.d >= cutIso; }).slice(-14);
-    var rate = (d && d.rate) ? d.rate : series[series.length - 1].v;
+    var cut = fxIso(new Date(Date.now() - (FX_DAYS + 3) * 86400000));
+    var series = all.filter(function (p) { return p.d >= cut; });
+    if (series.length < 2) { series = all.slice(-2); }
+
+    var chart = fxLine(series);
+
+    var rate = series[series.length - 1].v;
     var chg = series.length > 1 ? (rate - series[0].v) : 0;
     var pct = series.length > 1 ? (chg / series[0].v) * 100 : 0;
-    var sign = chg > 0 ? '+' : '';
     var stamp = (d && d.updatedLabel) ? d.updatedLabel : 'dữ liệu lưu sẵn';
     var stale = !d || d.stale;
 
@@ -318,12 +422,10 @@
       '<button class="fx-refresh" data-act="fx" aria-label="Cập nhật tỷ giá">↻</button></div>' +
       '<div class="fx-top"><div class="fx-rate">' + Math.round(rate).toLocaleString('vi-VN') +
       '<small>₫ / 1 ¥</small></div>' +
-      (series.length > 1
-        ? '<div class="fx-chg ' + (chg > 0 ? 'fx-up' : chg < 0 ? 'fx-down' : '') + '">' +
-          sign + pct.toFixed(2) + '% · 90 ngày</div>'
-        : '') +
+      '<div class="fx-chg ' + (chg > 0 ? 'fx-up' : chg < 0 ? 'fx-down' : '') + '">' +
+      (chg > 0 ? '+' : '') + pct.toFixed(2) + '% · 90 ngày</div>' +
       '</div>' +
-      fxSpark(series) +
+      chart +
       '<p class="fx-note">Cập nhật ' + esc(stamp) + ' · nguồn: er-api / currency-api' +
       (stale ? ' · số liệu lưu sẵn' : '') + '</p>' +
       '</section>';
@@ -335,17 +437,15 @@
   }
 
   function fxFetchLatest() {
-    /* 1) er-api (Cloudflare, một request) */
     return fetch('https://open.er-api.com/v6/latest/JPY', { mode: 'cors' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        return (j && j.rates && j.rates.VND) ? { d: fxToday(), v: j.rates.VND } : null;
+        return (j && j.rates && j.rates.VND) ? { d: fxIso(new Date()), v: j.rates.VND } : null;
       })
       .catch(function () { return null; })
       .then(function (x) {
         if (x) { return x; }
-        /* 2) currency-api qua jsDelivr */
-        return fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/jpy.json', { mode: 'cors' })
+        return fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/jpy.min.json', { mode: 'cors' })
           .then(function (r) { return r.json(); })
           .then(function (j) {
             return (j && j.jpy && j.jpy.vnd) ? { d: j.date, v: j.jpy.vnd } : null;
@@ -354,32 +454,139 @@
       });
   }
 
+  /* lấy giá đóng cửa 90 ngày, gộp 15 ngày/request qua jsDelivr combine */
+  function fxFetchHistory(days) {
+    var dates = [];
+    for (var i = days - 1; i >= 0; i--) { dates.push(new Date(Date.now() - i * 86400000)); }
+    var chunks = [];
+    for (var j = 0; j < dates.length; j += 15) { chunks.push(dates.slice(j, j + 15)); }
+
+    var reqs = chunks.map(function (ch) {
+      var url = 'https://cdn.jsdelivr.net/combine/' + ch.map(function (dt) {
+        return 'npm/@fawazahmed0/currency-api@' + fxVer(dt) + '/v1/currencies/jpy.min.json';
+      }).join(',');
+      return fetch(url, { mode: 'cors' })
+        .then(function (r) { return r.text(); })
+        .then(function (txt) {
+          var ds = txt.match(/"date":"\d{4}-\d{2}-\d{2}"/g) || [];
+          var vs = txt.match(/"vnd":[0-9.]+/g) || [];
+          var out = [];
+          for (var k = 0; k < Math.min(ds.length, vs.length); k++) {
+            out.push({ d: ds[k].slice(8, 18), v: parseFloat(vs[k].slice(6)) });
+          }
+          return out;
+        })
+        .catch(function () { return []; });
+    });
+
+    return Promise.all(reqs).then(function (lists) {
+      var out = [];
+      lists.forEach(function (l) { out = out.concat(l); });
+      return out;
+    });
+  }
+
   function fxLoad(force) {
     var d = fxRead();
-    if (!force && d && d.rate && (Date.now() - (d.ts || 0) < FX_TTL)) { return; }
+    var needRate = force || !d || !d.rate || (Date.now() - (d.ts || 0) > FX_TTL);
+    var needHist = force || !d || !d.histTs || (Date.now() - d.histTs > FX_HIST_TTL);
+    if (!needRate && !needHist) { return; }
 
-    fxFetchLatest().then(function (x) {
+    Promise.all([
+      needRate ? fxFetchLatest() : Promise.resolve(null),
+      needHist ? fxFetchHistory(FX_DAYS) : Promise.resolve([])
+    ]).then(function (res) {
+      var x = res[0], hist = res[1] || [];
       var map = {};
       FX_DEFAULT.forEach(function (p) { map[p[0]] = p[1]; });
       if (d && d.series) { d.series.forEach(function (p) { map[p.d] = p.v; }); }
+      hist.forEach(function (p) { map[p.d] = p.v; });
       if (x) { map[x.d] = x.v; }
 
       var series = Object.keys(map).sort().map(function (k) { return { d: k, v: map[k] }; });
       var last = series[series.length - 1];
       var now = new Date();
       fxWrite({
-        rate: x ? x.v : last.v,
-        date: x ? x.d : last.d,
-        series: series,
-        ts: x ? Date.now() : 0,
+        rate: last.v, date: last.d, series: series,
+        ts: x ? Date.now() : ((d && d.ts) || 0),
+        histTs: (needHist && hist.length) ? Date.now() : ((d && d.histTs) || 0),
         stale: !x,
         updatedLabel: x
-          ? ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) +
-            ' ' + ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2)
+          ? fxPad(now.getHours()) + ':' + fxPad(now.getMinutes()) + ' ' + fxPad(now.getDate()) + '/' + fxPad(now.getMonth() + 1)
           : 'dữ liệu lưu sẵn'
       });
       fxReplace();
     });
+  }
+
+  /* ---------------- từ vựng xoay vòng ---------------- */
+  var VROT = { list: [], i: 0, timer: null };
+  var VROT_MS = 5500;
+
+  function vocabPool() {
+    var keys = Object.keys(VOCAB).filter(function (k) {
+      var v = VOCAB[k];
+      return v && v.r && v.m;
+    });
+    return keys;
+  }
+
+  function vocabPick(n) {
+    var pool = vocabPool();
+    var out = [], seen = {};
+    while (out.length < n && pool.length) {
+      var k = pool[Math.floor(Math.random() * pool.length)];
+      if (!seen[k]) { seen[k] = 1; out.push(k); }
+    }
+    return out;
+  }
+
+  function hanViet(term) {
+    var map = window.HANVIET || {};
+    var out = [];
+    for (var i = 0; i < term.length; i++) {
+      var hv = map[term.charAt(i)];
+      if (hv) { out.push(hv); }
+    }
+    return out.join(' ');
+  }
+
+  function vocabInner(term, idx, total) {
+    var v = VOCAB[term] || { r: '', m: '' };
+    return '<div class="vrot-head"><span class="vrot-label">Từ vựng quan trọng</span>' +
+      '<span class="vrot-count">' + (idx + 1) + '/' + total + '</span></div>' +
+      '<div class="vrot-line">' +
+        '<button class="vrot-term" data-act="vocab" data-w="' + esc(term) + '">' + esc(term) + '</button>' +
+        (hanViet(term) ? '<span class="vrot-hv">' + esc(hanViet(term)) + '</span>' : '') +
+      '</div>' +
+      (v.r ? '<div class="vrot-read">' + esc(v.r) + '</div>' : '') +
+      '<p class="vrot-mean">' + esc(v.m) + '</p>';
+  }
+
+  function vocabBlock() {
+    var list = vocabPick(8);
+    if (!list.length) { return ''; }
+    VROT.list = list;
+    VROT.i = 0;
+    return '<section class="vrot" id="vrotBox">' + vocabInner(list[0], 0, list.length) + '</section>';
+  }
+
+  function stopVocabRotate() {
+    if (VROT.timer) { clearInterval(VROT.timer); VROT.timer = null; }
+  }
+
+  function startVocabRotate() {
+    stopVocabRotate();
+    if (!VROT.list.length) { return; }
+    VROT.timer = setInterval(function () {
+      var box = document.getElementById('vrotBox');
+      if (!box) { stopVocabRotate(); return; }
+      VROT.i = (VROT.i + 1) % VROT.list.length;
+      box.innerHTML = vocabInner(VROT.list[VROT.i], VROT.i, VROT.list.length);
+      box.classList.remove('swap');
+      void box.offsetWidth;
+      box.classList.add('swap');
+    }, VROT_MS);
   }
 
   function viewHome() {
@@ -439,13 +646,44 @@
         '</div>' +
 
         '<p class="footnote">Bộ câu hỏi tự biên soạn từ luật, không sao chép từ trang khác. Luôn đối chiếu với 免許センター nơi bạn thi.</p>' +
+        vocabBlock() +
         quoteBlock() +
         fxCard() +
         creditBlock() +
       '</main>';
   }
 
+  function gStat() {
+    var n = 0, ok = 0;
+    GQ.forEach(function (q) {
+      var a = db.answers[q.id];
+      if (a) { n += a.n; ok += a.ok; }
+    });
+    return { n: n, ok: ok, rate: n ? Math.round(ok / n * 100) : 0 };
+  }
+
   function viewPractice() {
+    var gs = gStat();
+    var special =
+      '<button class="catrow catrow-special" data-act="gram">' +
+        '<span class="catrow-icon">🔤</span>' +
+        '<span class="catrow-main"><h3>Bẫy ngôn ngữ <em>表現</em></h3>' +
+          '<p>' + GQ.length + ' câu · ' + (gs.n ? 'đúng ' + gs.rate + '%' : 'mẹo đọc câu hỏi') + '</p>' +
+          '<span class="bar"><i style="width:' + gs.rate + '%"></i></span></span>' +
+        '<span class="chev">›</span></button>' +
+      '<button class="catrow catrow-special" data-act="cards">' +
+        '<span class="catrow-icon">🃏</span>' +
+        '<span class="catrow-main"><h3>Flashcard từ vựng <em>単語</em></h3>' +
+          '<p>12 thẻ mỗi lượt · ưu tiên thẻ còn khó</p>' +
+          '<span class="bar"><i style="width:0%"></i></span></span>' +
+        '<span class="chev">›</span></button>' +
+      '<button class="catrow catrow-special" data-act="hard">' +
+        '<span class="catrow-icon">🔥</span>' +
+        '<span class="catrow-main"><h3>Đề khó <em>難問</em></h3>' +
+          '<p>20 câu dài và khó nhất trong kho</p>' +
+          '<span class="bar"><i style="width:0%"></i></span></span>' +
+        '<span class="chev">›</span></button>';
+
     var rows = CATS.map(function (c) {
       var list = byCat[c.id] || [];
       var st = catStat(c.id);
@@ -459,7 +697,7 @@
         '<span class="chev">›</span></button>';
     }).join('');
     return topbar('Chọn nhóm kiến thức') +
-      '<main class="wrap"><div class="catlist">' + rows + '</div>' +
+      '<main class="wrap"><div class="catlist">' + special + rows + '</div>' +
       '<p class="footnote">Mỗi câu trả lời được lưu trên máy này. Trả lời sai sẽ tự vào mục “Ôn câu sai”.</p></main>';
   }
 
@@ -504,7 +742,7 @@
       '<header class="quizbar">' +
         '<button class="icon-btn" data-act="quit" aria-label="Thoát">✕</button>' +
         '<div class="qmeta"><b>Câu ' + (S.i + 1) + '<span>/' + total + '</span></b>' +
-          '<i>' + (isExam ? 'Thi thử' : cat.vi) + '</i></div>' +
+          '<i>' + (isExam ? 'Thi thử' : (S.label || cat.vi)) + '</i></div>' +
         (isExam ? '<div class="timer" id="timer">30:00</div>' : '<div class="timer soft">' + scoreSoFar() + '</div>') +
       '</header>' +
       '<div class="progress"><i style="width:' + (((S.i + (answered ? 1 : 0)) / total) * 100) + '%"></i></div>' +
@@ -513,6 +751,10 @@
           '<span class="qtag cat-' + q.cat + '">' + cat.icon + ' ' + cat.vi + '</span>' +
           sign +
           '<p class="qtext">' + mark(esc(q.q)) + '</p>' +
+          '<div class="qctl">' +
+            '<button class="qctl-btn" data-act="tts">🔊 Đọc câu</button>' +
+            '<button class="qctl-btn' + (furiOn() ? ' on' : '') + '" data-act="furi">あ Phiên âm</button>' +
+          '</div>' +
           '<p class="qhint">' + (isExam ? 'Chọn ○ nếu đúng, × nếu sai' : 'Câu này đúng hay sai?') +
             ' · <span class="w-tip">chạm từ tiếng Nhật để tra nghĩa</span></p>' +
           answers +
@@ -647,6 +889,65 @@
     return { details: details, score: score, total: total, pass: pass, ill: ill };
   }
 
+  function shareResult() {
+    var r = S && S.result;
+    if (!r) { return; }
+    var isExam = S.mode === 'exam';
+    var pass = isExam && r.pass;
+
+    var c = document.createElement('canvas');
+    c.width = 1080; c.height = 1080;
+    var x = c.getContext('2d');
+    var g = x.createLinearGradient(0, 0, 1080, 1080);
+    g.addColorStop(0, '#14120f');
+    g.addColorStop(1, pass ? '#0e2b20' : '#2a1015');
+    x.fillStyle = g;
+    x.fillRect(0, 0, 1080, 1080);
+
+    x.strokeStyle = 'rgba(255,255,255,.14)';
+    x.lineWidth = 3;
+    x.strokeRect(48, 48, 984, 984);
+
+    x.textAlign = 'center';
+    x.fillStyle = 'rgba(255,255,255,.55)';
+    x.font = '600 30px system-ui, -apple-system, sans-serif';
+    x.fillText('THI THỬ 原付免許 · 50cc', 540, 190);
+
+    x.fillStyle = '#ffffff';
+    x.font = '700 170px system-ui, -apple-system, sans-serif';
+    x.fillText(r.score + '/' + r.total, 540, 520);
+
+    x.fillStyle = pass ? '#5be59b' : (isExam ? '#ff8a9b' : 'rgba(255,255,255,.75)');
+    x.font = '700 54px system-ui, -apple-system, sans-serif';
+    x.fillText(isExam ? (pass ? 'ĐỖ' : 'CHƯA ĐỖ') : 'KẾT QUẢ LUYỆN TẬP', 540, 610);
+
+    x.fillStyle = 'rgba(255,255,255,.72)';
+    x.font = '400 34px system-ui, -apple-system, sans-serif';
+    x.fillText('Luyện thi bằng lái xe 50cc tại Nhật', 540, 840);
+    x.fillStyle = 'rgba(255,255,255,.42)';
+    x.font = '400 28px system-ui, -apple-system, sans-serif';
+    x.fillText(new Date().toLocaleDateString('vi-VN'), 540, 900);
+
+    function done(blob) {
+      if (!blob) { return; }
+      var file = null;
+      try { file = new File([blob], 'gentuki-ket-qua.png', { type: 'image/png' }); } catch (e) { }
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Kết quả thi thử 原付' }).catch(function () { });
+        return;
+      }
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'gentuki-ket-qua.png';
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      toast('Đã tạo ảnh kết quả.');
+    }
+
+    if (c.toBlob) { c.toBlob(done, 'image/png'); }
+    else { var d = c.toDataURL('image/png').split(',')[1]; done(null); }
+  }
+
   function viewResult() {
     if (!S || !S.result) { return viewHome(); }
     var r = S.result;
@@ -718,6 +1019,7 @@
         '<div class="btnrow">' +
           '<button class="btn btn-primary" data-act="' + (isExam ? 'start-exam' : 'again') + '">' +
             (isExam ? 'Thi lại' : 'Làm lại nhóm này') + '</button>' +
+          '<button class="btn btn-ghost" data-act="share">Chia sẻ kết quả</button>' +
           '<button class="btn btn-ghost" data-act="back" data-to="home">Về trang chủ</button>' +
         '</div>' +
       '</main>';
@@ -793,6 +1095,7 @@
 
     return topbar('Tiến độ học') +
       '<main class="wrap">' +
+        streakChip() +
         '<section class="stats">' +
           '<div class="stat"><b>' + o.n + '</b><span>lượt trả lời</span></div>' +
           '<div class="stat"><b>' + o.rate + '%</b><span>tỉ lệ đúng</span></div>' +
@@ -851,15 +1154,76 @@
           '</ul>' +
         '</section>' +
         '<section class="panel">' +
+          '<h2>Thói quen Việt Nam vs Nhật Bản</h2>' +
+          '<p class="muted">Những phản xạ ở Việt Nam sẽ làm bạn trượt hoặc bị phạt ở Nhật.</p>' +
+          '<div class="cmp">' +
+            '<div class="cmp-row cmp-head"><span>Ở Việt Nam</span><span>Ở Nhật</span></div>' +
+            COMPARE.map(function (x) {
+              return '<div class="cmp-row"><span>' + esc(x.vi) + '</span>' +
+                '<span><b>' + esc(x.jp) + '</b><i>' + esc(x.note) + '</i></span></div>';
+            }).join('') +
+          '</div>' +
+        '</section>' +
+        '<section class="panel">' +
+          '<h2>Checklist đi thi</h2>' +
+          '<p class="muted" id="chkCount">' +
+            CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length + '/' + CHECKLIST.length +
+          ' mục đã xong — lưu trên máy này.</p>' +
+          '<div class="chk">' +
+            CHECKLIST.map(function (x, i) {
+              var on = !!db.checklist['c' + i];
+              return '<button class="chk-item' + (on ? ' done' : '') + '" data-act="check" data-k="c' + i + '">' +
+                '<span class="chk-box">' + (on ? '✓' : '') + '</span><span>' + esc(x) + '</span></button>';
+            }).join('') +
+          '</div>' +
+        '</section>' +
+        '<section class="panel">' +
+          '<h2>Sổ tay tình huống</h2>' +
+          '<p class="muted">Câu tiếng Nhật dùng được ngay khi ra đường.</p>' +
+          SITS.map(function (s) {
+            return '<details class="sos">' +
+              '<summary><span class="sos-icon">' + esc(s.icon) + '</span>' + esc(s.vi) + '</summary>' +
+              '<p class="sos-tip">' + esc(s.tip) + '</p>' +
+              '<ul class="sos-list">' +
+                s.phrases.map(function (p) {
+                  return '<li><span class="sos-ja">' + esc(p.ja) + '</span>' +
+                    '<span class="sos-r">' + esc(p.r) + '</span>' +
+                    '<span class="sos-vi">' + esc(p.vi) + '</span></li>';
+                }).join('') +
+              '</ul>' +
+            '</details>';
+          }).join('') +
+        '</section>' +
+        '<section class="panel">' +
           '<h2>Về bộ câu hỏi này</h2>' +
           '<p>Toàn bộ câu hỏi được biên soạn lại bằng tiếng Nhật từ nội dung luật (道路交通法), có giải thích tiếng Việt. ' +
           'Không sao chép văn bản từ trang luyện thi nào. Nếu bạn muốn thêm câu từ một nguồn khác, hãy chắc chắn bạn có quyền sử dụng nội dung đó.</p>' +
+        '</section>' +
+        '<section class="panel">' +
+          '<h2>Cộng đồng & góp ý</h2>' +
+          '<p>Thấy câu nào sai nghĩa, giải thích khó hiểu, hay muốn góp thêm câu hỏi? ' +
+            'Nhắn tin cho tác giả — mọi báo lỗi đều được xem lại và sửa trong bản cập nhật.</p>' +
+          '<p class="muted">Khi báo lỗi, gửi kèm mã câu (ví dụ <b>s23</b>) hoặc chụp màn hình để sửa nhanh hơn.</p>' +
+          '<a class="btn btn-ghost" href="https://www.facebook.com/Gimichan92" target="_blank" rel="noopener noreferrer" data-fb="1">Nhắn tin qua Facebook</a>' +
         '</section>' +
       '</main>';
   }
 
   /* ---------------- actions ---------------- */
-  function go(name) { screen = name; render(); }
+  function navSnapshot() {
+    var copy = null;
+    try { copy = S ? JSON.parse(JSON.stringify(S)) : null; } catch (err) { copy = null; }
+    return { nav: 1, screen: screen, S: copy };
+  }
+  function navSync() {
+    try { history.replaceState(navSnapshot(), ''); } catch (err) { }
+  }
+
+  function go(name) {
+    screen = name;
+    try { history.pushState(navSnapshot(), ''); } catch (err) { }
+    render();
+  }
 
   function startPractice(catId) {
     var list = shuffle(byCat[catId] || []);
@@ -867,6 +1231,113 @@
     S = { mode: 'practice', cat: catId, ids: list.map(function (q) { return q.id; }),
           i: 0, picks: list.map(function () { return undefined; }) };
     go('quiz');
+  }
+
+  function startGram(pat) {
+    var list = pat ? (byPat[pat] || []) : GQ;
+    if (!list.length) { return; }
+    var ids = shuffle(list.map(function (q) { return q.id; }));
+    S = { mode: 'practice', cat: 'gram', label: pat || 'Bẫy ngôn ngữ',
+          ids: ids, i: 0, picks: ids.map(function () { return undefined; }) };
+    go('quiz');
+  }
+
+  function startHard() {
+    var pool = Q.slice().sort(function (a, b) { return b.q.length - a.q.length; }).slice(0, 60);
+    var ids = shuffle(pool.map(function (q) { return q.id; })).slice(0, 20);
+    S = { mode: 'practice', cat: null, label: 'Đề khó',
+          ids: ids, i: 0, picks: ids.map(function () { return undefined; }) };
+    go('quiz');
+  }
+
+  /* ---------------- flashcard từ vựng ---------------- */
+  var F = null;
+
+  function startCards() {
+    var keys = Object.keys(VOCAB).filter(function (k) {
+      var v = VOCAB[k];
+      return v && v.r && v.m;
+    });
+    if (!keys.length) { return; }
+    var pool = keys.filter(function (k) { return (db.cards[k] || 0) < 3; });
+    if (pool.length < 8) { pool = keys; }
+    F = { keys: shuffle(pool).slice(0, 12), i: 0, open: false, ok: 0, no: 0 };
+    go('cards');
+  }
+
+  function nextCard() {
+    if (!F) { return; }
+    F.i++;
+    F.open = false;
+    render();
+  }
+
+  function viewCards() {
+    if (!F) { return viewHome(); }
+    if (F.i >= F.keys.length) {
+      return topbar('Flashcard từ vựng') +
+        '<main class="wrap"><section class="panel fcdone">' +
+          '<h2>Xong lượt thẻ</h2>' +
+          '<p>Đã nhớ <b>' + F.ok + '</b> thẻ · còn khó <b>' + F.no + '</b> thẻ.</p>' +
+          '<p class="muted">Thẻ “còn khó” sẽ xuất hiện lại sớm hơn ở lượt sau.</p>' +
+          '<div class="btnrow">' +
+            '<button class="btn btn-primary" data-act="cards-again">Lượt mới</button>' +
+            '<button class="btn btn-ghost" data-act="back" data-to="home">Về trang chủ</button>' +
+          '</div>' +
+        '</section></main>';
+    }
+    var k = F.keys[F.i];
+    var v = VOCAB[k];
+    var box = db.cards[k] || 0;
+    var hv = hanViet(k);
+
+    return topbar('Flashcard từ vựng') +
+      '<main class="wrap">' +
+        '<div class="fc-meta">Thẻ ' + (F.i + 1) + '/' + F.keys.length +
+          ' · hộp ' + (box || 1) + '/3</div>' +
+        '<button class="fc' + (F.open ? ' open' : '') + '" data-act="flip">' +
+          '<span class="fc-term">' + esc(k) + '</span>' +
+          (F.open
+            ? '<span class="fc-read">' + esc(v.r) + (hv ? ' · ' + esc(hv) : '') + '</span>' +
+              '<span class="fc-mean">' + esc(v.m) + '</span>'
+            : '<span class="fc-hint">chạm để xem nghĩa</span>') +
+        '</button>' +
+        (F.open
+          ? '<div class="btnrow fc-btns">' +
+              '<button class="btn btn-ghost" data-act="card-no">Còn khó</button>' +
+              '<button class="btn btn-primary" data-act="card-yes">Đã nhớ</button>' +
+            '</div>'
+          : '<button class="btn btn-primary fc-show" data-act="flip">Xem nghĩa</button>') +
+      '</main>';
+  }
+
+  function viewGram() {
+    var st = gStat();
+    var rows = PATS.map(function (pat) {
+      var list = byPat[pat], n = 0, ok = 0;
+      list.forEach(function (q) {
+        var a = db.answers[q.id];
+        if (a) { n += a.n; ok += a.ok; }
+      });
+      var rate = n ? Math.round(ok / n * 100) : 0;
+      return '<button class="catrow" data-act="gram-pat" data-pat="' + esc(pat) + '">' +
+        '<span class="catrow-icon">🔤</span>' +
+        '<span class="catrow-main"><h3>' + esc(pat) + '</h3>' +
+          '<p>' + list.length + ' câu · ' + (n ? 'đúng ' + rate + '%' : 'chưa làm') + '</p>' +
+          '<span class="bar"><i style="width:' + rate + '%"></i></span></span>' +
+        '<span class="chev">›</span></button>';
+    }).join('');
+
+    return topbar('Bẫy ngôn ngữ') +
+      '<main class="wrap">' +
+        '<section class="panel gramintro">' +
+          '<h2>Đọc câu hỏi cho đúng</h2>' +
+          '<p>Đề 原付 gài bẫy bằng <b>cấu trúc câu</b> chứ không phải bằng luật. Nắm 8 mẫu dưới đây là nắm phần lớn câu khó.</p>' +
+          '<p class="muted">' + GQ.length + ' câu · ' + (st.n ? 'đúng ' + st.rate + '%' : 'chưa làm câu nào') + '</p>' +
+          '<button class="btn btn-primary" data-act="gram-all">Làm tất cả ' + GQ.length + ' câu</button>' +
+        '</section>' +
+        '<div class="catlist">' + rows + '</div>' +
+      '</main>';
   }
 
   function startExam() {
@@ -975,11 +1446,19 @@
     else if (screen === 'result') { html = viewResult(); }
     else if (screen === 'stats') { html = viewStats(); }
     else if (screen === 'info') { html = viewInfo(); }
+    else if (screen === 'gram') { html = viewGram(); }
+    else if (screen === 'cards') { html = viewCards(); }
     else { html = viewHome(); }
     app.innerHTML = html;
     window.scrollTo(0, 0);
-    if (screen === 'home') { fxLoad(false); }
+    if (screen === 'home') {
+      fxLoad(false);
+      startVocabRotate();
+    } else {
+      stopVocabRotate();
+    }
     if (screen === 'quiz' && S && S.mode === 'exam') { paintTimer(); }
+    navSync();
   }
 
   /* ---------------- events ---------------- */
@@ -995,6 +1474,13 @@
     var act = t.dataset.act;
 
     if (act === 'close-sheet') { closeSheet(); return; }
+    if (act === 'vocab') { openWord(t.dataset.w); return; }
+    if (act === 'tts') {
+      var cur = S && qById[S.ids[S.i]];
+      speak(cur ? cur.q : '');
+      return;
+    }
+    if (act === 'furi') { toggleFuri(); return; }
     if (act === 'fx') { fxLoad(true); return; }
     if (act === 'quote') {
       var qb = document.getElementById('quoteBox');
@@ -1011,6 +1497,41 @@
     if (act === 'go-practice') { go('practice'); return; }
     if (act === 'go-stats') { go('stats'); return; }
     if (act === 'go-info') { go('info'); return; }
+    if (act === 'check') {
+      var ck = t.dataset.k;
+      db.checklist[ck] = !db.checklist[ck];
+      saveDB();
+      t.classList.toggle('done', !!db.checklist[ck]);
+      t.querySelector('.chk-box').textContent = db.checklist[ck] ? '✓' : '';
+      var cnt = document.getElementById('chkCount');
+      if (cnt) {
+        var done = CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length;
+        cnt.textContent = done + '/' + CHECKLIST.length + ' mục đã xong — lưu trên máy này.';
+      }
+      return;
+    }
+    if (act === 'share') { shareResult(); return; }
+    if (act === 'cards') { startCards(); return; }
+    if (act === 'cards-again') { startCards(); return; }
+    if (act === 'flip') { if (F) { F.open = !F.open; render(); } return; }
+    if (act === 'card-yes' || act === 'card-no') {
+      if (!F) { return; }
+      var ck2 = F.keys[F.i];
+      if (act === 'card-yes') {
+        db.cards[ck2] = Math.min(3, (db.cards[ck2] || 0) + 1);
+        F.ok++;
+      } else {
+        db.cards[ck2] = 1;
+        F.no++;
+      }
+      saveDB();
+      nextCard();
+      return;
+    }
+    if (act === 'gram') { go('gram'); return; }
+    if (act === 'gram-all') { startGram(null); return; }
+    if (act === 'gram-pat') { startGram(t.dataset.pat); return; }
+    if (act === 'hard') { startHard(); return; }
     if (act === 'start-cat') { startPractice(t.dataset.cat); return; }
     if (act === 'start-exam') { startExam(); return; }
     if (act === 'start-review') { startReview(); return; }
@@ -1088,7 +1609,18 @@
   });
 
   /* ---------------- boot ---------------- */
-  window.addEventListener('beforeunload', function () { stopTimer(); });
+  window.addEventListener('beforeunload', function () { stopTimer(); stopVocabRotate(); });
+  window.addEventListener('popstate', function (e) {
+    var st = e.state;
+    if (!st || !st.nav) { return; }
+    screen = st.screen || 'home';
+    S = st.S || null;
+    if (screen === 'quiz' && S && S.mode === 'exam') { startTimer(); } else { stopTimer(); }
+    render();
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { stopVocabRotate(); } else if (screen === 'home') { startVocabRotate(); }
+  });
   var sheetBack = document.getElementById('sheetBack');
   if (sheetBack) { sheetBack.addEventListener('click', closeSheet); }
 
@@ -1096,6 +1628,8 @@
   var demo = new URLSearchParams(location.search).get('demo');
   var themeParam = new URLSearchParams(location.search).get('theme');
   if (themeParam === 'dark' || themeParam === 'light') { applyTheme(themeParam); }
+  try { if (localStorage.getItem('gentsuki.furi') === '1') { document.documentElement.classList.add('furi'); } } catch (e) { }
+  if (new URLSearchParams(location.search).get('furi') === '1') { document.documentElement.classList.add('furi'); }
   if (demo) { document.documentElement.classList.add('no-anim'); }
   if (demo === 'quiz') { startPractice('sign'); }
   else if (demo === 'answered') { startPractice('sign'); answer(1); }
@@ -1105,6 +1639,9 @@
     S.picks = S.ids.map(function (id, i) { return i % 3 === 0 ? (qById[id].a === 1 ? 0 : 1) : qById[id].a; });
     finishPractice();
   } else if (demo === 'stats') { go('stats'); }
+  else if (demo === 'gram') { go('gram'); }
+  else if (demo === 'cards') { startCards(); }
+  else if (demo === 'info') { go('info'); }
   else if (demo === 'practice') { go('practice'); }
   else if (demo === 'ill') {
     startExam();
@@ -1127,15 +1664,14 @@
   }
   else if (demo === 'fx') {
     var ser = [];
-    for (var fi = 6; fi >= 0; fi--) {
-      var fdt = new Date(Date.now() - fi * 5 * 86400000);
-      ser.push({
-        d: fdt.getFullYear() + '-' + ('0' + (fdt.getMonth() + 1)).slice(-2) + '-' + ('0' + fdt.getDate()).slice(-2),
-        v: 158.4 + Math.sin(fi * 1.1) * 2.6 + fi * 0.55
-      });
+    var base = 164;
+    for (var fi = 89; fi >= 0; fi--) {
+      var fdt = new Date(Date.now() - fi * 86400000);
+      base += Math.sin(fi * 0.35) * 0.45 + (fi < 30 ? -0.25 : 0.12) + (Math.random() - 0.5) * 0.5;
+      ser.push({ d: fxIso(fdt), v: Math.round(base * 100) / 100 });
     }
     fxWrite({ rate: ser[ser.length - 1].v, date: ser[ser.length - 1].d, series: ser,
-      ts: Date.now(), updatedLabel: '22:30 08/11' });
+      ts: Date.now(), histTs: Date.now(), updatedLabel: '22:30 08/11' });
     go('home');
   }
   else if (demo === 'ready') {

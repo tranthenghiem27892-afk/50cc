@@ -1137,7 +1137,7 @@ body {
 .fx-chg { font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .fx-up { color: var(--green); }
 .fx-down { color: var(--red); }
-.fx-spark { width: 100%; height: 62px; display: block; margin: 4px 0 0; }
+.fx-chart { width: 100%; height: auto; display: block; margin: 8px 0 2px; color: var(--muted); }
 .fx-note { font-size: 10.5px; color: var(--muted); margin-top: 7px; line-height: 1.5; }
 [data-theme="dark"] .fx-refresh:hover { background: #262220; }
 
@@ -1153,3 +1153,145 @@ body {
   font-size: 11px;
   color: var(--muted);
 }
+/* ---------- từ vựng xoay vòng ---------- */
+.vrot {
+  margin-top: 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px 16px 13px;
+}
+.vrot-head { display: flex; align-items: center; justify-content: space-between; }
+.vrot-label { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.vrot-count { font-size: 10.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.vrot-term {
+  display: block;
+  margin: 8px 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--ink);
+  text-align: left;
+  transition: color .15s;
+}
+.vrot-term:hover { color: var(--red); }
+.vrot-read { font-size: 11.5px; color: var(--red); letter-spacing: .04em; margin-top: 1px; }
+.vrot-mean { font-size: 13px; line-height: 1.65; color: var(--ink-soft); margin-top: 6px; }
+@keyframes vfade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.vrot.swap { animation: vfade .45s ease both; }
+
+.vrot-line { display: flex; align-items: baseline; gap: 10px; margin-top: 8px; }
+.vrot-line .vrot-term { margin: 0; }
+.vrot-hv { font-size: 11px; font-weight: 600; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
+.w-hv { font-size: 11.5px; font-weight: 600; letter-spacing: .08em; color: var(--muted); margin-left: 9px; vertical-align: middle; text-transform: uppercase; }
+
+/* ---------- phiên âm (furigana) ---------- */
+.w rt { display: none; font-size: .5em; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+html.furi .w rt { display: inline; }
+
+/* ---------- nút đọc / phiên âm ---------- */
+.qctl { display: flex; gap: 8px; margin: 10px 0 2px; }
+.qctl-btn {
+  border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
+  border-radius: 999px; padding: 6px 12px; font-size: 11.5px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.qctl-btn:hover { background: #fbf8f3; color: var(--ink); }
+.qctl-btn.on { background: #eef6f1; border-color: #c0e4d2; color: #16794f; }
+[data-theme="dark"] .qctl-btn:hover { background: #262220; }
+[data-theme="dark"] .qctl-btn.on { background: #1b2d24; border-color: #2f4d3d; color: #7fd6a8; }
+
+/* ---------- hàng đặc biệt trong danh sách nhóm ---------- */
+.catrow-special { background: linear-gradient(100deg, #fff2e6, #ffffff 60%); border: 1px dashed #f0c9a4; }
+.catrow-special:nth-child(2) { background: linear-gradient(100deg, #fdeaea, #ffffff 60%); border-color: #f0b9b9; }
+[data-theme="dark"] .catrow-special { background: var(--card); border-color: #3d2d22; }
+
+/* ---------- màn bẫy ngôn ngữ ---------- */
+.gramintro { margin-bottom: 12px; }
+.gramintro h2 { font-size: 17px; }
+.gramintro p { font-size: 13px; color: var(--ink-soft); line-height: 1.65; margin-top: 6px; }
+.gramintro .btn { margin-top: 12px; width: 100%; }
+
+/* ---------- bảng so sánh ---------- */
+.cmp { margin-top: 10px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cmp-row { display: grid; grid-template-columns: 1fr 1.15fr; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #f2ede5; font-size: 12.5px; }
+.cmp-row:last-child { border-bottom: none; }
+.cmp-head { background: #faf6ef; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.cmp-row b { display: block; font-weight: 600; }
+.cmp-row i { display: block; font-style: normal; font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+[data-theme="dark"] .cmp-row { border-color: #2a2622; }
+[data-theme="dark"] .cmp-head { background: #221f1b; }
+
+/* ---------- checklist ---------- */
+.chk { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.chk-item {
+  display: flex; align-items: flex-start; gap: 10px; text-align: left;
+  background: #fdfbf7; border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 12px; font-size: 13px; line-height: 1.5; color: var(--ink);
+}
+.chk-item:hover { background: #faf6ef; }
+.chk-item.done { color: var(--muted); }
+.chk-item.done > span:last-child { text-decoration: line-through; }
+.chk-box {
+  flex: 0 0 auto; width: 18px; height: 18px; border-radius: 6px; border: 1px solid var(--line);
+  display: grid; place-items: center; font-size: 11px; color: #fff; background: #fff; margin-top: 1px;
+}
+.chk-item.done .chk-box { background: var(--green); border-color: var(--green); }
+[data-theme="dark"] .chk-item { background: #201d1a; }
+[data-theme="dark"] .chk-item:hover { background: #262220; }
+[data-theme="dark"] .chk-box { background: #201d1a; }
+
+/* ---------- sổ tay tình huống ---------- */
+.sos { border: 1px solid var(--line); border-radius: 12px; margin-top: 8px; background: #fdfbf7; overflow: hidden; }
+.sos summary { list-style: none; cursor: pointer; padding: 11px 13px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.sos summary::-webkit-details-marker { display: none; }
+.sos summary::after { content: '＋'; margin-left: auto; color: var(--muted); font-weight: 400; }
+.sos[open] summary::after { content: '−'; }
+.sos-icon { font-size: 15px; }
+.sos-tip { font-size: 12px; color: var(--muted); padding: 0 13px 8px; line-height: 1.6; }
+.sos-list { list-style: none; padding: 0 13px 12px; margin: 0; display: flex; flex-direction: column; gap: 9px; }
+.sos-list li { border-top: 1px dashed var(--line); padding-top: 8px; }
+.sos-ja { display: block; font-size: 13.5px; font-weight: 600; }
+.sos-r { display: block; font-size: 11px; color: var(--red); letter-spacing: .02em; margin-top: 1px; }
+.sos-vi { display: block; font-size: 12.5px; color: var(--ink-soft); margin-top: 3px; }
+[data-theme="dark"] .sos { background: #201d1a; }
+
+/* ---------- chuỗi ngày học ---------- */
+.streak {
+  background: linear-gradient(100deg, #fff3e6, #ffffff 70%);
+  border: 1px solid #ffdcc2; border-radius: 14px;
+  padding: 10px 14px; font-size: 12.5px; color: var(--ink-soft); margin-bottom: 12px;
+}
+.streak b { color: #c2410c; font-size: 14px; font-variant-numeric: tabular-nums; }
+[data-theme="dark"] .streak { background: linear-gradient(100deg, #2b211a, #1e1b18 70%); border-color: #3d2d22; }
+[data-theme="dark"] .streak b { color: #ff9a5c; }
+
+/* ---------- flashcard ---------- */
+.fc-meta { font-size: 11.5px; color: var(--muted); text-align: center; margin: 4px 0 12px; letter-spacing: .04em; }
+.fc {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  width: 100%; min-height: 300px; padding: 30px 22px; text-align: center;
+  background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+  transition: transform .15s, box-shadow .15s;
+}
+.fc:hover { box-shadow: 0 12px 28px -18px rgba(0,0,0,.35); }
+.fc:active { transform: scale(.995); }
+.fc-term { font-size: 34px; font-weight: 700; letter-spacing: .02em; }
+.fc-hint { font-size: 12px; color: var(--muted); }
+.fc-read { font-size: 13px; color: var(--red); letter-spacing: .04em; }
+.fc-mean { font-size: 14.5px; color: var(--ink-soft); line-height: 1.7; max-width: 32ch; }
+.fc-show { margin-top: 14px; width: 100%; }
+.fc-btns { margin-top: 14px; }
+.fcdone { text-align: center; }
+.fcdone h2 { font-size: 18px; }
+.fcdone p { font-size: 13px; color: var(--ink-soft); margin-top: 8px; }
+
+.catrow-special:nth-child(3) { background: linear-gradient(100deg, #eef4ff, #ffffff 60%); border-color: #c9d8f5; }
+[data-theme="dark"] .catrow-special:nth-child(3) { background: var(--card); border-color: #2b3748; }

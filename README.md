@@ -12,6 +12,15 @@ Web app tĩnh, không cần server, không cần build. Mở `index.html` là ch
 - **Tra từ vựng khi chạm**: 128 từ chuyên ngành, gồm 31 động từ nhận cả dạng chia.
 - **Thi thử đúng chuẩn**: 46 câu chữ (1 điểm/câu) + 2 câu hình (2 điểm/câu mỗi câu) = **48 câu, 50 điểm, 45 là đỗ, 30 phút**.
 - **Mức sẵn sàng**: dựa trên 5 đề gần nhất, tự báo Đủ / Gần đạt / Chưa.
+- **Bẫy ngôn ngữ**: 62 câu luyện cấu trúc đề thi (8 mẫu), tách riêng khỏi kho thi thử.
+- **Đọc câu + phiên âm**: nút 🔊 đọc câu bằng giọng Nhật, nút あ bật furigana cho từ vựng.
+- **Cẩm nang**: bảng so sánh thói quen Việt–Nhật, checklist 12 mục đi thi (tick được), sổ tay 8 tình huống với câu tiếng Nhật mẫu.
+- **Đề khó**: 20 câu dài/khó nhất kho.
+- **Flashcard từ vựng**: 12 thẻ/lượt, chia 3 hộp theo mức nhớ, ưu tiên thẻ còn khó.
+- **Chuỗi ngày học**: đếm số ngày liên tiếp có làm bài, hiện ở trang Tiến độ.
+- **Chia sẻ kết quả**: tạo ảnh 1080×1080 (thi thử hoặc luyện) để đăng Facebook/Zalo.
+- **Vuốt cạnh để quay lại**: dùng History API, mỗi lần chuyển trang là một bước lịch sử; vuốt cạnh/bấm back chỉ thoát app khi đang ở trang chủ gốc.
+- **Khối từ vựng xoay vòng**: 8 từ quan trọng ngẫu nhiên, tự đổi mỗi 5,5 giây, bấm vào từ để mở giải nghĩa.
 - **201 câu nói động lực** ngẫu nhiên cuối trang chủ.
 - **Giao diện sáng/tối**, tự theo máy lần đầu, có nút chuyển, nhớ lựa chọn.
 - **Cài được lên điện thoại** (PWA), chạy offline sau lần mở đầu.
