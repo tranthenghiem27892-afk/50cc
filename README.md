@@ -14,7 +14,9 @@ Web app tĩnh, không cần server, không cần build. Mở `index.html` là ch
 - **Mức sẵn sàng**: dựa trên 5 đề gần nhất, tự báo Đủ / Gần đạt / Chưa.
 - **Bẫy ngôn ngữ**: 62 câu luyện cấu trúc đề thi (8 mẫu), tách riêng khỏi kho thi thử.
 - **Đọc câu + phiên âm**: nút 🔊 đọc câu bằng giọng Nhật, nút あ bật furigana cho từ vựng.
-- **Cẩm nang**: bảng so sánh thói quen Việt–Nhật, checklist 12 mục đi thi (tick được), sổ tay 8 tình huống với câu tiếng Nhật mẫu.
+- **Checklist đi thi**: 12 mục tick được, lưu trên máy — màn hình riêng từ trang chủ.
+- **Sổ tay tình huống**: 8 tình huống × 5 câu tiếng Nhật có romaji — màn hình riêng.
+- **Cẩm nang**: thủ tục, luật mới, mẹo thi và bảng so sánh thói quen Việt–Nhật.
 - **Đề khó**: 20 câu dài/khó nhất kho.
 - **Flashcard từ vựng**: 12 thẻ/lượt, chia 3 hộp theo mức nhớ, ưu tiên thẻ còn khó.
 - **Chuỗi ngày học**: đếm số ngày liên tiếp có làm bài, hiện ở trang Tiến độ.

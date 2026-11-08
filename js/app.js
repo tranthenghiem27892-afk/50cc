@@ -307,17 +307,44 @@
     return list[i];
   }
 
-  function quoteBlock() {
-    var q = pickQuote();
-    if (!q) { return ''; }
-    return '<section class="quote" id="quoteBox">' +
-      '<div class="quote-emoji">' + q.e + '</div>' +
+  function quoteInner(q) {
+    return '<div class="quote-emoji">' + q.e + '</div>' +
       '<div class="quote-body">' +
         '<p class="quote-text">' + esc(q.t) + '</p>' +
         (q.a ? '<p class="quote-author">— ' + esc(q.a) + '</p>' : '') +
-      '</div>' +
+      '</div>';
+  }
+
+  function quoteBlock() {
+    var q = pickQuote();
+    if (!q) { return ''; }
+    return '<section class="quote" id="quoteBox">' + quoteInner(q) +
       '<button class="quote-next" data-act="quote" aria-label="Câu khác" title="Câu khác">↻</button>' +
       '</section>';
+  }
+
+  /* tự đổi câu động lực liên tục, nhanh hơn khối từ vựng */
+  var QROT = { timer: null };
+  var QROT_MS = 3600;
+
+  function stopQuoteRotate() {
+    if (QROT.timer) { clearInterval(QROT.timer); QROT.timer = null; }
+  }
+
+  function startQuoteRotate() {
+    stopQuoteRotate();
+    if (!(window.QUOTES || []).length) { return; }
+    QROT.timer = setInterval(function () {
+      var box = document.getElementById('quoteBox');
+      if (!box) { stopQuoteRotate(); return; }
+      var q = pickQuote();
+      if (!q) { return; }
+      box.innerHTML = quoteInner(q) +
+        '<button class="quote-next" data-act="quote" aria-label="Câu khác" title="Câu khác">↻</button>';
+      box.classList.remove('swap');
+      void box.offsetWidth;
+      box.classList.add('swap');
+    }, QROT_MS);
   }
 
   /* ---------------- tỷ giá JPY → VND ---------------- */
@@ -678,6 +705,18 @@
           '<button class="tile" data-act="go-info">' +
             '<span class="tile-icon">🇯🇵</span>' +
             '<span class="tile-body"><h3>Thủ tục & mẹo thi</h3><p>Giấy tờ, lệ phí, 原付講習</p></span>' +
+            '<span class="chev">›</span>' +
+          '</button>' +
+          '<button class="tile" data-act="go-checklist">' +
+            '<span class="tile-icon">✅</span>' +
+            '<span class="tile-body"><h3>Checklist đi thi</h3><p>' +
+              CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length + '/' + CHECKLIST.length +
+              ' mục đã xong</p></span>' +
+            '<span class="chev">›</span>' +
+          '</button>' +
+          '<button class="tile" data-act="go-sos">' +
+            '<span class="tile-icon">📕</span>' +
+            '<span class="tile-body"><h3>Sổ tay tình huống</h3><p>' + SITS.length + ' tình huống · câu tiếng Nhật</p></span>' +
             '<span class="chev">›</span>' +
           '</button>' +
         '</div>' +
@@ -1148,6 +1187,50 @@
       '</main>';
   }
 
+  function chkList() {
+    return CHECKLIST.map(function (x, i) {
+      var on = !!db.checklist['c' + i];
+      return '<button class="chk-item' + (on ? ' done' : '') + '" data-act="check" data-k="c' + i + '">' +
+        '<span class="chk-box">' + (on ? '✓' : '') + '</span><span>' + esc(x) + '</span></button>';
+    }).join('');
+  }
+
+  function viewChecklist() {
+    var done = CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length;
+    return topbar('Checklist đi thi') +
+      '<main class="wrap">' +
+        '<section class="panel">' +
+          '<h2>Chuẩn bị trước ngày thi</h2>' +
+          '<p class="muted" id="chkCount">' + done + '/' + CHECKLIST.length +
+            ' mục đã xong — lưu trên máy này.</p>' +
+          '<div class="chk">' + chkList() + '</div>' +
+        '</section>' +
+      '</main>';
+  }
+
+  function viewSos() {
+    return topbar('Sổ tay tình huống') +
+      '<main class="wrap">' +
+        '<section class="panel">' +
+          '<h2>Câu tiếng Nhật dùng được ngay</h2>' +
+          '<p class="muted">Chạm vào từng tình huống để mở.</p>' +
+          SITS.map(function (s) {
+            return '<details class="sos">' +
+              '<summary><span class="sos-icon">' + esc(s.icon) + '</span>' + esc(s.vi) + '</summary>' +
+              '<p class="sos-tip">' + esc(s.tip) + '</p>' +
+              '<ul class="sos-list">' +
+                s.phrases.map(function (ph) {
+                  return '<li><span class="sos-ja">' + esc(ph.ja) + '</span>' +
+                    '<span class="sos-r">' + esc(ph.r) + '</span>' +
+                    '<span class="sos-vi">' + esc(ph.vi) + '</span></li>';
+                }).join('') +
+              '</ul>' +
+            '</details>';
+          }).join('') +
+        '</section>' +
+      '</main>';
+  }
+
   function viewInfo() {
     return topbar('Thủ tục & mẹo thi') +
       '<main class="wrap info">' +
@@ -1202,39 +1285,9 @@
           '</div>' +
         '</section>' +
         '<section class="panel">' +
-          '<h2>Checklist đi thi</h2>' +
-          '<p class="muted" id="chkCount">' +
-            CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length + '/' + CHECKLIST.length +
-          ' mục đã xong — lưu trên máy này.</p>' +
-          '<div class="chk">' +
-            CHECKLIST.map(function (x, i) {
-              var on = !!db.checklist['c' + i];
-              return '<button class="chk-item' + (on ? ' done' : '') + '" data-act="check" data-k="c' + i + '">' +
-                '<span class="chk-box">' + (on ? '✓' : '') + '</span><span>' + esc(x) + '</span></button>';
-            }).join('') +
-          '</div>' +
-        '</section>' +
-        '<section class="panel">' +
-          '<h2>Sổ tay tình huống</h2>' +
-          '<p class="muted">Câu tiếng Nhật dùng được ngay khi ra đường.</p>' +
-          SITS.map(function (s) {
-            return '<details class="sos">' +
-              '<summary><span class="sos-icon">' + esc(s.icon) + '</span>' + esc(s.vi) + '</summary>' +
-              '<p class="sos-tip">' + esc(s.tip) + '</p>' +
-              '<ul class="sos-list">' +
-                s.phrases.map(function (p) {
-                  return '<li><span class="sos-ja">' + esc(p.ja) + '</span>' +
-                    '<span class="sos-r">' + esc(p.r) + '</span>' +
-                    '<span class="sos-vi">' + esc(p.vi) + '</span></li>';
-                }).join('') +
-              '</ul>' +
-            '</details>';
-          }).join('') +
-        '</section>' +
-        '<section class="panel">' +
           '<h2>Về bộ câu hỏi này</h2>' +
           '<p>Toàn bộ câu hỏi được biên soạn lại bằng tiếng Nhật từ nội dung luật (道路交通法), có giải thích tiếng Việt. ' +
-          'Không sao chép văn bản từ trang luyện thi nào. Nếu bạn muốn thêm câu từ một nguồn khác, hãy chắc chắn bạn có quyền sử dụng nội dung đó.</p>' +
+          'Không sao chép văn bản từ trang luyện thi nào.</p>' +
         '</section>' +
         '<section class="panel">' +
           '<h2>Cộng đồng & góp ý</h2>' +
@@ -1485,14 +1538,18 @@
     else if (screen === 'info') { html = viewInfo(); }
     else if (screen === 'gram') { html = viewGram(); }
     else if (screen === 'cards') { html = viewCards(); }
+    else if (screen === 'checklist') { html = viewChecklist(); }
+    else if (screen === 'sos') { html = viewSos(); }
     else { html = viewHome(); }
     app.innerHTML = html;
     window.scrollTo(0, 0);
     if (screen === 'home') {
       fxLoad(false);
       startVocabRotate();
+      startQuoteRotate();
     } else {
       stopVocabRotate();
+      stopQuoteRotate();
     }
     if (screen === 'quiz' && S && S.mode === 'exam') { paintTimer(); }
     navSync();
@@ -1522,6 +1579,7 @@
     if (act === 'quote') {
       var qb = document.getElementById('quoteBox');
       if (qb) { qb.outerHTML = quoteBlock(); }
+      startQuoteRotate();
       return;
     }
     if (act === 'theme') {
@@ -1534,6 +1592,8 @@
     if (act === 'go-practice') { go('practice'); return; }
     if (act === 'go-stats') { go('stats'); return; }
     if (act === 'go-info') { go('info'); return; }
+    if (act === 'go-checklist') { go('checklist'); return; }
+    if (act === 'go-sos') { go('sos'); return; }
     if (act === 'check') {
       var ck = t.dataset.k;
       db.checklist[ck] = !db.checklist[ck];
@@ -1656,7 +1716,8 @@
     render();
   });
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) { stopVocabRotate(); } else if (screen === 'home') { startVocabRotate(); }
+    if (document.hidden) { stopVocabRotate(); stopQuoteRotate(); }
+    else if (screen === 'home') { startVocabRotate(); startQuoteRotate(); }
   });
   var sheetBack = document.getElementById('sheetBack');
   if (sheetBack) { sheetBack.addEventListener('click', closeSheet); }
@@ -1677,6 +1738,8 @@
     finishPractice();
   } else if (demo === 'stats') { go('stats'); }
   else if (demo === 'gram') { go('gram'); }
+  else if (demo === 'check') { go('checklist'); }
+  else if (demo === 'sos') { go('sos'); }
   else if (demo === 'cards') { startCards(); }
   else if (demo === 'info') { go('info'); }
   else if (demo === 'practice') { go('practice'); }
