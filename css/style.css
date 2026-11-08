@@ -1403,13 +1403,19 @@ html.furi .w rt { visibility: visible; }
   -webkit-backface-visibility: hidden;
 }
 .qflip-back { transform: rotateY(180deg); }
-.qflip.back .qflip-inner {
-  transform: rotateY(180deg);
-  animation: qflip .55s cubic-bezier(.2, .7, .2, 1);
-}
+.qflip.back .qflip-inner { transform: rotateY(180deg); }
+
+/* chỉ chạy animation khi người dùng bấm nút, không chạy khi đổi câu */
+.qflip.anim.back .qflip-inner { animation: qflip .55s cubic-bezier(.2, .7, .2, 1); }
+.qflip.anim:not(.back) .qflip-inner { animation: qflipRev .55s cubic-bezier(.2, .7, .2, 1); }
+
 @keyframes qflip {
   from { transform: rotateY(0deg); }
   to { transform: rotateY(180deg); }
+}
+@keyframes qflipRev {
+  from { transform: rotateY(180deg); }
+  to { transform: rotateY(0deg); }
 }
 .qflip-note {
   display: block;

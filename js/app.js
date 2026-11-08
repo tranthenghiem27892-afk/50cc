@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '51';
+  var APP_VER = '56';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -57,6 +57,9 @@
 
   /* từ vựng: bọc các thuật ngữ bằng nút bấm được */
   var VOCAB = window.VOCAB || {};
+  var VI = window.VI || {};
+  var VI_MANUAL = {};
+  (window.VI_MANUAL || []).forEach(function (k) { VI_MANUAL[k] = 1; });
   var VOCAB_ALIAS = {};
   Object.keys(VOCAB).forEach(function (k) {
     var v = VOCAB[k];
@@ -864,6 +867,8 @@
     var isExam = S.mode === 'exam';
     var answered = picked !== undefined;
     var showFb = !isExam && answered;
+    var viAnimCls = S.viAnim ? ' anim' : '';
+    S.viAnim = false;
 
     var sign = q.img && SIGNS[q.img] ? '<div class="qsign">' + SIGNS[q.img] + '</div>' : '';
     var answers;
@@ -896,10 +901,19 @@
         '<article class="qcard">' +
           '<span class="qtag cat-' + q.cat + '">' + cat.icon + ' ' + cat.vi + '</span>' +
           sign +
-          '<p class="qtext">' + mark(esc(q.q)) + '</p>' +
+          '<div class="qflip' + (S.viOn ? ' back' : '') + viAnimCls + '">' +
+            '<div class="qflip-inner">' +
+              '<div class="qflip-face qflip-front"><p class="qtext">' + mark(esc(q.q)) + '</p></div>' +
+              '<div class="qflip-face qflip-back">' +
+                '<p class="qtext qtext-vi">' + esc(VI[q.id] || 'Chưa có bản dịch cho câu này.') + '</p>' +
+                '<span class="qflip-note">' + (VI_MANUAL[q.id] ? 'Bản dịch biên soạn' : 'Bản dịch tự động · tham khảo') + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
           '<div class="qctl">' +
             '<button class="qctl-btn" data-act="tts">🔊 Đọc câu</button>' +
             '<button class="qctl-btn' + (furiOn() ? ' on' : '') + '" data-act="furi">あ Phiên âm</button>' +
+            '<button class="qctl-btn' + (S.viOn ? ' on' : '') + '" data-act="vi">🌐 Dịch</button>' +
           '</div>' +
           '<p class="qhint">' + (isExam ? 'Chọn ○ nếu đúng, × nếu sai' : 'Câu này đúng hay sai?') +
             ' · <span class="w-tip">chạm từ tiếng Nhật để tra nghĩa</span></p>' +
@@ -1572,6 +1586,7 @@
       return;
     }
     S.i++;
+    S.viOn = false;
     render();
   }
 
@@ -1584,6 +1599,7 @@
     }
     if (S.i === 0) { return; }
     S.i--;
+    S.viOn = false;
     render();
   }
 
@@ -1676,6 +1692,7 @@
       return;
     }
     if (act === 'furi') { toggleFuri(); return; }
+    if (act === 'vi') { if (S) { S.viOn = !S.viOn; S.viAnim = true; render(); } return; }
     if (act === 'fx') { fxLoad(true); return; }
     if (act === 'quote') {
       var qb = document.getElementById('quoteBox');
@@ -1919,6 +1936,7 @@
   else if (demo === 'q' && qById[new URLSearchParams(location.search).get('id')]) {
     var qid = new URLSearchParams(location.search).get('id');
     S = { mode: 'practice', cat: qById[qid].cat, ids: [qid], i: 0, picks: [undefined] };
+    if (new URLSearchParams(location.search).get('vi') === '1') { S.viOn = true; }
     go('quiz');
   } else { render(); }
 })();

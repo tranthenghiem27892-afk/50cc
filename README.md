@@ -13,6 +13,7 @@ Web app tĩnh, không cần server, không cần build. Mở `index.html` là ch
 - **Thi thử đúng chuẩn**: 46 câu chữ (1 điểm/câu) + 2 câu hình (2 điểm/câu mỗi câu) = **48 câu, 50 điểm, 45 là đỗ, 30 phút**.
 - **Mức sẵn sàng**: dựa trên 5 đề gần nhất, tự báo Đủ / Gần đạt / Chưa.
 - **Bẫy ngôn ngữ**: 62 câu luyện cấu trúc đề thi (8 mẫu), tách riêng khỏi kho thi thử.
+- **Dịch câu hỏi**: nút 🌐 lật thẻ, hiện bản dịch tiếng Việt (681 câu). toàn bộ 681 câu đã dịch tay
 - **Đọc câu + phiên âm**: nút 🔊 đọc câu bằng giọng Nhật, nút あ bật furigana cho từ vựng.
 - **Checklist đi thi**: 12 mục tick được, lưu trên máy — màn hình riêng từ trang chủ.
 - **Sổ tay tình huống**: 8 tình huống × 5 câu tiếng Nhật có romaji — màn hình riêng.
