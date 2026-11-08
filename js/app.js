@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '47';
+  var APP_VER = '48';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -792,7 +792,6 @@
         vocabBlock() +
         quoteBlock() +
         fxCard() +
-        creditBlock() +
         '<p class="terms"><b>© 2026 Nghiệm Trần</b>' +
           'Đây là dự án miễn phí vì cộng đồng. Vui lòng chỉ dùng cá nhân, ' +
           'không sao chép/tái bản, không dùng để kiếm tiền. ' +
@@ -1349,8 +1348,8 @@
           '<p>Thấy câu nào sai nghĩa, giải thích khó hiểu, hay muốn góp thêm câu hỏi? ' +
             'Nhắn tin cho tác giả — mọi báo lỗi đều được xem lại và sửa trong bản cập nhật.</p>' +
           '<p class="muted">Khi báo lỗi, gửi kèm mã câu (ví dụ <b>s23</b>) hoặc chụp màn hình để sửa nhanh hơn.</p>' +
-          '<a class="btn btn-ghost" href="https://www.facebook.com/Gimichan92" target="_blank" rel="noopener noreferrer" data-fb="1">Nhắn tin qua Facebook</a>' +
         '</section>' +
+        creditBlock() +
       '</main>';
   }
 
