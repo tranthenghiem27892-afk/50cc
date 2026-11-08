@@ -6,8 +6,8 @@ Web app tĩnh, không cần server, không cần build. Mở `index.html` là ch
 
 ## Nội dung
 
-- **503 câu hỏi ○×** tiếng Nhật, chia **8 nhóm**, có giải thích tiếng Việt và căn cứ pháp lý.
-- **6 bộ câu hình 危険予測** (mỗi bộ 3 nhận định, đúng cả 3 mới được 2 điểm) — đúng dạng đề thật.
+- **619 câu hỏi ○×** tiếng Nhật, chia **8 nhóm**, có giải thích tiếng Việt và căn cứ pháp lý.
+- **12 bộ câu hình 危険予測** (mỗi bộ 3 nhận định, đúng cả 3 mới được 2 điểm) — đúng dạng đề thật.
 - **Giải thích cả hai đáp án**: vì sao đáp án đúng là đúng, và vì sao đáp án còn lại là sai.
 - **Tra từ vựng khi chạm**: 128 từ chuyên ngành, gồm 31 động từ nhận cả dạng chia.
 - **Thi thử đúng chuẩn**: 46 câu chữ (1 điểm/câu) + 2 câu hình (2 điểm/câu mỗi câu) = **48 câu, 50 điểm, 45 là đỗ, 30 phút**.
@@ -57,10 +57,10 @@ gentsuki-app/
    ├─ questions.js       # ngân hàng gốc + khai báo 8 nhóm
    ├─ q2.js … q5.js      # các đợt bổ sung
    ├─ q7.js              # luật mới 2025 + kỹ thuật đi xe
-   ├─ q8.js, q9.js       # mở rộng lên 503 câu
-   ├─ illustrations.js   # 6 bộ câu hình 危険予測
+   ├─ q8.js … q12.js      # mở rộng lên 619 câu
+   ├─ illustrations.js   # 12 bộ câu hình 危険予測
    ├─ traps.js           # "vì sao sai" cho từng câu
-   ├─ vocab.js … vocab3.js  # từ điển tra cứu (273 từ)
+   ├─ vocab.js … vocab3.js  # từ điển tra cứu (347 từ)
    ├─ author.js          # credit tác giả
    ├─ quotes.js          # 201 câu động lực
    └─ signs.js           # 24 SVG biển báo

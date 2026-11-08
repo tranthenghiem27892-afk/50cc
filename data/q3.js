@@ -3,12 +3,7 @@
    ============================================================ */
 window.QUESTIONS.push(
   /* ---------- 駐停車禁止 ---------- */
-  { id: 's39', cat: 'sign', a: 1, img: 'nostopping',
-    q: '「駐停車禁止」の標識がある場所では、駐車も停車もしてはいけない。',
-    exp: 'Đúng. Hai gạch chéo hình X trên nền xanh: cấm cả đỗ lẫn dừng, dù chỉ vài chục giây.',
-    ref: '道路交通法第44条' },
-
-  { id: 's40', cat: 'sign', a: 0, img: 'nostopping',
+    { id: 's40', cat: 'sign', a: 0, img: 'nostopping',
     q: '「駐停車禁止」と「駐車禁止」は、同じ意味の標識である。',
     exp: 'Sai. 駐車禁止 (một gạch chéo) chỉ cấm đỗ; 駐停車禁止 (hai gạch) cấm cả đỗ và dừng.',
     ref: '道路交通法第44条・第45条' },
@@ -52,12 +47,7 @@ window.QUESTIONS.push(
     exp: 'Đúng. Đường dành riêng cho xe đạp; 原付 và ô tô không được vào.',
     ref: '道路交通法第9条' },
 
-  { id: 's48', cat: 'sign', a: 0, img: 'bicycle',
-    q: '「自転車専用」の標識がある道路は、原付も通行することができる。',
-    exp: 'Sai. 原付 không được đi vào đường dành riêng cho xe đạp.',
-    ref: '' },
-
-  /* ---------- 転回禁止 ---------- */
+    /* ---------- 転回禁止 ---------- */
   { id: 's49', cat: 'sign', a: 1, img: 'turnaround',
     q: '「転回禁止」の標識がある場所では、車の向きを変えて反対方向に進んではいけない。',
     exp: 'Đúng. 転回 = quay đầu xe (U-turn); biển này cấm quay đầu tại chỗ.',

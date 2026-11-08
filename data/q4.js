@@ -3,12 +3,7 @@
    ============================================================ */
 window.QUESTIONS.push(
   /* ---------- 徐行 (329-A) ---------- */
-  { id: 's75', cat: 'sign', a: 1, img: 'slowdown',
-    q: '「徐行」の標識がある場所では、すぐに停止できる速度で進まなければならない。',
-    exp: 'Đúng. 徐行 = tốc độ có thể dừng ngay khi cần, thực tế khoảng dưới 10km/h.',
-    ref: '道路交通法第42条' },
-
-  { id: 's76', cat: 'sign', a: 0, img: 'slowdown',
+    { id: 's76', cat: 'sign', a: 0, img: 'slowdown',
     q: '「徐行」の標識は、その場所の最高速度を示す標識である。',
     exp: 'Sai. Đây là biển hiệu lệnh đi chậm, không phải biển giới hạn tốc độ.',
     ref: '' },

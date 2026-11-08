@@ -126,12 +126,7 @@ window.QUESTIONS = [
     exp: 'Cấm xe cộ lưu thông — 原付 cũng nằm trong nhóm bị cấm, không có ngoại lệ.',
     ref: '道路交通法第8条' },
 
-  { id: 's09', cat: 'sign', a: 0,
-    q: '「原動機付自転車の右折方法（小回り）」の標識がある交差点では、二段階右折をしなければならない。',
-    exp: 'Ngược lại. Biển "小回り" nghĩa là rẽ phải kiểu bình thường (như ô tô), KHÔNG phải rẽ 2 bước.',
-    ref: '道路交通法第34条' },
-
-  { id: 's10', cat: 'sign', a: 1,
+    { id: 's10', cat: 'sign', a: 1,
     q: '「徐行」の標識がある場所では、すぐに停止できる速度で進まなければならない。',
     exp: '徐行 = tốc độ có thể dừng ngay lập tức khi cần (thực tế khoảng dưới 10km/h).',
     ref: '道路交通法第2条' },
@@ -436,12 +431,7 @@ window.QUESTIONS = [
     exp: 'Sai. Đường dành riêng cho xe đạp — 原付 không được vào.',
     ref: '' },
 
-  { id: 's19', cat: 'sign', a: 1,
-    q: '警笛鳴らせの標識がある場所では、警音器を鳴らさなければならない。',
-    exp: 'Đúng. Đến đoạn có biển này phải bấm còi cảnh báo.',
-    ref: '道路交通法第54条' },
-
-  { id: 's20', cat: 'sign', a: 0,
+    { id: 's20', cat: 'sign', a: 0,
     q: '高さ制限の標識で指定された高さを超える車両でも、原付なら通行することができる。',
     exp: 'Sai. Giới hạn chiều cao áp dụng cho mọi xe, kể cả 原付.',
     ref: '' },
@@ -583,12 +573,7 @@ window.QUESTIONS = [
     exp: 'Đúng. Tấp trái để nhường đường cho xe vượt.',
     ref: '道路交通法第28条' },
 
-  { id: 'r16', cat: 'road', a: 0,
-    q: '夜間、対向車とすれ違うときは、前照灯を上向きのままにする。',
-    exp: 'Sai. Phải hạ đèn (減光) để không làm chói mắt tài xế ngược chiều.',
-    ref: '道路交通法第52条' },
-
-  { id: 'r17', cat: 'road', a: 1,
+    { id: 'r17', cat: 'road', a: 1,
     q: 'トンネルの中では、前照灯を点灯しなければならない。',
     exp: 'Đúng. Trong hầm luôn phải bật đèn, kể cả ban ngày.',
     ref: '道路交通法第52条' },

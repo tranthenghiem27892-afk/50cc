@@ -37,11 +37,9 @@ window.QUESTIONS.push(
   { id: 's117', cat: 'sign', a: 0, q: '補助標識の「原付」には、新基準原付は含まれない。', exp: 'Sai. 新基準原付 vẫn là 一般原付.', trap: 'Đã là 原付 thì thuộc biển 原付.' },
   { id: 's118', cat: 'sign', a: 0, q: '補助標識の「自二輪」には、原付も含まれる。', exp: 'Sai. 自二輪 là 大型・普通二輪.', trap: '原付 không nằm trong 自二輪.' },
   { id: 's119', cat: 'sign', a: 1, q: '「駐車可」の標識があっても、他の場所で駐車禁止なら駐車できない。', exp: 'Đúng. Biển cho phép không ghi đè lệnh cấm khác.', trap: 'Phải xét cả biển khác.' },
-  { id: 's120', cat: 'sign', a: 1, q: '「徐行」の標識がある場所では、すぐに停止できる速度で進む。', exp: 'Đúng. 徐行 là tốc độ dừng được ngay.', trap: 'Không phải chỉ giảm nhẹ.' },
-  { id: 's121', cat: 'sign', a: 1, q: '「追越し禁止」の標識は、原付にも適用される。', exp: 'Đúng. Áp dụng cho mọi xe.', trap: 'Không có ngoại lệ cho xe nhỏ.' },
+    { id: 's121', cat: 'sign', a: 1, q: '「追越し禁止」の標識は、原付にも適用される。', exp: 'Đúng. Áp dụng cho mọi xe.', trap: 'Không có ngoại lệ cho xe nhỏ.' },
   { id: 's122', cat: 'sign', a: 0, q: '「一方通行」の標識がある道路でも、原付は逆方向に通行できる。', exp: 'Sai. Cấm với mọi xe.', trap: 'Đi ngược chiều là vi phạm.' },
-  { id: 's123', cat: 'sign', a: 1, q: '「車両通行止め」の標識がある道路は、自転車も通行できない。', exp: 'Đúng. Xe đạp là 車両.', trap: 'Không chỉ cấm xe máy.' },
-  { id: 's124', cat: 'sign', a: 1, q: '標識の「止まれ」は、道路標示の「止まれ」と同じ意味である。', exp: 'Đúng. Cả hai đều buộc dừng hẳn.', trap: 'Không phân biệt mạnh yếu.' },
+    { id: 's124', cat: 'sign', a: 1, q: '標識の「止まれ」は、道路標示の「止まれ」と同じ意味である。', exp: 'Đúng. Cả hai đều buộc dừng hẳn.', trap: 'Không phân biệt mạnh yếu.' },
   { id: 's125', cat: 'sign', a: 0, q: '規制標識は、すべて青い円形で表される。', exp: 'Sai. Có hình tròn đỏ, tam giác, vuông, chữ nhật.', trap: 'Không có một hình duy nhất.' },
 
   /* ---------- cross ---------- */
@@ -56,15 +54,11 @@ window.QUESTIONS.push(
   { id: 'c59', cat: 'cross', a: 0, q: '交差点で右折するときは、対向の直進車より先に曲がってよい。', exp: 'Sai. Phải nhường xe đi thẳng đối diện.', trap: 'Cướp đường là gây tai nạn.' },
   { id: 'c60', cat: 'cross', a: 1, q: '踏切の手前では、一時停止して安全を確認する。', exp: 'Đúng. Kể cả khi không có tàu.', trap: 'Không được chỉ giảm tốc.' },
   { id: 'c61', cat: 'cross', a: 0, q: '踏切の中では、車を止めて待ってよい。', exp: 'Sai. Tuyệt đối không dừng trong đường sắt.', trap: 'Rất nguy hiểm.' },
-  { id: 'c62', cat: 'cross', a: 1, q: '交差点内で停止するおそれがあるときは、進入してはいけない。', exp: 'Đúng. Chờ trước vạch.', trap: 'Không được chặn ngang giao lộ.' },
-  { id: 'c63', cat: 'cross', a: 1, q: '横断歩道の手前に車が止まっているときは、その車の陰から人が出てくる可能性を考える。', exp: 'Đúng. Khuất tầm nhìn rất nguy hiểm.', trap: 'Không được vượt ẩu.' },
-  { id: 'c64', cat: 'cross', a: 0, q: '青信号であれば、交差点内に停止してもかまわない。', exp: 'Sai. Dừng trong giao lộ là vi phạm.', trap: 'Đèn xanh không cho phép chặn đường.' },
+      { id: 'c64', cat: 'cross', a: 0, q: '青信号であれば、交差点内に停止してもかまわない。', exp: 'Sai. Dừng trong giao lộ là vi phạm.', trap: 'Đèn xanh không cho phép chặn đường.' },
   { id: 'c65', cat: 'cross', a: 1, q: '環状交差点では、環内の車が優先である。', exp: 'Đúng. Xe vào phải nhường.', trap: 'Không phải xe vào trước.' },
   { id: 'c66', cat: 'cross', a: 1, q: '交差点を左折するときは、左折先の横断歩道の歩行者に注意する。', exp: 'Đúng. Người đi bộ được ưu tiên.', trap: 'Không được cắt mặt người đi bộ.' },
   { id: 'c67', cat: 'cross', a: 0, q: '交差点で右折するときは、後方の確認は不要である。', exp: 'Sai. Vẫn phải quan sát trước khi đổi hướng.', trap: 'Bỏ quan sát là nguy hiểm.' },
-  { id: 'c68', cat: 'cross', a: 1, q: '見通しの悪い交差点では、徐行して左右を確認する。', exp: 'Đúng. Khuất tầm nhìn thì phải chậm.', trap: 'Không được phóng nhanh cho lẹ.' },
-
-  /* ---------- road ---------- */
+    /* ---------- road ---------- */
   { id: 'r51', cat: 'road', a: 1, q: '原付の法定速度は30km/hである。', exp: 'Đúng. Giới hạn cố định theo luật.', trap: 'Không phải 40 hay 50.' },
   { id: 'r52', cat: 'road', a: 0, q: '道路標識で40km/hと指定されていれば、原付は40km/hで走れる。', exp: 'Sai. 原付 vẫn chỉ 30km/h.', trap: 'Biển cho ô tô không áp cho 原付.' },
   { id: 'r53', cat: 'road', a: 1, q: '原付は、道路の左側端に寄って通行する。', exp: 'Đúng. Giữ sát trái.', trap: 'Không đi giữa đường.' },
@@ -76,8 +70,7 @@ window.QUESTIONS.push(
   { id: 'r59', cat: 'road', a: 1, q: '進路を変えるときは、3秒前までに合図する。', exp: 'Đúng. Quy định rõ thời điểm.', trap: 'Không phải bật ngay lúc đổi.' },
   { id: 'r60', cat: 'road', a: 1, q: '追越しをするときは、前の車の右側を通過する。', exp: 'Đúng. Vượt bên phải.', trap: 'Không vượt bên trái.' },
   { id: 'r61', cat: 'road', a: 0, q: '追越しをされるときは、速度を上げて先に進む。', exp: 'Sai. Không được tăng tốc cản xe vượt.', trap: 'Tăng tốc là vi phạm.' },
-  { id: 'r62', cat: 'road', a: 1, q: '追越しをされるときは、道路の左側端に寄る。', exp: 'Đúng. Tấp trái nhường đường.', trap: 'Không giữ giữa làn.' },
-  { id: 'r63', cat: 'road', a: 1, q: '車間距離は、速度が速いほど長くとる。', exp: 'Đúng. Quãng phanh tăng theo tốc độ.', trap: 'Không giữ cố định.' },
+    { id: 'r63', cat: 'road', a: 1, q: '車間距離は、速度が速いほど長くとる。', exp: 'Đúng. Quãng phanh tăng theo tốc độ.', trap: 'Không giữ cố định.' },
   { id: 'r64', cat: 'road', a: 0, q: '雨天時は、晴天時より車間距離を短くしてよい。', exp: 'Sai. Phải giữ xa hơn.', trap: 'Đường ướt phanh kém hơn.' },
   { id: 'r65', cat: 'road', a: 1, q: '原付は、緊急自動車が近づいたら左に寄って進路を譲る。', exp: 'Đúng. Nhường xe ưu tiên.', trap: 'Không được cản đường.' },
 
@@ -88,12 +81,8 @@ window.QUESTIONS.push(
   { id: 'f64', cat: 'safe', a: 1, q: '交差点から5m以内は駐停車禁止である。', exp: 'Đúng. Chừa 5m quanh giao lộ.', trap: 'Không được đỗ sát góc.' },
   { id: 'f65', cat: 'safe', a: 1, q: '横断歩道の前後5m以内は駐停車禁止である。', exp: 'Đúng. Để người đi bộ qua an toàn.', trap: 'Không được chặn vạch.' },
   { id: 'f66', cat: 'safe', a: 1, q: 'バス停から10m以内は駐停車禁止である。', exp: 'Đúng. Chừa chỗ cho xe buýt.', trap: 'Không phải 5m.' },
-  { id: 'f67', cat: 'safe', a: 1, q: '踏切の前後10m以内は駐停車禁止である。', exp: 'Đúng. Chừa khoảng an toàn.', trap: 'Không phải 5m.' },
-  { id: 'f68', cat: 'safe', a: 0, q: '坂道の途中では、駐車してはいけない。', exp: 'Sai. Được đỗ nếu chèn bánh, gài số.', trap: 'Không có lệnh cấm tuyệt đối.' },
-  { id: 'f69', cat: 'safe', a: 1, q: '坂道に駐車するときは、車輪止めをする。', exp: 'Đúng. Chống xe trôi.', trap: 'Không chỉ kéo phanh tay.' },
-  { id: 'f70', cat: 'safe', a: 1, q: 'エンジンをかけたまま車を離れると、盗難の危険がある。', exp: 'Đúng. Tắt máy, khóa xe.', trap: 'Không được để máy nổ.' },
-  { id: 'f71', cat: 'safe', a: 0, q: 'ハザードランプを点滅させていれば、駐車違反にならない。', exp: 'Sai. Đèn cảnh báo không miễn trừ.', trap: 'Vẫn bị phạt.' },
-  { id: 'f72', cat: 'safe', a: 1, q: 'ヘルメットは、あごひもをしっかり締める。', exp: 'Đúng. Không cài quai là vô nghĩa.', trap: 'Mũ lỏng sẽ văng khi ngã.' },
+      { id: 'f69', cat: 'safe', a: 1, q: '坂道に駐車するときは、車輪止めをする。', exp: 'Đúng. Chống xe trôi.', trap: 'Không chỉ kéo phanh tay.' },
+      { id: 'f72', cat: 'safe', a: 1, q: 'ヘルメットは、あごひもをしっかり締める。', exp: 'Đúng. Không cài quai là vô nghĩa.', trap: 'Mũ lỏng sẽ văng khi ngã.' },
   { id: 'f73', cat: 'safe', a: 1, q: 'タイヤの空気圧が不足すると、走行が不安定になる。', exp: 'Đúng. Kiểm tra định kỳ.', trap: 'Không chỉ hao xăng.' },
   { id: 'f74', cat: 'safe', a: 0, q: 'ブレーキの効きが悪くても、しばらく乗れば直る。', exp: 'Sai. Phải sửa ngay.', trap: 'Không tự khỏi.' },
   { id: 'f75', cat: 'safe', a: 1, q: '荷物は左右に偏らないように積む。', exp: 'Đúng. Lệch bên dễ mất thăng bằng.', trap: 'Không dồn một bên.' }

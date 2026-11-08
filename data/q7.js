@@ -183,12 +183,7 @@ window.QUESTIONS.push(
     exp: 'Sai. Là 10m. Con số 5m dành cho giao lộ và vạch qua đường.',
     ref: '' },
 
-  { id: 'n36', cat: 'mark', a: 1,
-    q: '横断歩道の前後5m以内は、駐停車禁止である。',
-    exp: 'Đúng. Chừa 5m trước và sau vạch qua đường.',
-    ref: '道路交通法第44条' },
-
-  { id: 'n37', cat: 'mark', a: 0,
+    { id: 'n37', cat: 'mark', a: 0,
     q: 'バス停は、標識から5m以内が駐停車禁止である。',
     exp: 'Sai. Là 10m tính từ cột biển trạm xe buýt.',
     ref: '' },
