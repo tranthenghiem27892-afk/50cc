@@ -1,6 +1,7 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const CACHE = 'gentsuki-v63';
+const VERSION = '64';
+const CACHE = 'gentsuki-v' + VERSION;
 
 const ASSETS = [
   './',
@@ -54,11 +55,15 @@ const ASSETS = [
   './icons/apple-touch-icon.png'
 ];
 
+/* JS/CSS được cache kèm ?v= đúng như index.html gọi,
+   nhờ vậy bản mới không bị bản cũ trong cache "che" mất */
+const CACHED_URLS = ASSETS.map((u) => (/\.(js|css)$/.test(u) ? u + '?v=' + VERSION : u));
+
 self.addEventListener('install', (e) => {
   /* Thêm từng file một: một file lỗi 404 không làm hỏng cả bản cập nhật */
   e.waitUntil(
     caches.open(CACHE)
-      .then((c) => Promise.all(ASSETS.map((u) => c.add(u).catch(() => null))))
+      .then((c) => Promise.all(CACHED_URLS.map((u) => c.add(u).catch(() => null))))
       .then(() => self.skipWaiting())
   );
 });
@@ -92,7 +97,7 @@ self.addEventListener('fetch', (e) => {
 
   /* Tài nguyên tĩnh: cache-first cho nhanh, tự cập nhật khi SW đổi phiên bản */
   e.respondWith(
-    caches.match(req, { ignoreSearch: true }).then((hit) => {
+    caches.match(req).then((hit) => {
       if (hit) { return hit; }
       return fetch(req)
         .then((res) => {

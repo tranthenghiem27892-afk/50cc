@@ -1,6 +1,6 @@
 {
-  "version": "63",
-  "cache": "gentsuki-v63",
+  "version": "64",
+  "cache": "gentsuki-v64",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "Mở file này trên trang đã deploy. Từ v63, service worker tải HTML với cache:no-store nên không còn dính cache CDN 10 phút."
+  "note": "v64: cache JS/CSS kèm ?v=, bỏ ignoreSearch. index.html có ?v=64."
 }
