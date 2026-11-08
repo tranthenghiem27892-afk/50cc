@@ -1,6 +1,6 @@
 {
-  "version": "64",
-  "cache": "gentsuki-v64",
+  "version": "65",
+  "cache": "gentsuki-v65",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v64: cache JS/CSS kèm ?v=, bỏ ignoreSearch. index.html có ?v=64."
+  "note": "v65: index.html tự gỡ service worker cũ + xoá cache một lần, sau đó mới đăng ký lại. Không còn dính bản cũ."
 }
