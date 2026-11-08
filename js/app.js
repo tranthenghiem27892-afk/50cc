@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '56';
+  var APP_VER = '63';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -1016,10 +1016,13 @@
       btns = '<button class="btn btn-ghost" data-act="to-text">← Trước</button>' +
         '<button class="btn btn-primary" data-act="submit"' + (allIll ? '' : ' disabled') + '>Nộp bài</button>';
     }
+    /* giữ chỗ nút "nộp sớm" ở mọi trạng thái để chân trang không nhảy */
+    var early = S.phase === 'text';
     return '<div class="examnav">' +
       '<div class="dots">' + dots + '</div>' +
       '<div class="examnav-btns">' + btns + '</div>' +
-      (allText && allIll ? '' : '<button class="linkbtn" data-act="submit">Nộp bài sớm</button>') +
+      '<button class="linkbtn' + (early ? '' : ' inv') + '" data-act="submit"' +
+        (early ? '' : ' tabindex="-1" aria-hidden="true"') + '>Nộp bài sớm</button>' +
       '</div>';
   }
 
