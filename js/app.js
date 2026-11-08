@@ -241,10 +241,16 @@
   }
 
   /* ---------------- tỷ giá JPY → VND ---------------- */
-  var FX_KEY = 'gentsuki.fx';
-  var FX_API = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@';
+  var FX_KEY = 'gentsuki.fx.v2';
   var FX_TTL = 30 * 60 * 1000;
-  var FX_FALLBACK = { rate: 161.5, date: '2026-11-08', series: [] };
+  /* chuỗi tỷ giá lưu sẵn (nguồn currency-api) — dùng khi không gọi được API */
+  var FX_DEFAULT = [
+    ['2026-08-16', 164.09], ['2026-08-23', 164.18], ['2026-08-30', 162.91],
+    ['2026-09-06', 166.90], ['2026-09-13', 168.82], ['2026-09-20', 165.85],
+    ['2026-09-27', 165.13], ['2026-10-04', 164.63], ['2026-10-11', 163.41],
+    ['2026-10-18', 163.73], ['2026-10-25', 164.70], ['2026-11-01', 163.73],
+    ['2026-11-08', 161.49]
+  ];
 
   function fxRead() {
     try { return JSON.parse(localStorage.getItem(FX_KEY)); } catch (e) { return null; }
@@ -252,7 +258,20 @@
   function fxWrite(d) {
     try { localStorage.setItem(FX_KEY, JSON.stringify(d)); } catch (e) { }
   }
-  function fxTemp(ts) { return ts < 0 ? 'fx-down' : ts > 0 ? 'fx-up' : ''; }
+  function fxDefaultSeries() {
+    return FX_DEFAULT.map(function (p) { return { d: p[0], v: p[1] }; });
+  }
+  function fxSeriesOf(d) {
+    var map = {};
+    FX_DEFAULT.forEach(function (p) { map[p[0]] = p[1]; });
+    if (d && d.series) { d.series.forEach(function (p) { map[p.d] = p.v; }); }
+    var arr = Object.keys(map).sort().map(function (k) { return { d: k, v: map[k] }; });
+    return arr.length >= 2 ? arr : fxDefaultSeries();
+  }
+  function fxToday() {
+    var n = new Date();
+    return n.getFullYear() + '-' + ('0' + (n.getMonth() + 1)).slice(-2) + '-' + ('0' + n.getDate()).slice(-2);
+  }
 
   function fxSpark(series) {
     if (!series || series.length < 2) { return ''; }
@@ -282,33 +301,31 @@
 
   function fxCard() {
     var d = fxRead();
-    if (!d || !d.rate) {
-      return '<section class="fx" id="fxBox">' +
-        '<div class="fx-head"><b>Tỷ giá JPY → VND</b></div>' +
-        '<p class="fx-note">Đang tải tỷ giá…</p></section>';
-    }
-    var series = d.series || [];
-    var chg = series.length > 1 ? (d.rate - series[0].v) : 0;
+    var all = fxSeriesOf(d);
+    /* chỉ lấy các điểm trong 90 ngày gần nhất */
+    var cut = new Date(Date.now() - 92 * 86400000);
+    var cutIso = cut.getFullYear() + '-' + ('0' + (cut.getMonth() + 1)).slice(-2) + '-' + ('0' + cut.getDate()).slice(-2);
+    var series = all.filter(function (p) { return p.d >= cutIso; }).slice(-14);
+    var rate = (d && d.rate) ? d.rate : series[series.length - 1].v;
+    var chg = series.length > 1 ? (rate - series[0].v) : 0;
     var pct = series.length > 1 ? (chg / series[0].v) * 100 : 0;
     var sign = chg > 0 ? '+' : '';
-    var amounts = [1, 100, 1000, 10000, 100000];
-    var rows = amounts.map(function (a) {
-      return '<div class="fx-row"><span>' + a.toLocaleString('vi-VN') + ' ¥</span>' +
-        '<b>' + Math.round(a * d.rate).toLocaleString('vi-VN') + ' ₫</b></div>';
-    }).join('');
+    var stamp = (d && d.updatedLabel) ? d.updatedLabel : 'dữ liệu lưu sẵn';
+    var stale = !d || d.stale;
+
     return '<section class="fx" id="fxBox">' +
       '<div class="fx-head"><b>Tỷ giá JPY → VND</b>' +
       '<button class="fx-refresh" data-act="fx" aria-label="Cập nhật tỷ giá">↻</button></div>' +
-      '<div class="fx-top"><div class="fx-rate">' + Math.round(d.rate).toLocaleString('vi-VN') +
+      '<div class="fx-top"><div class="fx-rate">' + Math.round(rate).toLocaleString('vi-VN') +
       '<small>₫ / 1 ¥</small></div>' +
       (series.length > 1
-        ? '<div class="fx-chg ' + fxTemp(chg) + '">' + sign + pct.toFixed(2) + '% · 30 ngày</div>'
+        ? '<div class="fx-chg ' + (chg > 0 ? 'fx-up' : chg < 0 ? 'fx-down' : '') + '">' +
+          sign + pct.toFixed(2) + '% · 90 ngày</div>'
         : '') +
       '</div>' +
       fxSpark(series) +
-      '<div class="fx-table">' + rows + '</div>' +
-      '<p class="fx-note">Cập nhật ' + esc(d.updatedLabel || '') + ' · nguồn: currency-api (jsDelivr)' +
-      (d.stale ? ' · số liệu lưu sẵn' : '') + '</p>' +
+      '<p class="fx-note">Cập nhật ' + esc(stamp) + ' · nguồn: er-api / currency-api' +
+      (stale ? ' · số liệu lưu sẵn' : '') + '</p>' +
       '</section>';
   }
 
@@ -317,84 +334,52 @@
     if (el) { el.outerHTML = fxCard(); }
   }
 
+  function fxFetchLatest() {
+    /* 1) er-api (Cloudflare, một request) */
+    return fetch('https://open.er-api.com/v6/latest/JPY', { mode: 'cors' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        return (j && j.rates && j.rates.VND) ? { d: fxToday(), v: j.rates.VND } : null;
+      })
+      .catch(function () { return null; })
+      .then(function (x) {
+        if (x) { return x; }
+        /* 2) currency-api qua jsDelivr */
+        return fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/jpy.json', { mode: 'cors' })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            return (j && j.jpy && j.jpy.vnd) ? { d: j.date, v: j.jpy.vnd } : null;
+          })
+          .catch(function () { return null; });
+      });
+  }
+
   function fxLoad(force) {
     var d = fxRead();
     if (!force && d && d.rate && (Date.now() - (d.ts || 0) < FX_TTL)) { return; }
 
-    var dates = [];
-    for (var i = 6; i >= 0; i--) {
-      var dt = new Date(Date.now() - i * 5 * 86400000);
-      dates.push({
-        y: dt.getFullYear(), m: dt.getMonth() + 1, d: dt.getDate(),
-        iso: dt.getFullYear() + '-' + ('0' + (dt.getMonth() + 1)).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2)
-      });
-    }
+    fxFetchLatest().then(function (x) {
+      var map = {};
+      FX_DEFAULT.forEach(function (p) { map[p[0]] = p[1]; });
+      if (d && d.series) { d.series.forEach(function (p) { map[p.d] = p.v; }); }
+      if (x) { map[x.d] = x.v; }
 
-    var jobs = dates.map(function (x) {
-      var ver = x.y + '.' + x.m + '.' + x.d;
-      var url = FX_API + '@' + ver + '/v1/currencies/jpy.json';
-      return fetch(url, { mode: 'cors' }).then(function (r) { return r.json(); }).then(function (j) {
-        var v = j && j.jpy && j.jpy.vnd;
-        return v ? { d: x.iso, v: v } : null;
-      }).catch(function () { return null; });
-    });
-
-    Promise.all(jobs).then(function (arr) {
-      var series = arr.filter(Boolean).sort(function (a, b) { return a.d < b.d ? -1 : 1; });
-      if (!series.length) { throw new Error('empty'); }
+      var series = Object.keys(map).sort().map(function (k) { return { d: k, v: map[k] }; });
       var last = series[series.length - 1];
       var now = new Date();
       fxWrite({
-        rate: last.v, date: last.d, series: series, ts: Date.now(),
-        updatedLabel: ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) +
-          ' ' + ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2)
+        rate: x ? x.v : last.v,
+        date: x ? x.d : last.d,
+        series: series,
+        ts: x ? Date.now() : 0,
+        stale: !x,
+        updatedLabel: x
+          ? ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2) +
+            ' ' + ('0' + now.getDate()).slice(-2) + '/' + ('0' + (now.getMonth() + 1)).slice(-2)
+          : 'dữ liệu lưu sẵn'
       });
       fxReplace();
-    }).catch(function () {
-      var old = fxRead();
-      if (!old) {
-        fxWrite({
-          rate: FX_FALLBACK.rate, date: FX_FALLBACK.date, series: [], ts: 0,
-          updatedLabel: FX_FALLBACK.date, stale: true
-        });
-        fxReplace();
-      }
     });
-  }
-
-  /* ---------------- mở app Facebook thay vì trình duyệt ---------------- */
-  function openFacebook(url) {
-    var ua = navigator.userAgent || '';
-    var isAndroid = /Android/i.test(ua);
-    var isIOS = /iPhone|iPad|iPod/i.test(ua);
-
-    if (isAndroid) {
-      /* Android: intent mở app nếu có, tự fallback về web nếu không */
-      var bare = url.replace(/^https?:\/\//, '');
-      window.location.href = 'intent://' + bare +
-        '#Intent;scheme=https;package=com.facebook.katana;' +
-        'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
-      return;
-    }
-
-    if (isIOS) {
-      /* iOS: thử scheme fb:// rồi fallback sau 1.2s nếu app không mở */
-      var opened = false;
-      var timer = setTimeout(function () {
-        if (!opened) { window.location.href = url; }
-      }, 1200);
-      document.addEventListener('visibilitychange', function onVis() {
-        if (document.hidden) {
-          opened = true;
-          clearTimeout(timer);
-          document.removeEventListener('visibilitychange', onVis);
-        }
-      });
-      window.location.href = 'fb://facewebmodal/f?href=' + encodeURIComponent(url);
-      return;
-    }
-
-    window.open(url, '_blank', 'noopener');
   }
 
   function viewHome() {
@@ -1134,6 +1119,11 @@
       return illById[id].subs.map(function (s) { return j === 0 ? s.a : 1 - s.a; });
     });
     submitExam(false);
+  }
+  else if (demo === 'fxempty') {
+    fxWrite({ rate: 161.5, date: '2026-11-08', series: [], ts: Date.now(),
+      updatedLabel: '22:30 08/11', stale: true });
+    go('home');
   }
   else if (demo === 'fx') {
     var ser = [];

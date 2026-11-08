@@ -1138,11 +1138,18 @@ body {
 .fx-up { color: var(--green); }
 .fx-down { color: var(--red); }
 .fx-spark { width: 100%; height: 62px; display: block; margin: 4px 0 0; }
-.fx-table { margin-top: 4px; border-top: 1px dashed var(--line); }
-.fx-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12.5px; border-bottom: 1px solid #f3eee6; }
-.fx-row:last-child { border-bottom: none; }
-.fx-row span { color: var(--muted); font-variant-numeric: tabular-nums; }
-.fx-row b { font-weight: 600; font-variant-numeric: tabular-nums; }
 .fx-note { font-size: 10.5px; color: var(--muted); margin-top: 7px; line-height: 1.5; }
-[data-theme="dark"] .fx-row { border-color: #2a2622; }
 [data-theme="dark"] .fx-refresh:hover { background: #262220; }
+
+.fx-empty {
+  height: 62px;
+  margin-top: 6px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(232, 70, 92, .06), rgba(232, 70, 92, 0));
+  border-bottom: 1px dashed var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+}
