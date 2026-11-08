@@ -726,6 +726,9 @@
         quoteBlock() +
         fxCard() +
         creditBlock() +
+        '<p class="terms"><b>© 2026 Nghiệm Trần</b>' +
+          'Đây là dự án miễn phí vì cộng đồng. Vui lòng chỉ dùng cá nhân, ' +
+          'không sao chép/tái bản, không dùng để kiếm tiền.</p>' +
       '</main>';
   }
 
