@@ -1387,3 +1387,35 @@ html.furi .w rt { visibility: visible; }
 [data-theme="dark"] .tiles .tile:nth-child(6) { background: linear-gradient(155deg, #281f36, #1b1a18); border-color: #3d3157; }
 [data-theme="dark"] .tiles .tile:nth-child(7) { background: linear-gradient(155deg, #2f1f38, #1b1a18); border-color: #492f56; }
 [data-theme="dark"] .tiles .tile:nth-child(8) { background: linear-gradient(155deg, #2b1f26, #1b1a18); border-color: #452c3a; }
+
+.qrshare { display: block; width: 100%; margin-top: 12px; }
+
+/* ---------- lật thẻ câu hỏi để xem bản dịch ---------- */
+.qflip { perspective: 1400px; }
+.qflip-inner {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
+}
+.qflip-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.qflip-back { transform: rotateY(180deg); }
+.qflip.back .qflip-inner {
+  transform: rotateY(180deg);
+  animation: qflip .55s cubic-bezier(.2, .7, .2, 1);
+}
+@keyframes qflip {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(180deg); }
+}
+.qflip-note {
+  display: block;
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: .03em;
+  color: var(--muted);
+}
+.qtext-vi { font-size: 14.5px; line-height: 1.8; color: var(--ink); }

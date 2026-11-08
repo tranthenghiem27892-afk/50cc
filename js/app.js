@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '50';
+  var APP_VER = '51';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -1342,6 +1342,7 @@
             '<li><b>iPhone:</b> mở bằng Safari → nút Chia sẻ → <b>Thêm vào Màn hình chính</b></li>' +
             '<li>Nếu đang trong Zalo/Facebook: bấm “Mở bằng trình duyệt” trước</li>' +
           '</ol>' +
+          '<button class="btn btn-primary qrshare" data-act="share-app">Chia sẻ link cài app</button>' +
         '</section>' +
 '<section class="panel">' +
           '<h2>Cộng đồng & góp ý</h2>' +
@@ -1706,6 +1707,24 @@
       if (cnt) {
         var done = CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length;
         cnt.textContent = done + '/' + CHECKLIST.length + ' mục đã xong — lưu trên máy này.';
+      }
+      return;
+    }
+    if (act === 'share-app') {
+      var shareUrl = 'https://tranthenghiem27892-afk.github.io/50cc/';
+      var shareData = {
+        title: 'Luyện thi 原付 50cc',
+        text: 'App luyện thi bằng lái xe 50cc tại Nhật — miễn phí, dùng offline được.',
+        url: shareUrl
+      };
+      if (navigator.share) {
+        navigator.share(shareData).catch(function () { });
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl).then(function () {
+          toast('Đã copy link cài app.');
+        }, function () { toast(shareUrl); });
+      } else {
+        toast(shareUrl);
       }
       return;
     }
