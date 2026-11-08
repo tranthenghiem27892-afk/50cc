@@ -1,6 +1,6 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const CACHE = 'gentsuki-v56';
+const CACHE = 'gentsuki-v57';
 
 const ASSETS = [
   './',
@@ -91,7 +91,7 @@ self.addEventListener('fetch', (e) => {
 
   /* Tài nguyên tĩnh: cache-first cho nhanh, tự cập nhật khi SW đổi phiên bản */
   e.respondWith(
-    caches.match(req).then((hit) => {
+    caches.match(req, { ignoreSearch: true }).then((hit) => {
       if (hit) { return hit; }
       return fetch(req)
         .then((res) => {
