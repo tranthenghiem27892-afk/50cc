@@ -1,14 +1,15 @@
 {
-  "version": "57",
-  "cache": "gentsuki-v57",
+  "version": "62",
+  "cache": "gentsuki-v62",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
   "updateFiles": {
     "index.html": 4.3,
+    "css/style.css": 54.0,
     "js/app.js": 83.3,
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "Mở file này trên trang đã deploy. index.html có ?v=57 nên ép tải JS/CSS mới kể cả khi service worker cũ còn giữ cache."
+  "note": "Mở file này trên trang đã deploy. index.html có ?v=62 nên ép tải JS/CSS mới."
 }
