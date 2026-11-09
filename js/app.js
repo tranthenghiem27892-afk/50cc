@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '70';
+  var APP_VER = '73';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -24,6 +24,9 @@
   GQ.forEach(function (q) { (byPat[q.pat] || (byPat[q.pat] = [])).push(q); });
   var PATS = Object.keys(byPat);
 
+  var MODELS = window.MODELS || [];
+  var GEAR = window.GEAR || [];
+  var GEAR_AVOID = window.GEAR_AVOID || [];
   var SITS = window.SITUATIONS || [];
   var COMPARE = window.COMPARE || [];
   var CHECKLIST = [
@@ -791,10 +794,24 @@
           '</button>' +
         '</div>' +
 
+
+
         '<p class="footnote">Bộ câu hỏi tự biên soạn từ luật, không sao chép từ trang khác. Luôn đối chiếu với 免許センター nơi bạn thi.</p>' +
         vocabBlock() +
         quoteBlock() +
         fxCard() +
+        '<div class="catlist home-extra">' +
+          '<button class="catrow" data-act="go-models">' +
+            '<span class="catrow-icon">🏍️</span>' +
+            '<span class="catrow-main"><h3>Các mẫu xe phổ biến <em>原付車種</em></h3>' +
+              '<p>' + MODELS.length + ' mẫu · 125cc và 50cc · link trang hãng</p></span>' +
+            '<span class="chev">›</span></button>' +
+          '<button class="catrow" data-act="go-gear">' +
+            '<span class="catrow-icon">🧥</span>' +
+            '<span class="catrow-main"><h3>Trang phục khi đi xe <em>服装</em></h3>' +
+              '<p>Mũ, găng, áo, giày · nên và không nên mặc</p></span>' +
+            '<span class="chev">›</span></button>' +
+        '</div>' +
         '<p class="terms"><b>© 2026 Nghiệm Trần</b>' +
           'Đây là dự án miễn phí vì cộng đồng. Vui lòng chỉ dùng cá nhân, ' +
           'không sao chép/tái bản, không dùng để kiếm tiền. ' +
@@ -1371,6 +1388,80 @@
       '</main>';
   }
 
+  function modelCard(m) {
+    var brand = (window.MODEL_BRANDS || {})[m.brand] || {};
+    return '<article class="model">' +
+      '<div class="model-body">' +
+        '<div class="model-head"><span class="model-brand">' + esc(m.brand) + '</span>' +
+          '<h3>' + esc(m.name) + '</h3></div>' +
+        '<p class="model-romaji">' + esc(m.romaji) + ' · ' + esc(m.type) + '</p>' +
+        '<div class="model-facts">' +
+          '<span><b>' + esc(m.cc) + '</b></span>' +
+          '<span><b>' + esc(m.power) + '</b></span>' +
+          '<span><b>' + esc(m.price) + '</b></span>' +
+        '</div>' +
+        '<p class="model-desc">' + esc(m.desc) + '</p>' +
+        '<ul class="model-specs">' + m.specs.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' +
+        '<p class="model-fit"><b>Phù hợp:</b> ' + esc(m.fit) + '</p>' +
+        '<p class="model-note">' + esc(m.note) + '</p>' +
+        '<a class="btn btn-ghost model-link" href="' + esc(m.url || brand.url || '#') + '" target="_blank" rel="noopener noreferrer">' +
+          esc(brand.label || 'Trang hãng') + ' ↗</a>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function viewModels() {
+    if (!MODELS.length) { return viewHome(); }
+    var news = MODELS.filter(function (m) { return m.group === 'new'; });
+    var olds = MODELS.filter(function (m) { return m.group !== 'new'; });
+
+    return topbar('Các mẫu xe phổ biến') +
+      '<main class="wrap">' +
+        '<section class="panel">' +
+          '<h2>Xe lái được bằng bằng 原付</h2>' +
+          '<p class="muted">Từ 1/4/2025, <b>125cc trở xuống và công suất ≤ 4,0 kW</b> cũng thuộc nhóm 原付 — gọi là <b>新基準原付</b>. ' +
+            'Vẫn biển trắng, 30 km/h, rẽ phải hai bước, 1 người.</p>' +
+          '<p class="muted">Giá là giá niêm yết tham khảo, đã gồm thuế. Bấm nút cuối mỗi mục để sang trang hãng xem chi tiết.</p>' +
+        '</section>' +
+        '<h3 class="group-title">新基準原付 · 125cc (đang bán)</h3>' +
+        news.map(modelCard).join('') +
+        '<h3 class="group-title">50cc (đã ngừng sản xuất 10/2025)</h3>' +
+        '<p class="muted group-note">Vẫn mua được xe cũ và vẫn hợp pháp, nhưng phụ tùng sẽ khan dần.</p>' +
+        olds.map(modelCard).join('') +
+      '</main>';
+  }
+
+  function viewGear() {
+    if (!GEAR.length) { return viewHome(); }
+    var items = GEAR.map(function (g) {
+      return '<article class="gear-item">' +
+        '<div class="gear-icon">' + esc(g.icon) + '</div>' +
+        '<div class="gear-body">' +
+          '<div class="gear-head"><h3>' + esc(g.ja) + '</h3>' +
+            (g.must ? '<span class="gear-must">bắt buộc</span>' : '<span class="gear-opt">nên có</span>') + '</div>' +
+          '<p class="gear-vi">' + esc(g.vi) + '</p>' +
+          '<p class="gear-desc">' + esc(g.desc) + '</p>' +
+          '<p class="gear-tip">' + esc(g.tip) + '</p>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+
+    var avoid = GEAR_AVOID.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('');
+
+    return topbar('Trang phục khi đi xe') +
+      '<main class="wrap">' +
+        '<section class="panel">' +
+          '<h2>Mặc gì khi đi 原付</h2>' +
+          '<p class="muted">Nguyên tắc: <b>che kín càng nhiều càng tốt</b> và <b>phải nhìn thấy từ xa</b>.</p>' +
+        '</section>' +
+        items +
+        '<section class="panel gear-avoid">' +
+          '<h2>Không nên</h2>' +
+          '<ul>' + avoid + '</ul>' +
+        '</section>' +
+      '</main>';
+  }
+
   function viewInfo() {
     return topbar('Thủ tục & mẹo thi') +
       '<main class="wrap info">' +
@@ -1704,6 +1795,8 @@
     else if (screen === 'sos') { html = viewSos(); }
     else if (screen === 'law') { html = viewLaw(); }
     else if (screen === 'connect') { html = viewConnect(); }
+    else if (screen === 'models') { html = viewModels(); }
+    else if (screen === 'gear') { html = viewGear(); }
     else { html = viewHome(); }
     app.innerHTML = html;
     window.scrollTo(0, 0);
@@ -1762,6 +1855,8 @@
     if (act === 'go-sos') { go('sos'); return; }
     if (act === 'go-law') { go('law'); return; }
     if (act === 'go-connect') { go('connect'); return; }
+    if (act === 'go-models') { go('models'); return; }
+    if (act === 'go-gear') { go('gear'); return; }
     if (act === 'check') {
       var ck = t.dataset.k;
       db.checklist[ck] = !db.checklist[ck];
@@ -1966,6 +2061,8 @@
   else if (demo === 'gram') { go('gram'); }
   else if (demo === 'check') { go('checklist'); }
   else if (demo === 'law') { go('law'); }
+  else if (demo === 'models') { go('models'); }
+  else if (demo === 'gear') { go('gear'); }
   else if (demo === 'connect') { go('connect'); }
   else if (demo === 'sos') { go('sos'); }
   else if (demo === 'cards') {
