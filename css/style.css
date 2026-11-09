@@ -1552,3 +1552,25 @@ html.furi .w rt { line-height: 1; }
 .model-link { display: block; width: 100%; margin-top: 12px; text-align: center; text-decoration: none; }
 [data-theme="dark"] .model-brand { background: #2a2622; color: #c9c3b8; }
 [data-theme="dark"] .model-facts span { background: #201d1a; border-color: #2f2a25; }
+
+/* ---------- ô từ vựng: chiều cao cố định ---------- */
+.vrot {
+  min-height: 182px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.vrot-line { flex-wrap: nowrap; min-width: 0; }
+.vrot-line .vrot-term {
+  min-width: 0;
+  max-width: calc(100% - 6px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vrot-mean {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
