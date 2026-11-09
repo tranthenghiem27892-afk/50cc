@@ -1,6 +1,6 @@
 /* ============================================================
    Mẫu xe 原付 tại Nhật — 50cc (đã ngừng sản xuất) và 新基準原付 125cc
-   Link trỏ tới trang xe máy chính thức của từng hãng.
+   Link trỏ tới trang sản phẩm / danh mục xe chính thức của hãng.
    ============================================================ */
 window.MODELS = [
   /* ---------- 新基準原付: 125cc, ≤4,0 kW, đi bằng bằng 原付 ---------- */
@@ -12,8 +12,8 @@ window.MODELS = [
     desc: 'Bản giới hạn công suất của Dio 110 để đủ điều kiện 新基準原付. Sàn để chân phẳng, cốp dưới yên rộng — mẫu thực dụng nhất cho đi chợ và đi làm.',
     specs: ['Sàn phẳng, chở được đồ cồng kềnh', 'Bánh 14 inch chạy êm', 'Trọng lượng ~100 kg'],
     fit: 'Người cần xe thực dụng hằng ngày, đi quãng ngắn–trung.',
-    note: 'Bản Lite bị giới hạn điện tử ở 4,0 kW — không độ lại được, độ là mất tính hợp pháp.',
-    url: 'https://www.honda.co.jp/motorcycle/'
+    note: 'Bản Lite bị giới hạn điện tử ở 4,0 kW — độ lại là mất tính hợp pháp.',
+    url: 'https://www.honda.co.jp/Dio110/'
   },
   {
     id: 'cub110', brand: 'Honda', group: 'new',
@@ -23,7 +23,8 @@ window.MODELS = [
     desc: 'Cub 110 bản giới hạn công suất. Máy 110cc chạy nhàn, mô-men tốt ở vòng tua thấp nên leo dốc khỏe hơn hẳn 50cc.',
     specs: ['Xe số 4 cấp, bền', 'Bánh 17 inch', 'Giữ giá khi bán lại'],
     fit: 'Người thích xe số, đi đường dài, cần độ bền cao.',
-    note: 'Giá cao nhất nhóm nhưng bán lại được giá — tính tổng chi phí thì không đắt.'
+    note: 'Giá cao nhất nhóm nhưng bán lại được giá — tính tổng chi phí thì không đắt.',
+    url: 'https://www.honda.co.jp/SUPERCUB/'
   },
   {
     id: 'crosscub110', brand: 'Honda', group: 'new',
@@ -33,7 +34,8 @@ window.MODELS = [
     desc: 'Phiên bản gầm cao, lốp gai của dòng Cub. Chạy đường xấu, đường đất tốt hơn hẳn xe ga bánh nhỏ.',
     specs: ['Gầm cao, lốp gai', 'Bánh 14 inch', 'Chở được đồ trên giá sau'],
     fit: 'Người ở vùng nông thôn, đường xấu, hay đi xa.',
-    note: 'Yên cao hơn Cub thường — bạn thấp người nên ngồi thử trước.'
+    note: 'Yên cao hơn Cub thường — bạn thấp người nên ngồi thử trước.',
+    url: 'https://www.honda.co.jp/CROSSCUB/'
   },
   {
     id: 'jogone', brand: 'Yamaha', group: 'new',
@@ -43,7 +45,8 @@ window.MODELS = [
     desc: 'Mẫu 新基準原付 hoàn toàn mới của Yamaha (ra mắt 2026), thiết kế từ đầu cho chuẩn 4,0 kW chứ không phải cắt bớt từ xe 125.',
     specs: ['Cốp dưới yên 21,3 L — vừa mũ full-face + áo mưa', 'Có ổ USB (tùy chọn)', 'Trọng lượng 95 kg'],
     fit: 'Người muốn một chiếc xe ga mới, cốp rộng, không phải xe cũ.',
-    note: 'Nặng hơn 50cc khoảng 15–20 kg — dắt xe và dựng chân chống giữa sẽ mệt hơn.'
+    note: 'Nặng hơn 50cc khoảng 15–20 kg — dắt xe và dựng chân chống giữa sẽ mệt hơn.',
+    url: 'https://www.yamaha-motor.co.jp/mc/lineup/'
   },
   {
     id: 'address125', brand: 'Suzuki', group: 'new',
@@ -53,7 +56,8 @@ window.MODELS = [
     desc: 'Suzuki được cho là sẽ ra mẫu 新基準原付 dựa trên Address 125 — bánh to, cốp rộng, chạy êm. Chưa có lịch chính thức.',
     specs: ['Bánh lớn, chạy êm', 'Cốp dưới yên rộng', 'Thông tin chưa công bố chính thức'],
     fit: 'Người thích xe Suzuki, có thể chờ hoặc xem xe cũ.',
-    note: 'Đây là thông tin dự kiến từ báo chí xe — kiểm tra trang Suzuki trước khi mua.'
+    note: 'Đây là thông tin dự kiến từ báo chí xe — kiểm tra trang Suzuki trước khi mua.',
+    url: 'https://www1.suzuki.co.jp/motor/lineup/'
   },
 
   /* ---------- 50cc: đã ngừng sản xuất 10/2025 ---------- */
@@ -66,7 +70,7 @@ window.MODELS = [
     specs: ['Tiết kiệm ~60–70 km/L', 'Bánh 17 inch', 'Phụ tùng dễ kiếm hiện tại'],
     fit: 'Người cần xe rẻ, bền, chấp nhận xe cũ.',
     note: 'Phụ tùng 50cc sẽ khan dần sau 2030 — cân nhắc khi mua để đi lâu dài.',
-    url: 'https://www.honda.co.jp/motorcycle/'
+    url: 'https://www.honda.co.jp/SUPERCUB/'
   },
   {
     id: 'giorno', brand: 'Honda', group: 'old',
@@ -77,7 +81,7 @@ window.MODELS = [
     specs: ['Yên thấp, dễ chống chân', 'Móc treo tiện', 'Đèn pha tròn'],
     fit: 'Người thích phong cách nhẹ nhàng, đi phố.',
     note: 'Xe cũ giữ giá; kiểm tra kỹ giấy tờ và tình trạng máy.',
-    url: 'https://www.honda.co.jp/motorcycle/'
+    url: 'https://www.honda.co.jp/50-Scooter/'
   },
   {
     id: 'zoomer', brand: 'Honda', group: 'old',
@@ -88,7 +92,7 @@ window.MODELS = [
     specs: ['Bánh 10 inch bản rộng', 'Không có cốp', 'Khung thép chắc'],
     fit: 'Bạn trẻ thích nổi bật, hay độ xe.',
     note: 'Không hợp để chở đồ — gần như không có chỗ cất.',
-    url: 'https://www.honda.co.jp/motorcycle/'
+    url: 'https://www.honda.co.jp/ZOOMER/'
   },
   {
     id: 'jog', brand: 'Yamaha', group: 'old',
@@ -99,7 +103,7 @@ window.MODELS = [
     specs: ['Động cơ 1 xy-lanh, làm mát bằng gió', 'Thân xe gọn', 'Phụ tùng dễ kiếm'],
     fit: 'Người thích cảm giác lái nhanh, nam giới trẻ.',
     note: 'Đời cũ tem xe đơn giản — kiểm tra giấy tờ kỹ khi mua cũ.',
-    url: 'https://www.yamaha-motor.co.jp/mc/'
+    url: 'https://www.yamaha-motor.co.jp/mc/lineup/jog/'
   },
   {
     id: 'vino', brand: 'Yamaha', group: 'old',
@@ -110,7 +114,7 @@ window.MODELS = [
     specs: ['Yên thấp 720 mm', 'Cốp nhỏ để đồ lặt vặt', 'Đèn pha tròn'],
     fit: 'Người thích kiểu dáng mềm mại, đi trong phố.',
     note: 'Giữ giá khá tốt vì được ưa chuộng.',
-    url: 'https://www.yamaha-motor.co.jp/mc/'
+    url: 'https://www.yamaha-motor.co.jp/mc/lineup/vino/'
   },
   {
     id: 'lets', brand: 'Suzuki', group: 'old',
@@ -121,7 +125,7 @@ window.MODELS = [
     specs: ['Cốp ~20 L', 'Trọng lượng dưới 80 kg', 'Tay lái nhẹ'],
     fit: 'Người mới, sinh viên, đi chợ hằng ngày.',
     note: 'Bánh nhỏ — giảm tốc khi qua gờ giảm tốc.',
-    url: 'https://www1.suzuki.co.jp/motor/'
+    url: 'https://www1.suzuki.co.jp/motor/lineup/'
   },
   {
     id: 'address50', brand: 'Suzuki', group: 'old',
@@ -132,12 +136,12 @@ window.MODELS = [
     specs: ['Bánh 12 inch', 'Cốp dưới yên rộng', 'Phanh đĩa trước (một số đời)'],
     fit: 'Người đi quãng dài, đường hơi xấu.',
     note: 'Nặng hơn nhóm còn lại — bạn nhỏ con nên thử dắt trước.',
-    url: 'https://www1.suzuki.co.jp/motor/'
+    url: 'https://www1.suzuki.co.jp/motor/lineup/'
   }
 ];
 
 window.MODEL_BRANDS = {
-  Honda: { url: 'https://www.honda.co.jp/motorcycle/', label: 'Trang xe máy Honda' },
-  Yamaha: { url: 'https://www.yamaha-motor.co.jp/mc/', label: 'Trang xe máy Yamaha' },
-  Suzuki: { url: 'https://www1.suzuki.co.jp/motor/', label: 'Trang xe máy Suzuki' }
+  Honda: { url: 'https://www.honda.co.jp/motor/', label: 'Xem trên Honda' },
+  Yamaha: { url: 'https://www.yamaha-motor.co.jp/mc/lineup/', label: 'Xem trên Yamaha' },
+  Suzuki: { url: 'https://www1.suzuki.co.jp/motor/lineup/', label: 'Xem trên Suzuki' }
 };
