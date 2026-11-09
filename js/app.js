@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '74';
+  var APP_VER = '75';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
