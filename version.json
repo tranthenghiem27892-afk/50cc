@@ -1,6 +1,6 @@
 {
-  "version": "65",
-  "cache": "gentsuki-v65",
+  "version": "68",
+  "cache": "gentsuki-v68",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v65: index.html tự gỡ service worker cũ + xoá cache một lần, sau đó mới đăng ký lại. Không còn dính bản cũ."
+  "note": "v68: bù phiên âm cho từ ghép mới (新基準原付, 特定小型原付, 雨天時...)."
 }
