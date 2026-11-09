@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '68';
+  var APP_VER = '70';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -1908,6 +1908,29 @@
     } else if (k === 'ArrowLeft') { prev(); }
   });
 
+  /* ---------------- kiểm tra CSS đã cập nhật chưa ---------------- */
+  function cssFresh() {
+    var d = document.createElement('div');
+    d.className = 'fc3d';
+    d.style.cssText = 'position:absolute;left:-9999px;top:0;width:1px;height:1px';
+    document.body.appendChild(d);
+    var v = '';
+    try { v = getComputedStyle(d).perspective || ''; } catch (e) { }
+    document.body.removeChild(d);
+    return !!v && v !== 'none' && v !== 'auto';
+  }
+
+  function warnStaleCss() {
+    if (document.getElementById('cssWarn')) { return; }
+    var d = document.createElement('div');
+    d.id = 'cssWarn';
+    d.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;' +
+      'background:#c8102e;color:#fff;font-size:11.5px;line-height:1.5;padding:8px 12px;' +
+      'border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)';
+    d.textContent = 'Giao diện chưa cập nhật trên máy chủ (CSS cũ). Hãy upload lại css/style.css.';
+    document.body.appendChild(d);
+  }
+
   /* ---------------- boot ---------------- */
   window.addEventListener('beforeunload', function () { stopTimer(); stopVocabRotate(); });
   window.addEventListener('popstate', function (e) {
@@ -1998,4 +2021,6 @@
     if (new URLSearchParams(location.search).get('vi') === '1') { S.viOn = true; }
     go('quiz');
   } else { render(); }
+
+  if (!cssFresh()) { warnStaleCss(); }
 })();
