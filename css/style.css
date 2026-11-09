@@ -1,3 +1,4 @@
+/* gentsuki-css v70 */
 /* ============================================================
    原付免許 50cc — styles
    ============================================================ */
@@ -1481,3 +1482,9 @@ html.furi .w rt { visibility: visible; }
   from { transform: rotateY(180deg); }
   to { transform: rotateY(0deg); }
 }
+
+/* khi bật phiên âm: nới dòng để rt không đè lên dòng dưới */
+html.furi .qtext { line-height: 2.9; }
+html.furi .ill-q { line-height: 2.6; }
+html.furi .ill-scene { line-height: 2.5; }
+html.furi .w rt { line-height: 1; }
