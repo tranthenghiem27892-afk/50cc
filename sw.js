@@ -1,6 +1,6 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const VERSION = '73';
+const VERSION = '74';
 const CACHE = 'gentsuki-v' + VERSION;
 
 const ASSETS = [
