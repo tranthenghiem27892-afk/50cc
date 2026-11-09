@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '65';
+  var APP_VER = '68';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -1495,26 +1495,71 @@
     var v = VOCAB[k];
     var box = db.cards[k] || 0;
     var hv = hanViet(k);
+    var anim = F.anim || '';
+    var flipCls = F.flip ? ' ' + F.flip : '';
+    F.anim = '';
+    F.flip = '';
 
     return topbar('Flashcard từ vựng') +
       '<main class="wrap">' +
         '<div class="fc-meta">Thẻ ' + (F.i + 1) + '/' + F.keys.length +
           ' · hộp ' + (box || 1) + '/3</div>' +
-        '<button class="fc' + (F.open ? ' open' : '') + '" data-act="flip">' +
-          '<span class="fc-term">' + esc(k) + '</span>' +
-          (F.open
-            ? '<span class="fc-read">' + esc(v.r) + (hv ? ' · ' + esc(hv) : '') + '</span>' +
-              '<span class="fc-mean">' + esc(v.m) + '</span>'
-            : '<span class="fc-hint">chạm để xem nghĩa</span>') +
-        '</button>' +
+        '<div class="fc3d' + (F.open ? ' back' : '') + (anim ? ' ' + anim : '') + flipCls + '" data-act="flip">' +
+          '<div class="fc3d-inner">' +
+            '<div class="fc-face fc-front">' +
+              '<span class="fc-term">' + esc(k) + '</span>' +
+              '<span class="fc-hint">chạm để lật thẻ · lướt để đổi thẻ</span>' +
+            '</div>' +
+            '<div class="fc-face fc-back">' +
+              '<span class="fc-term">' + esc(k) + '</span>' +
+              '<span class="fc-read">' + esc(v.r) + (hv ? ' · ' + esc(hv) : '') + '</span>' +
+              '<span class="fc-mean">' + esc(v.m) + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
         (F.open
           ? '<div class="btnrow fc-btns">' +
               '<button class="btn btn-ghost" data-act="card-no">Còn khó</button>' +
               '<button class="btn btn-primary" data-act="card-yes">Đã nhớ</button>' +
             '</div>'
-          : '<button class="btn btn-primary fc-show" data-act="flip">Xem nghĩa</button>') +
+          : '<button class="btn btn-primary fc-show" data-act="flip">Lật thẻ</button>') +
       '</main>';
   }
+
+  function cardSwipe(dir) {
+    if (!F) { return; }
+    if (dir > 0) {
+      if (F.i + 1 >= F.keys.length) { return; }
+      F.i++;
+      F.anim = 'in-left';
+    } else {
+      if (F.i === 0) { return; }
+      F.i--;
+      F.anim = 'in-right';
+    }
+    F.open = false;
+    render();
+  }
+
+  /* cử chỉ: chạm = lật, lướt ngang = đổi thẻ */
+  var cardPtr = null;
+  var cardSwipeAt = 0;
+  document.addEventListener('pointerdown', function (e) {
+    var el = e.target.closest('.fc3d');
+    if (!el) { return; }
+    cardPtr = { x: e.clientX, y: e.clientY, t: Date.now() };
+  });
+  document.addEventListener('pointerup', function (e) {
+    if (!cardPtr) { return; }
+    var dx = e.clientX - cardPtr.x;
+    var dy = e.clientY - cardPtr.y;
+    var dt = Date.now() - cardPtr.t;
+    cardPtr = null;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) && dt < 900) {
+      cardSwipeAt = Date.now();
+      cardSwipe(dx < 0 ? 1 : -1);
+    }
+  });
 
   function viewGram() {
     var st = gStat();
@@ -1760,7 +1805,15 @@
     if (act === 'share') { shareResult(); return; }
     if (act === 'cards') { startCards(); return; }
     if (act === 'cards-again') { startCards(); return; }
-    if (act === 'flip') { if (F) { F.open = !F.open; render(); } return; }
+    if (act === 'flip') {
+      if (Date.now() - cardSwipeAt < 400) { return; }
+      if (F) {
+        F.open = !F.open;
+        F.flip = F.open ? 'flip-to-back' : 'flip-to-front';
+        render();
+      }
+      return;
+    }
     if (act === 'card-yes' || act === 'card-no') {
       if (!F) { return; }
       var ck2 = F.keys[F.i];
@@ -1892,7 +1945,10 @@
   else if (demo === 'law') { go('law'); }
   else if (demo === 'connect') { go('connect'); }
   else if (demo === 'sos') { go('sos'); }
-  else if (demo === 'cards') { startCards(); }
+  else if (demo === 'cards') {
+    startCards();
+    if (new URLSearchParams(location.search).get('open') === '1' && F) { F.open = true; render(); }
+  }
   else if (demo === 'info') { go('info'); }
   else if (demo === 'practice') { go('practice'); }
   else if (demo === 'ill') {
