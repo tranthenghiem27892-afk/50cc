@@ -65,3 +65,27 @@ Object.assign(window.HANVIET, {
   '逆': 'nghịch', '連': 'liên', '遠': 'viễn', '金': 'kim', '関': 'quan', '防': 'phòng',
   '降': 'giáng', '電': 'điện', '項': 'hạng', '頭': 'đầu'
 });
+
+/* bổ sung cho đợt từ vựng 5 */
+Object.assign(window.HANVIET, {
+  '丈': 'trượng',
+  '国': 'quốc',
+  '夫': 'phu',
+  '射': 'xạ',
+  '文': 'văn',
+  '料': 'liệu',
+  '晴': 'tình',
+  '材': 'tài',
+  '次': 'thứ',
+  '準': 'chuẩn',
+  '章': 'chương',
+  '計': 'kế'
+});
+
+Object.assign(window.HANVIET, {
+  '三': 'tam',
+  '四': 'tứ',
+  '天': 'thiên',
+  '新': 'tân',
+  '由': 'do'
+});
