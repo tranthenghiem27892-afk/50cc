@@ -1,6 +1,6 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const VERSION = '70';
+const VERSION = '73';
 const CACHE = 'gentsuki-v' + VERSION;
 
 const ASSETS = [
@@ -32,6 +32,8 @@ const ASSETS = [
   './data/q12.js',
   './data/grammar.js',
   './data/situations.js',
+  './data/gear.js',
+  './data/models.js',
   './data/illustrations.js',
   './data/vocab.js',
   './data/vocab2.js',

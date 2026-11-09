@@ -1,6 +1,6 @@
 {
-  "version": "70",
-  "cache": "gentsuki-v70",
+  "version": "73",
+  "cache": "gentsuki-v73",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v70: app tự phát hiện CSS cũ trên máy chủ và hiện cảnh báo."
+  "note": "v73: chuyển 2 mục mẫu xe và trang phục xuống cuối trang chủ."
 }
