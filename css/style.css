@@ -1309,7 +1309,7 @@ html.furi .w rt { visibility: visible; }
 .fc-read { font-size: 13px; color: var(--red); letter-spacing: .04em; }
 .fc-mean { font-size: 14.5px; color: var(--ink-soft); line-height: 1.7; max-width: 32ch; }
 .fc-show { margin-top: 14px; width: 100%; }
-.fc-btns { margin-top: 14px; }
+.fc-btns { margin-top: 14px; grid-template-columns: 1fr 1fr; }
 .fcdone { text-align: center; }
 .fcdone h2 { font-size: 18px; }
 .fcdone p { font-size: 13px; color: var(--ink-soft); margin-top: 8px; }
@@ -1439,3 +1439,45 @@ html.furi .w rt { visibility: visible; }
   color: var(--muted);
 }
 .qtext-vi { color: var(--ink); }   /* dùng chung cỡ chữ với câu hỏi gốc */
+
+/* ---------- flashcard 3D ---------- */
+.fc3d { perspective: 1400px; touch-action: pan-y; cursor: pointer; }
+.fc3d-inner {
+  display: grid;
+  min-height: 300px;              /* hai mặt luôn cao bằng nhau */
+  transform-style: preserve-3d;
+  transition: transform .55s cubic-bezier(.2, .7, .2, 1);
+}
+.fc3d.back .fc3d-inner { transform: rotateY(180deg); }
+.fc-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  height: 100%; padding: 30px 22px; text-align: center;
+  background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+  box-shadow: 0 12px 28px -22px rgba(0, 0, 0, .35);
+}
+.fc-back { transform: rotateY(180deg); }
+.fc3d.in-left { animation: fcInL .28s ease both; }
+.fc3d.in-right { animation: fcInR .28s ease both; }
+@keyframes fcInL {
+  from { opacity: 0; transform: translateX(26px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fcInR {
+  from { opacity: 0; transform: translateX(-26px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* lật thẻ flashcard (chạy animation vì phần tử được vẽ lại) */
+.fc3d.flip-to-back .fc3d-inner { animation: fcFlip .55s cubic-bezier(.2, .7, .2, 1); }
+.fc3d.flip-to-front .fc3d-inner { animation: fcFlipBack .55s cubic-bezier(.2, .7, .2, 1); }
+@keyframes fcFlip {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(180deg); }
+}
+@keyframes fcFlipBack {
+  from { transform: rotateY(180deg); }
+  to { transform: rotateY(0deg); }
+}
