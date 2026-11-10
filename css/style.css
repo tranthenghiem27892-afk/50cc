@@ -1571,6 +1571,8 @@ html.furi .w rt { visibility: visible; }
   overflow: hidden;
 }
 
+.fxb-hint { font-size: 10.5px; color: var(--muted); opacity: .8; margin-top: -2px; }
+
 /* ---------- thẻ tỷ giá lật 2 mặt ---------- */
 .fx-flip { perspective: 1400px; margin-top: 12px; }
 .fx-inner { display: grid; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.2,.7,.2,1); }
@@ -1630,3 +1632,33 @@ html.furi .w rt { visibility: visible; }
 
 /* ---------- flashcard giữa màn hình ---------- */
 .fcmain { padding-top: clamp(28px, 12vh, 130px); }
+
+/* ---------- bảng vi phạm & mức phạt ---------- */
+.pen-list { display: flex; flex-direction: column; }
+.pen-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--line);
+}
+.pen-row:last-child { border-bottom: 0; }
+.pen-main { min-width: 0; }
+.pen-main b { display: block; font-size: 13px; font-weight: 600; color: var(--ink); }
+.pen-main span { display: block; font-size: 12px; color: var(--ink-soft); line-height: 1.5; margin-top: 2px; }
+.pen-note { display: block; font-size: 10.5px; font-style: normal; color: var(--muted); margin-top: 3px; }
+.pen-side { flex: none; text-align: right; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+.pen-fine { font-size: 13px; font-weight: 700; color: var(--red); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pen-fine.pen-no { color: var(--muted); font-weight: 600; }
+.pen-pts {
+  font-size: 10px; font-weight: 700; letter-spacing: .02em;
+  background: #f4efe6; color: var(--ink-soft); border-radius: 999px; padding: 2px 8px; white-space: nowrap;
+}
+.pen-pts.pen-zero { opacity: .55; }
+.pen-heavy { display: flex; flex-direction: column; gap: 8px; }
+.pen-heavy-row {
+  background: #fdf3f4; border: 1px solid #f6dde1; border-radius: 12px; padding: 10px 12px;
+}
+.pen-heavy-row .pen-main b { color: var(--red); }
+.pen-heavy-pun { font-size: 12.5px; font-weight: 700; color: var(--ink); margin-top: 5px; }
+.pen-heavy-pts { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.pen-notes { margin: 12px 0 0 18px; padding: 0; font-size: 12px; line-height: 1.7; color: var(--ink-soft); }
+[data-theme="dark"] .pen-pts { background: #2a2622; color: #c9c3b8; }
+[data-theme="dark"] .pen-heavy-row { background: #2c1c20; border-color: #47262d; }
