@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '75';
+  var APP_VER = '81';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -413,6 +413,10 @@
   var FX_TTL = 30 * 60 * 1000;
   var FX_HIST_TTL = 12 * 60 * 60 * 1000;
   var FX_DAYS = 90;
+  var FX_FLIP = false;   /* đang xem mặt sau (máy quy đổi) */
+  var FX_SWAP = false;   /* false: ¥ → ₫, true: ₫ → ¥ */
+  var FX_AMT = null;
+  var FX_ANIM = '';
   /* chuỗi dự phòng (giá đóng cửa hằng tuần) khi không gọi được API */
   var FX_DEFAULT = [
     ['2026-08-16', 164.09], ['2026-08-23', 164.18], ['2026-08-30', 162.91],
@@ -490,14 +494,69 @@
       '</svg>';
   }
 
-  function fxCard() {
+  function fxRate() {
     var d = fxRead();
+    if (d && d.rate) { return d.rate; }
+    return FX_DEFAULT[FX_DEFAULT.length - 1][1];
+  }
+
+  function fxDigits(s) {
+    return String(s).replace(/\D/g, '');
+  }
+
+  /* 10000 -> 10.000 (dấu chấm phân cách nghìn, kiểu Việt Nam) */
+  function fxGroup(s) {
+    return String(s).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  }
+
+  function fxRate2() {
+    return Math.round(fxRate() * 100) / 100;
+  }
+
+  function fxBack() {
+    var rate = fxRate2();
+    var amt = (FX_AMT === null) ? (FX_SWAP ? 100000 : 10000) : FX_AMT;
+    var num = parseFloat(String(amt).replace(/[^\d.]/g, '')) || 0;
+    var res = FX_SWAP ? (rate ? num / rate : 0) : num * rate;
+    var shown = FX_SWAP
+      ? res.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : Math.round(res).toLocaleString('vi-VN');
+    return '<div class="fxb">' +
+      '<div class="fxb-head"><b>Quy đổi tiền</b>' +
+        '<button class="fxb-swap" data-act="fxswap" aria-label="Đổi chiều quy đổi">' +
+          '<span class="cur' + (FX_SWAP ? '' : ' on') + '">¥</span>' +
+          '<span class="ar">⇄</span>' +
+          '<span class="cur' + (FX_SWAP ? ' on' : '') + '">₫</span>' +
+        '</button></div>' +
+      '<label class="fxb-field">' +
+        '<input id="fxAmt" type="text" inputmode="numeric" autocomplete="off" value="' + fxGroup(fxDigits(amt)) + '">' +
+        '<span>' + (FX_SWAP ? '₫' : '¥') + '</span>' +
+      '</label>' +
+      '<div class="fxb-out"><b id="fxOut">' + shown + '</b><span>' + (FX_SWAP ? '¥' : '₫') + '</span></div>' +
+      '<p class="fxb-note">Tỷ giá đang dùng: 1 ¥ = ' + rate.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₫</p>' +
+      '<button class="fxb-back" data-act="fxflip">← Xem biểu đồ</button>' +
+      '</div>';
+  }
+
+  function fxCard() {
+    var anim = FX_ANIM;
+    FX_ANIM = '';
+    var d = fxRead();
+    if (!d || !d.rate) {
+      /* chưa có dữ liệu: vẫn cho lật sang máy quy đổi */
+      var head0 = '<div class="fx-head"><b>Tỷ giá JPY → VND</b>' +
+        '<button class="fx-refresh" data-act="fx" aria-label="Cập nhật tỷ giá">↻</button></div>' +
+        '<p class="fx-note">Đang tải tỷ giá…</p>';
+      return '<section class="fx-flip' + (FX_FLIP ? ' back' : '') + (anim ? ' ' + anim : '') + '" id="fxBox" data-act="fxflip">' +
+        '<div class="fx-inner">' +
+          '<div class="fx-face fx-front">' + head0 + '</div>' +
+          '<div class="fx-face fx-fback">' + fxBack() + '</div>' +
+        '</div></section>';
+    }
     var all = fxSeriesOf(d);
     var cut = fxIso(new Date(Date.now() - (FX_DAYS + 3) * 86400000));
     var series = all.filter(function (p) { return p.d >= cut; });
     if (series.length < 2) { series = all.slice(-2); }
-
-    var chart = fxLine(series);
 
     var rate = series[series.length - 1].v;
     var chg = series.length > 1 ? (rate - series[0].v) : 0;
@@ -505,23 +564,92 @@
     var stamp = (d && d.updatedLabel) ? d.updatedLabel : 'dữ liệu lưu sẵn';
     var stale = !d || d.stale;
 
-    return '<section class="fx" id="fxBox">' +
-      '<div class="fx-head"><b>Tỷ giá JPY → VND</b>' +
+    var front = '<div class="fx-head"><b>Tỷ giá JPY → VND</b>' +
       '<button class="fx-refresh" data-act="fx" aria-label="Cập nhật tỷ giá">↻</button></div>' +
       '<div class="fx-top"><div class="fx-rate">' + Math.round(rate).toLocaleString('vi-VN') +
       '<small>₫ / 1 ¥</small></div>' +
       '<div class="fx-chg ' + (chg > 0 ? 'fx-up' : chg < 0 ? 'fx-down' : '') + '">' +
       (chg > 0 ? '+' : '') + pct.toFixed(2) + '% · 90 ngày</div>' +
       '</div>' +
-      chart +
+      fxLine(series) +
       '<p class="fx-note">Cập nhật ' + esc(stamp) + ' · nguồn: er-api / currency-api' +
-      (stale ? ' · số liệu lưu sẵn' : '') + '</p>' +
-      '</section>';
+      (stale ? ' · số liệu lưu sẵn' : '') + ' · <b>chạm để quy đổi</b></p>';
+
+    return '<section class="fx-flip' + (FX_FLIP ? ' back' : '') + (anim ? ' ' + anim : '') + '" id="fxBox" data-act="fxflip">' +
+      '<div class="fx-inner">' +
+        '<div class="fx-face fx-front">' + front + '</div>' +
+        '<div class="fx-face fx-fback">' + fxBack() + '</div>' +
+      '</div>' +
+    '</section>';
   }
+
+  function fxConvert() {
+    var el = document.getElementById('fxAmt');
+    var out = document.getElementById('fxOut');
+    if (!el || !out) { return; }
+    var rate = fxRate2();
+    var v = parseFloat(fxDigits(el.value)) || 0;
+    var r = FX_SWAP ? (rate ? v / rate : 0) : v * rate;
+    out.textContent = FX_SWAP
+      ? r.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : Math.round(r).toLocaleString('vi-VN');
+  }
+
+  var amtEl = null;
+  var amtPrevDigits = null;
+
+  var amtComposing = false;
+  var amtTimer = null;
+
+  function fxFormatNow(el) {
+    if (!el) { return; }
+    var digits = fxDigits(el.value).slice(0, 12);
+    var out = fxGroup(digits);
+    if (out === el.value) { return; }
+    var atEnd = (el.selectionStart === el.value.length);
+    el.value = out;
+    if (atEnd) {
+      try { el.setSelectionRange(out.length, out.length); } catch (err) { }
+    }
+    FX_AMT = out;
+  }
+
+  /* định dạng SAU khi ngừng gõ — không can thiệp giữa lúc bộ gõ đang xử lý */
+  function fxSchedule(el) {
+    clearTimeout(amtTimer);
+    amtTimer = setTimeout(function () {
+      if (amtComposing) { return; }
+      fxFormatNow(el);
+    }, 600);
+  }
+
+  document.addEventListener('compositionstart', function (e) {
+    if (e.target && e.target.id === 'fxAmt') { amtComposing = true; }
+  });
+  document.addEventListener('compositionend', function (e) {
+    if (!e.target || e.target.id !== 'fxAmt') { return; }
+    amtComposing = false;
+    fxFormatNow(e.target);
+  });
+
+  document.addEventListener('input', function (e) {
+    if (!e.target || e.target.id !== 'fxAmt') { return; }
+    var el = e.target;
+    FX_AMT = el.value;
+    fxConvert();               /* kết quả cập nhật ngay, không bao giờ bị chặn */
+    if (!amtComposing) { fxSchedule(el); }
+  });
+
+  document.addEventListener('focusout', function (e) {
+    if (!e.target || e.target.id !== 'fxAmt') { return; }
+    clearTimeout(amtTimer);
+    fxFormatNow(e.target);
+  });
 
   function fxReplace() {
     var el = document.getElementById('fxBox');
     if (el) { el.outerHTML = fxCard(); }
+    if (FX_FLIP) { setTimeout(fxConvert, 20); }
   }
 
   function fxFetchLatest() {
@@ -1592,7 +1720,7 @@
     F.flip = '';
 
     return topbar('Flashcard từ vựng') +
-      '<main class="wrap">' +
+      '<main class="wrap fcmain">' +
         '<div class="fc-meta">Thẻ ' + (F.i + 1) + '/' + F.keys.length +
           ' · hộp ' + (box || 1) + '/3</div>' +
         '<div class="fc3d' + (F.open ? ' back' : '') + (anim ? ' ' + anim : '') + flipCls + '" data-act="flip">' +
@@ -1610,7 +1738,7 @@
         '</div>' +
         (F.open
           ? '<div class="btnrow fc-btns">' +
-              '<button class="btn btn-ghost" data-act="card-no">Còn khó</button>' +
+              '<button class="btn btn-ghost" data-act="card-no">Chưa nhớ</button>' +
               '<button class="btn btn-primary" data-act="card-yes">Đã nhớ</button>' +
             '</div>'
           : '<button class="btn btn-primary fc-show" data-act="flip">Lật thẻ</button>') +
@@ -1835,6 +1963,21 @@
     if (act === 'furi') { toggleFuri(); return; }
     if (act === 'vi') { if (S) { S.viOn = !S.viOn; S.viAnim = true; render(); } return; }
     if (act === 'fx') { fxLoad(true); return; }
+    if (act === 'fxflip') {
+      if (e.target.closest('input, button, a')) { return; }
+      FX_FLIP = !FX_FLIP;
+      FX_ANIM = FX_FLIP ? 'flip-to-back' : 'flip-to-front';
+      fxReplace();
+      if (FX_FLIP) { setTimeout(fxConvert, 30); }
+      return;
+    }
+    if (act === 'fxswap') {
+      FX_SWAP = !FX_SWAP;
+      FX_AMT = null;
+      fxReplace();
+      setTimeout(fxConvert, 30);
+      return;
+    }
     if (act === 'quote') {
       var qb = document.getElementById('quoteBox');
       if (qb) { qb.outerHTML = quoteBlock(); }
@@ -2062,6 +2205,7 @@
   else if (demo === 'check') { go('checklist'); }
   else if (demo === 'law') { go('law'); }
   else if (demo === 'models') { go('models'); }
+  else if (demo === 'fxback') { FX_FLIP = true; go('home'); }
   else if (demo === 'gear') { go('gear'); }
   else if (demo === 'connect') { go('connect'); }
   else if (demo === 'sos') { go('sos'); }
@@ -2119,5 +2263,11 @@
     go('quiz');
   } else { render(); }
 
+  (function () {
+    var qa = new URLSearchParams(location.search).get('amt');
+    if (qa) { FX_AMT = qa; }
+  })();
+
   if (!cssFresh()) { warnStaleCss(); }
+  if (FX_FLIP) { setTimeout(fxConvert, 80); }
 })();
