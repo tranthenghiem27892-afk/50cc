@@ -1,6 +1,6 @@
 {
-  "version": "75",
-  "cache": "gentsuki-v75",
+  "version": "81",
+  "cache": "gentsuki-v81",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v75: ô từ vựng cao cố định, không nhảy khi gặp từ dài."
+  "note": "v81: định dạng số sau khi ngừng gõ 0,6s, không can thiệp lúc bộ gõ tiếng Việt xử lý."
 }
