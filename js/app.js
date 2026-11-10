@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '81';
+  var APP_VER = '83';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -25,6 +25,9 @@
   var PATS = Object.keys(byPat);
 
   var MODELS = window.MODELS || [];
+  var PENALTIES = window.PENALTIES || [];
+  var PENALTIES_HEAVY = window.PENALTIES_HEAVY || [];
+  var PENALTY_NOTES = window.PENALTY_NOTES || [];
   var GEAR = window.GEAR || [];
   var GEAR_AVOID = window.GEAR_AVOID || [];
   var SITS = window.SITUATIONS || [];
@@ -534,7 +537,7 @@
       '</label>' +
       '<div class="fxb-out"><b id="fxOut">' + shown + '</b><span>' + (FX_SWAP ? '¥' : '₫') + '</span></div>' +
       '<p class="fxb-note">Tỷ giá đang dùng: 1 ¥ = ' + rate.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₫</p>' +
-      '<button class="fxb-back" data-act="fxflip">← Xem biểu đồ</button>' +
+      '<p class="fxb-hint">chạm ra ngoài để quay lại biểu đồ</p>' +
       '</div>';
   }
 
@@ -1488,7 +1491,52 @@
             }).join('') +
           '</div>' +
         '</section>' +
+        penaltyBlock() +
       '</main>';
+  }
+
+  /* ---------------- vi phạm & mức phạt ---------------- */
+  function yen(n) {
+    return n.toLocaleString('ja-JP') + ' ¥';
+  }
+
+  function penaltyBlock() {
+    if (!PENALTIES.length) { return ''; }
+    var rows = PENALTIES.map(function (p) {
+      var pts = p.points
+        ? '<span class="pen-pts">' + p.points + ' điểm</span>'
+        : '<span class="pen-pts pen-zero">0 điểm</span>';
+      var fine = p.fine
+        ? '<span class="pen-fine">' + yen(p.fine) + '</span>'
+        : '<span class="pen-fine pen-no">không có</span>';
+      return '<div class="pen-row">' +
+        '<div class="pen-main"><b>' + esc(p.ja) + '</b><span>' + esc(p.vi) + '</span>' +
+          (p.note ? '<i class="pen-note">' + esc(p.note) + '</i>' : '') + '</div>' +
+        '<div class="pen-side">' + fine + pts + '</div>' +
+      '</div>';
+    }).join('');
+
+    var heavy = PENALTIES_HEAVY.map(function (p) {
+      return '<div class="pen-heavy-row">' +
+        '<div class="pen-main"><b>' + esc(p.ja) + '</b><span>' + esc(p.vi) + '</span></div>' +
+        '<div class="pen-heavy-pun">' + esc(p.punish) + '</div>' +
+        '<div class="pen-heavy-pts">' + esc(p.points) + '</div>' +
+      '</div>';
+    }).join('');
+
+    var notes = PENALTY_NOTES.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('');
+
+    return '<section class="panel">' +
+        '<h2>Vi phạm thường gặp & mức phạt</h2>' +
+        '<p class="muted">Mức áp cho <b>原付</b> (biển trắng). Đây là 反則金 — nộp trong thời hạn thì không bị truy tố.</p>' +
+        '<div class="pen-list">' + rows + '</div>' +
+      '</section>' +
+      '<section class="panel">' +
+        '<h2>Lỗi nặng — ra tòa, không còn 反則金</h2>' +
+        '<div class="pen-heavy">' + heavy + '</div>' +
+        '<ul class="pen-notes">' + notes + '</ul>' +
+        '<p class="muted">Nguồn: 警視庁 — bảng 反則金 và 点数, cập nhật 4/2026. Mức phạt có thể thay đổi theo luật.</p>' +
+      '</section>';
   }
 
   function viewConnect() {
