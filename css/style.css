@@ -323,7 +323,7 @@ svg { display: block; }
 
 .qtext {
   font-size: 19px;
-  line-height: 1.95;
+  line-height: 2.5;
   letter-spacing: .012em;
   margin: 16px 0 8px;
   font-weight: 500;
@@ -1009,7 +1009,7 @@ body {
   margin-top: 4px;
 }
 .ill-sub:first-of-type { border-top: none; }
-.ill-q { font-size: 14px; line-height: 1.7; color: var(--ink); }
+.ill-q { font-size: 14px; line-height: 2.1; color: var(--ink); }
 .ill-ans { display: flex; gap: 8px; margin-top: 9px; }
 .pill-ans {
   flex: 1;
@@ -1483,11 +1483,7 @@ html.furi .w rt { visibility: visible; }
   to { transform: rotateY(0deg); }
 }
 
-/* khi bật phiên âm: nới dòng để rt không đè lên dòng dưới */
-html.furi .qtext { line-height: 2.9; }
-html.furi .ill-q { line-height: 2.6; }
-html.furi .ill-scene { line-height: 2.5; }
-html.furi .w rt { line-height: 1; }
+/* rt luôn giữ chỗ nên bật/tắt phiên âm không làm xê dịch chữ */
 
 /* ---------- mẫu xe ---------- */
 .home-extra { margin-top: 14px; }
@@ -1574,3 +1570,63 @@ html.furi .w rt { line-height: 1; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ---------- thẻ tỷ giá lật 2 mặt ---------- */
+.fx-flip { perspective: 1400px; margin-top: 12px; }
+.fx-inner { display: grid; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.2,.7,.2,1); }
+.fx-flip.back .fx-inner { transform: rotateY(180deg); }
+.fx-face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+  padding: 14px 16px 12px;
+}
+.fx-fback { transform: rotateY(180deg); }
+.fx-flip.flip-to-back .fx-inner { animation: fxFlip .5s cubic-bezier(.2,.7,.2,1); }
+.fx-flip.flip-to-front .fx-inner { animation: fxFlipBack .5s cubic-bezier(.2,.7,.2,1); }
+@keyframes fxFlipBack { from { transform: rotateY(180deg); } to { transform: rotateY(0deg); } }
+@keyframes fxFlip { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+
+/* máy quy đổi */
+.fxb { display: flex; flex-direction: column; gap: 8px; }
+.fxb-head { display: flex; align-items: center; justify-content: space-between; }
+.fxb-head b { font-size: 12.5px; }
+.fxb-swap {
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); background: #f6f1e8;
+  border-radius: 999px; padding: 4px 8px; height: 40px;
+  transition: transform .15s ease, background .2s ease;
+}
+.fxb-swap:active { transform: scale(.96); }
+.fxb-swap .cur {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 14px; font-weight: 800;
+  background: #fff; color: #b3aa9c; border: 1px solid var(--line);
+  transition: background .2s ease, color .2s ease;
+}
+.fxb-swap .cur.on { background: var(--red); color: #fff; border-color: var(--red); }
+.fxb-swap .ar { font-size: 15px; color: var(--ink-soft); font-weight: 700; }
+[data-theme="dark"] .fxb-swap { background: #262220; }
+[data-theme="dark"] .fxb-swap .cur { background: #1c1917; color: #8d8479; }
+[data-theme="dark"] .fxb-swap .cur.on { background: var(--red); color: #fff; }
+.fxb-field { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+.fxb-field input {
+  flex: 1; min-width: 0; border: 0; background: none; outline: none;
+  font-size: 18px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.fxb-field span { font-size: 12px; color: var(--muted); }
+.fxb-out { display: flex; align-items: baseline; gap: 8px; padding: 2px 2px 0; }
+.fxb-out b { font-size: 22px; font-weight: 700; color: var(--red); font-variant-numeric: tabular-nums; }
+.fxb-out span { font-size: 12px; color: var(--muted); }
+.fxb-note { font-size: 10.5px; color: var(--muted); }
+.fxb-back {
+  margin-top: 2px; align-self: flex-start; background: none; border: 0;
+  color: var(--muted); font-size: 11px; text-decoration: underline; text-underline-offset: 3px;
+}
+[data-theme="dark"] .fxb-swap { background: #262220; }
+[data-theme="dark"] .fx-face { background: var(--card); }
+
+/* ---------- flashcard giữa màn hình ---------- */
+.fcmain { padding-top: clamp(28px, 12vh, 130px); }
