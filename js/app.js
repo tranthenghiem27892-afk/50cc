@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '156';
+  var APP_VER = '158';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -286,6 +286,24 @@
     touchStreak();
     saveDB();
   }
+  function askConfirm(text, onYes) {
+    var w = document.createElement('div');
+    w.className = 'cfm-wrap';
+    w.innerHTML = '<div class="cfm"><p>' + esc(text) + '</p>' +
+      '<div class="cfm-btns">' +
+        '<button class="btn btn-ghost" data-c="0">' + T('common.cancel') + '</button>' +
+        '<button class="btn btn-primary" data-c="1">' + T('common.ok') + '</button>' +
+      '</div></div>';
+    w.addEventListener('click', function (e) {
+      var b = e.target.closest('button');
+      if (!b) { if (e.target === w) { w.remove(); } return; }
+      var yes = b.getAttribute('data-c') === '1';
+      w.remove();
+      if (yes && onYes) { onYes(); }
+    });
+    document.body.appendChild(w);
+  }
+
   function toast(msg) {
     var t = document.getElementById('toast');
     if (!t) { return; }
@@ -2047,9 +2065,20 @@
   var pracSwipe = null;
   document.addEventListener('pointerdown', function (e) {
     if (!S || S.mode !== 'practice' || screen !== 'quiz') { return; }
-    if (e.target.closest('button, a, input, textarea')) { return; }
+    if (e.target.closest('a, input, textarea, .qctl, .answers, .examfooter, .quizbar, .topbar, .progress')) { return; }
     pracSwipe = { x: e.clientX, y: e.clientY, t: Date.now() };
   });
+  document.addEventListener('pointercancel', function () { pracSwipe = null; });
+  document.addEventListener('touchend', function (e) {
+    if (!pracSwipe || !e.changedTouches || !e.changedTouches.length) { return; }
+    var tt = e.changedTouches[0];
+    var dx = tt.clientX - pracSwipe.x, dy = tt.clientY - pracSwipe.y, dt = Date.now() - pracSwipe.t;
+    pracSwipe = null;
+    if (dt > 900 || Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) { return; }
+    e.preventDefault();
+    if (dx < 0) { if (S && S.i + 1 < S.ids.length) { S.anim = 'in-left'; next(); } }
+    else { S.anim = 'in-right'; prev(); }
+  }, { passive: false });
   document.addEventListener('pointerup', function (e) {
     if (!pracSwipe) { return; }
     var dx = e.clientX - pracSwipe.x;
@@ -2337,15 +2366,19 @@
           if (arr.some(function (p) { return p === undefined; })) { leftIll++; }
         });
       }
-      var msg = '';
-      if (left > 0) { msg = 'Còn ' + left + ' câu chữ'; }
-      if (leftIll > 0) { msg += (msg ? ' và ' : 'Còn ') + leftIll + ' câu hình'; }
-      if (msg && !confirm(msg + ' chưa trả lời. Vẫn nộp bài?')) { return; }
+      var un = left + leftIll;
+      if (un > 0) {
+        askConfirm(T('cf.submit1') + un + T('cf.submit2'), function () { submitExam(false); });
+        return;
+      }
       submitExam(false);
       return;
     }
     if (act === 'quit') {
-      if (S && S.mode === 'exam' && !confirm('Thoát bài thi? Kết quả sẽ không được lưu.')) { return; }
+      if (S && S.mode === 'exam') {
+        askConfirm(T('cf.quit'), function () { stopTimer(); S = null; go('home'); });
+        return;
+      }
       stopTimer(); S = null; go('home');
       return;
     }
@@ -2356,11 +2389,12 @@
       return;
     }
     if (act === 'reset') {
-      if (!confirm('Xoá toàn bộ tiến độ học trên máy này?')) { return; }
-      localStorage.removeItem(STORE);
-      db = loadDB();
-      toast('Đã xoá tiến độ.');
-      go('home');
+      askConfirm(T('cf.reset'), function () {
+        localStorage.removeItem(STORE);
+        db = loadDB();
+        toast(T('toast.cleared'));
+        go('home');
+      });
       return;
     }
     if (act === 'export') {
