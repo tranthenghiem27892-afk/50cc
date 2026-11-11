@@ -1,5 +1,6 @@
 /* ============================================================
    Lịch sử cập nhật (changelog) — hiển thị trong màn Cài app & góp ý
+   Đã gộp các đợt nhỏ cho gọn (v104–v119 thành một mục).
    ============================================================ */
 window.CHANGELOG = [
   {
@@ -58,74 +59,88 @@ window.CHANGELOG = [
     ]
   },
   {
-    v: 'v66 – v70', title: 'Flashcard & từ vựng',
+    v: 'v66 – v75', title: 'Flashcard, từ vựng & hai màn mới',
     items: [
       'Flashcard lật 3D: mặt trước chữ Nhật, mặt sau cách đọc + nghĩa',
-      'Lật có animation hai chiều, thẻ cao cố định',
       'Thêm 26 từ ghép còn thiếu phiên âm (新基準原付, 雨天時…)',
-      'Sửa lỗi phiên âm đè lên dòng chữ'
-    ]
-  },
-  {
-    v: 'v71 – v75', title: 'Hai màn mới',
-    items: [
       'Các mẫu xe phổ biến: 12 mẫu 50cc và 新基準原付 125cc, link trang hãng',
       'Trang phục khi đi xe: 8 món bắt buộc/nên có + 6 điều không nên',
-      'Chuyển hai mục này xuống cuối trang chủ',
       'Ô "Từ vựng quan trọng" cao cố định, không nhảy khi đổi từ'
     ]
   },
   {
-    v: 'v76 – v82', title: 'Máy quy đổi tiền',
+    v: 'v76 – v84', title: 'Máy quy đổi, bảng phạt & thi thử',
     items: [
-      'Lật thẻ tỷ giá thành máy quy đổi ¥ ↔ ₫',
-      'Nút đổi chiều dạng viên thuốc, đồng tiền đang đổi tô đỏ',
-      'Tự chèn dấu phân cách nghìn khi nhập',
-      'Sửa lỗi bộ gõ tiếng Việt làm nhân đôi số, nhảy con trỏ'
-    ]
-  },
-  {
-    v: 'v83 – v84', title: 'Luật & thi thử',
-    items: [
+      'Lật thẻ tỷ giá thành máy quy đổi ¥ ↔ ₫, tự chèn dấu phân cách nghìn',
+      'Sửa lỗi bộ gõ tiếng Việt làm nhân đôi số, nhảy con trỏ',
       'Thêm bảng vi phạm thường gặp và khung xử phạt 原付',
       'Sửa lỗi kẹt ở câu 47: không sang được câu 48, không nộp được bài',
-      'Ô số 47/48 bấm được, chân trang có nút Tiếp',
       'Vuốt ngang để đổi câu khi luyện theo nhóm'
     ]
   },
   {
-    v: 'v85 – v91', title: 'Hình minh hoạ câu 47/48',
+    v: 'v85 – v96', title: 'Hình minh hoạ & rà soát',
     items: [
-      'Vẽ 12 hình cho 12 tình huống 危険予測',
-      'Câu hỏi hình chuyển sang tiếng Nhật, thêm nút Dịch',
-      'Thêm mây, nhà cửa, cây cối cho đỡ trống',
-      'Sửa vạch qua đường, tim đường, giao lộ, phối cảnh cửa hầm'
-    ]
-  },
-  {
-    v: 'v92 – v96', title: 'Rà soát toàn bộ',
-    items: [
-      'Đọc lại 619 câu + 36 nhận định câu hình',
-      'Sửa 6 lỗi luật: b15, t41, c01, n31, b01 và biển 横断禁止',
+      'Vẽ 12 hình cho 12 tình huống 危険予測, câu hỏi chuyển sang tiếng Nhật',
+      'Sửa vạch qua đường, tim đường, giao lộ, phối cảnh cửa hầm',
+      'Đọc lại 619 câu + 36 nhận định, sửa 6 lỗi luật (b15, t41, c01, n31, b01, 横断禁止)',
       'Bản dịch câu hình giữ chỗ sẵn — bật/tắt không đổi kích thước khối',
       'Bấm Dịch, chọn đáp án, lật thẻ, đổi theme — không còn nhảy về đầu trang'
     ]
   },
   {
-    v: 'v97 – v99', title: 'Số khẩn cấp',
+    v: 'v97 – v103', title: 'Số khẩn cấp & lịch sử cập nhật',
     items: [
-      'Màn Số khẩn cấp: 110, 119, 118, 171, #9110',
-      'Đại sứ quán Việt Nam, hotline bảo hộ 24/24, ban lao động, ban giáo dục',
+      'Màn Số khẩn cấp: 110, 119, 118, 171, #9110, đại sứ quán, hotline bảo hộ',
       'Bấm số là gọi luôn, kèm hướng dẫn "khi gọi thì nói gì"',
-      'Cập nhật mô tả app: 619 câu, 48 câu trong 30 phút'
+      'Thêm mục Lịch sử cập nhật dạng xổ trong Cài app & góp ý',
+      'Lướt đổi câu khi luyện có hiệu ứng trượt giống thẻ flashcard'
     ]
   },
   {
-    v: 'v100 – v102', title: 'Lịch sử cập nhật & đồng bộ thao tác',
+    v: 'v104 – v119', title: 'Đa ngôn ngữ & dịch toàn bộ nội dung',
     items: [
-      'Thêm mục Lịch sử cập nhật dạng xổ từng bản trong Cài app & góp ý',
-      'Đưa lịch sử cập nhật xuống cuối trang',
-      'Lướt đổi câu khi luyện có hiệu ứng trượt giống thẻ flashcard'
+      'Bỏ tiếng Hàn — còn Tiếng Việt, 中文, Filipino; chọn ngôn ngữ cạnh nút sáng/tối',
+      'Dịch giao diện, 619 câu giải thích, 293 “vì sao sai”, 62 câu ngữ pháp',
+      'Dịch số khẩn cấp, bảng phạt, 12 mẫu xe, trang phục, sổ tay, checklist, thủ tục, changelog',
+      'Dịch 406 nghĩa từ vựng và 201 danh ngôn',
+      'Nút Dịch trong câu hỏi hiển thị theo ngôn ngữ đã chọn'
+    ]
+  },
+  {
+    v: 'v120 – v134', title: 'Dịch sâu & dọn giao diện',
+    items: [
+      'Dịch màn Luật mới, 12 giải thích tình huống minh hoạ',
+      'Dịch nhãn Thống kê (streak, mức sẵn sàng), Ngữ pháp, Mẫu xe, thẻ tỷ giá',
+      'Ẩn âm Hán-Việt và bản dịch tiếng Việt khi chọn 中文/Filipino',
+      'Meta description đổi theo ngôn ngữ'
+    ]
+  },
+  {
+    v: 'v135 – v147', title: 'Hoàn tất “vì sao sai” & sửa nút Dịch',
+    items: [
+      'Dịch 293/293 giải thích “vì sao sai”',
+      'Sửa lỗi expTxt: giải thích đúng/sai giờ hiện đúng ngôn ngữ',
+      'Nút Dịch không còn lật ra trống; câu hình chỉ hiện giải thích sau khi chọn đủ 3 ý',
+      'Dịch nốt màn luyện theo nhóm và nhãn phản hồi'
+    ]
+  },
+  {
+    v: 'v148 – v154', title: 'Dịch toàn bộ 619 câu hỏi',
+    items: [
+      'Dịch 619/619 câu hỏi sang zh và fil (6 đợt)',
+      'Nút Dịch hoạt động trở lại: lật thẻ xem bản dịch câu hỏi',
+      'Câu chưa dịch tự ẩn nút, không lật ra trống',
+      'Bản dịch vẫn ưu tiên tiếng Việt khi chọn Tiếng Việt'
+    ]
+  },
+  {
+    v: 'v155 – v156', title: 'Tiền tệ theo ngôn ngữ',
+    items: [
+      'Gộp changelog v104–v119, rút từ 40 xuống 14 mục',
+      'Thẻ tỷ giá và máy đổi tiền đổi đơn vị theo ngôn ngữ: Tiếng Việt → VND, 中文 → CNY, Filipino → PHP',
+      'Tỷ giá, biểu đồ 90 ngày và bộ nhớ đệm tách riêng cho từng loại tiền',
+      'Đổi ngôn ngữ là tự tải tỷ giá của tiền tệ mới'
     ]
   }
 ];

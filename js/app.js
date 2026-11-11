@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '102';
+  var APP_VER = '156';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -55,7 +55,7 @@
   ILLS.forEach(function (x) { illById[x.id] = x; });
   var catById = {};
   CATS.forEach(function (c) { catById[c.id] = c; });
-  catById['gram'] = { id: 'gram', vi: 'Bẫy ngôn ngữ', ja: '表現', icon: '🔤' };
+  catById['gram'] = { id: 'gram', vi: T('nav.gram'), ja: '表現', icon: '🔤' };
   var byCat = {};
   CATS.forEach(function (c) { byCat[c.id] = []; });
   Q.forEach(function (q) { (byCat[q.cat] || (byCat[q.cat] = [])).push(q); });
@@ -149,7 +149,7 @@
             '<li>Chọn <b>Cài đặt ứng dụng</b> hoặc <b>Thêm vào màn hình chính</b></li>' +
           '</ol>') +
       '<p class="w-note">Nếu đang mở trong Zalo/Facebook, hãy bấm “Mở bằng trình duyệt” trước — các app đó chặn cài đặt.</p>' +
-      '<button class="btn btn-ghost sheet-close" data-act="close-sheet">Đóng</button>';
+      '<button class="btn btn-ghost sheet-close" data-act="close-sheet">' + T('word.close') + '</button>';
     document.getElementById('sheet').classList.add('open');
     document.getElementById('sheetBack').classList.add('open');
   }
@@ -187,8 +187,8 @@
       '<div class="w-term">' + esc(key) +
         (hanViet(key) ? '<span class="w-hv">' + esc(hanViet(key)) + '</span>' : '') + '</div>' +
       '<div class="w-read">' + esc(v.r) + '</div>' +
-      (term !== key ? '<div class="w-form">dạng trong câu: ' + esc(term) + '</div>' : '') +
-      '<p class="w-mean">' + esc(v.m) + '</p>' +
+      (term !== key ? '<div class="w-form">' + T('word.form') + esc(term) + '</div>' : '') +
+      '<p class="w-mean">' + esc(vMean(key, v)) + '</p>' +
       (v.n ? '<p class="w-note">' + esc(v.n) + '</p>' : '') +
       '<button class="btn btn-ghost sheet-close" data-act="close-sheet">Đóng</button>';
     document.getElementById('sheet').classList.add('open');
@@ -271,8 +271,8 @@
     var s = db.streak || { last: '', n: 0 };
     var alive = (s.last === isoDay(0)) || (s.last === isoDay(1));
     var n = alive ? s.n : 0;
-    return '<div class="streak">🔥 <b>' + n + '</b> ngày liên tiếp' +
-      (n ? '' : ' — làm một câu để bắt đầu chuỗi') + '</div>';
+    return '<div class="streak">🔥 <b>' + n + '</b> ' + T('st.streakDay') +
+      (n ? '' : T('st.streakStart')) + '</div>';
   }
 
   function record(id, ok) {
@@ -311,6 +311,95 @@
     var m = document.querySelector('meta[name="theme-color"]');
     if (m) { m.setAttribute('content', t === 'dark' ? '#14120f' : '#f5f2ec'); }
   }
+  var LANGS = ['vi', 'zh', 'fil'];
+
+  var LANG = (function () {
+
+    var v = null;
+
+    try { v = localStorage.getItem('gentsuki.lang'); } catch (e) { }
+
+    return LANGS.indexOf(v) >= 0 ? v : 'vi';
+
+  })();
+
+  function T(k) {
+
+    var d = (window.I18N || {})[LANG] || {};
+
+    var f = (window.I18N || {}).vi || {};
+
+    return d[k] || f[k] || k;
+
+  }
+
+  function applyLang(l) {
+
+    if (LANGS.indexOf(l) < 0) { l = 'vi'; }
+
+    LANG = l;
+
+    try { localStorage.setItem('gentsuki.lang', l); } catch (e) { }
+
+    document.documentElement.setAttribute('lang', l === 'vi' ? 'vi' : l === 'zh' ? 'zh-Hans' : 'fil');
+
+  }
+
+  function vMean(k, v) {
+    var tr = ((window.VOCAB_I18N || {})[k] || {})[LANG];
+    return tr || (v && v.m) || '';
+  }
+
+  function catName(c) {
+    if (!c) { return ''; }
+    var k = T('cat.' + c.id);
+    return (k && k !== 'cat.' + c.id) ? k : c.vi;
+  }
+
+  /* bản dịch 62 câu bẫy ngôn ngữ (zh / fil) */
+  function trQ(id) {
+    if (LANG === 'vi') { return VI[id] || ''; }
+    return (((window.QTEXT_I18N || {})[id] || {})[LANG]) || '';
+  }
+
+  function expTxt(id) {
+    var r = ((window.EXP_I18N || {})[id] || {})[LANG];
+    if (!r) { return ''; }
+    return typeof r === 'string' ? r : (r.exp || '');
+  }
+
+  function localizeQ(q) {
+    if (!q || LANG === 'vi') { return q; }
+    var g = ((window.GRAMMAR_I18N || {})[q.id] || {})[LANG];
+    var eTxt = expTxt(q.id);
+    var tp = ((window.TRAP_I18N || {})[q.id] || {})[LANG];
+    if (!g && !eTxt && !tp) { return q; }
+    var copy = {};
+    for (var k in q) { if (Object.prototype.hasOwnProperty.call(q, k)) { copy[k] = q[k]; } }
+    if (g) {
+      if (g.q) { copy.q = g.q; }
+      if (g.exp) { copy.exp = g.exp; }
+      if (g.note) { copy.trap = g.note; }
+    }
+    if (eTxt) { copy.exp = eTxt; }
+    if (tp) { copy.trap = tp; }
+    return copy;
+  }
+
+  function langSel() {
+
+    var opts = LANGS.map(function (l) {
+
+      var n = ((window.I18N || {})[l] || {})['lang.name'] || l;
+
+      return '<option value="' + l + '"' + (l === LANG ? ' selected' : '') + '>' + n + '</option>';
+
+    }).join('');
+
+    return '<select class="lang-sel" id="langSel" aria-label="Language">' + opts + '</select>';
+
+  }
+
   function themeBtn() {
     var dark = currentTheme() === 'dark';
     return '<button class="icon-btn" data-act="theme" aria-label="' +
@@ -322,6 +411,7 @@
     return '<header class="topbar">' +
       '<button class="icon-btn" data-act="back" data-to="' + (backTo || 'home') + '" aria-label="Quay lại">←</button>' +
       '<div class="topbar-title">' + title + '</div>' +
+      langSel() +
       themeBtn() +
       '</header>';
   }
@@ -350,11 +440,11 @@
         '<div class="credit-name">' + esc(name) +
           (a.handle ? '<span>' + esc(a.handle) + '</span>' : '') + '</div>' +
         (a.bio || a.bioLink
-          ? '<p class="credit-bio">' + esc(a.bio || '') +
+          ? '<p class="credit-bio">' + esc(LANG === 'vi' ? (a.bio || '') : T('credit.bio')) +
             (a.bioLink
               ? '<a class="credit-bio-link" href="' + esc(a.bioLink) + '" target="_blank" rel="noopener noreferrer"' +
                 (/facebook\.com/i.test(a.bioLink) ? ' data-fb="1"' : '') + '>' +
-                esc(a.bioLinkText || 'tại đây') + '</a>'
+                esc(LANG === 'vi' ? (a.bioLinkText || 'tại đây') : T('credit.link')) + '</a>'
               : '') +
             (a.bio ? '.' : '') +
             '</p>'
@@ -375,9 +465,11 @@
   }
 
   function quoteInner(q) {
+    var tr = ((window.QUOTE_I18N || [])[lastQuote]) || null;
+    var text = (tr && tr[LANG]) ? tr[LANG] : q.t;
     return '<div class="quote-emoji">' + q.e + '</div>' +
       '<div class="quote-body">' +
-        '<p class="quote-text">' + esc(q.t) + '</p>' +
+        '<p class="quote-text">' + esc(text) + '</p>' +
         (q.a ? '<p class="quote-author">— ' + esc(q.a) + '</p>' : '') +
       '</div>';
   }
@@ -386,7 +478,7 @@
     var q = pickQuote();
     if (!q) { return ''; }
     return '<section class="quote" id="quoteBox">' + quoteInner(q) +
-      '<button class="quote-next" data-act="quote" aria-label="Câu khác" title="Câu khác">↻</button>' +
+      '<button class="quote-next" data-act="quote" aria-label="' + T('quote.next') + '" title="' + T('quote.next') + '">↻</button>' +
       '</section>';
   }
 
@@ -407,7 +499,7 @@
       var q = pickQuote();
       if (!q) { return; }
       box.innerHTML = quoteInner(q) +
-        '<button class="quote-next" data-act="quote" aria-label="Câu khác" title="Câu khác">↻</button>';
+        '<button class="quote-next" data-act="quote" aria-label="' + T('quote.next') + '" title="' + T('quote.next') + '">↻</button>';
       box.classList.remove('swap');
       void box.offsetWidth;
       box.classList.add('swap');
@@ -423,6 +515,29 @@
   var FX_SWAP = false;   /* false: ¥ → ₫, true: ₫ → ¥ */
   var FX_AMT = null;
   var FX_ANIM = '';
+
+  /* đơn vị tiền tệ đích theo ngôn ngữ: vi → VND, zh → CNY, fil → PHP */
+  var FX_CUR = {
+    vi: { code: 'VND', sym: '₫', name: 'VND', loc: 'vi-VN', dec: 0, swap: 100000 },
+    zh: { code: 'CNY', sym: '元', name: '人民币', loc: 'zh-CN', dec: 2, swap: 1000 },
+    fil: { code: 'PHP', sym: '₱', name: 'PHP', loc: 'en-PH', dec: 2, swap: 1000 }
+  };
+  var FX_FALLBACK = { VND: 161.49, CNY: 0.0472, PHP: 0.392 };
+  function fxCur() { return FX_CUR[LANG] || FX_CUR.vi; }
+  function fxKey() {
+    var c = fxCur();
+    return c.code === 'VND' ? 'gentsuki.fx.v3' : 'gentsuki.fx.v3.' + c.code;
+  }
+  function fxDec() { return fxCur().dec; }
+  function fxNum(n, d) {
+    var dec = (d === undefined) ? fxDec() : d;
+    try {
+      return Number(n).toLocaleString(fxCur().loc, { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    } catch (e) { return String(Math.round(n)); }
+  }
+  function fxTitle() { return T('fx.title') + ' → ' + fxCur().name; }
+
+  function fxScale() { return (FX_FALLBACK[fxCur().code] || 1) / FX_FALLBACK.VND; }
   /* chuỗi dự phòng (giá đóng cửa hằng tuần) khi không gọi được API */
   var FX_DEFAULT = [
     ['2026-08-16', 164.09], ['2026-08-23', 164.18], ['2026-08-30', 162.91],
@@ -433,20 +548,21 @@
   ];
 
   function fxRead() {
-    try { return JSON.parse(localStorage.getItem(FX_KEY)); } catch (e) { return null; }
+    try { return JSON.parse(localStorage.getItem(fxKey())); } catch (e) { return null; }
   }
   function fxWrite(d) {
-    try { localStorage.setItem(FX_KEY, JSON.stringify(d)); } catch (e) { }
+    try { localStorage.setItem(fxKey(), JSON.stringify(d)); } catch (e) { }
   }
   function fxPad(n) { return ('0' + n).slice(-2); }
   function fxIso(dt) { return dt.getFullYear() + '-' + fxPad(dt.getMonth() + 1) + '-' + fxPad(dt.getDate()); }
   function fxVer(dt) { return dt.getFullYear() + '.' + (dt.getMonth() + 1) + '.' + dt.getDate(); }
   function fxDefaultSeries() {
-    return FX_DEFAULT.map(function (p) { return { d: p[0], v: p[1] }; });
+    var k = fxScale();
+    return FX_DEFAULT.map(function (p) { return { d: p[0], v: p[1] * k }; });
   }
   function fxSeriesOf(d) {
     var map = {};
-    FX_DEFAULT.forEach(function (p) { map[p[0]] = p[1]; });
+    fxDefaultSeries().forEach(function (p) { map[p.d] = p.v; });
     if (d && d.series) { d.series.forEach(function (p) { map[p.d] = p.v; }); }
     return Object.keys(map).sort().map(function (k) { return { d: k, v: map[k] }; });
   }
@@ -468,7 +584,7 @@
       grid += '<line x1="' + pl + '" y1="' + yy.toFixed(1) + '" x2="' + (pl + pw).toFixed(1) + '" y2="' + yy.toFixed(1) +
         '" stroke="rgba(128,128,128,.18)" stroke-width="1" stroke-dasharray="2 3"/>';
       grid += '<text x="' + (pl + pw + 5).toFixed(1) + '" y="' + (yy + 2.7).toFixed(1) +
-        '" font-size="8" fill="currentColor" opacity=".6">' + Math.round(v) + '</text>';
+        '" font-size="8" fill="currentColor" opacity=".6">' + fxNum(v, v < 10 ? 3 : 0) + '</text>';
     });
 
     /* thang thời gian: đầu, giữa, cuối */
@@ -503,7 +619,7 @@
   function fxRate() {
     var d = fxRead();
     if (d && d.rate) { return d.rate; }
-    return FX_DEFAULT[FX_DEFAULT.length - 1][1];
+    return FX_FALLBACK[fxCur().code] || 1;
   }
 
   function fxDigits(s) {
@@ -516,31 +632,32 @@
   }
 
   function fxRate2() {
-    return Math.round(fxRate() * 100) / 100;
+    var p = fxDec() === 0 ? 100 : 10000;
+    return Math.round(fxRate() * p) / p;
   }
 
   function fxBack() {
-    var rate = fxRate2();
-    var amt = (FX_AMT === null) ? (FX_SWAP ? 100000 : 10000) : FX_AMT;
+    var c = fxCur(), rate = fxRate2();
+    var amt = (FX_AMT === null) ? (FX_SWAP ? c.swap : 10000) : FX_AMT;
     var num = parseFloat(String(amt).replace(/[^\d.]/g, '')) || 0;
     var res = FX_SWAP ? (rate ? num / rate : 0) : num * rate;
-    var shown = FX_SWAP
-      ? res.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : Math.round(res).toLocaleString('vi-VN');
+    var shown = FX_SWAP ? fxNum(res, 0) : fxNum(res, c.dec === 0 ? 0 : 2);
+    var from = FX_SWAP ? c.sym : '¥';
+    var to = FX_SWAP ? '¥' : c.sym;
     return '<div class="fxb">' +
-      '<div class="fxb-head"><b>Quy đổi tiền</b>' +
-        '<button class="fxb-swap" data-act="fxswap" aria-label="Đổi chiều quy đổi">' +
+      '<div class="fxb-head"><b>' + T('fx.convert') + '</b>' +
+        '<button class="fxb-swap" data-act="fxswap" aria-label="' + T('fx.swap') + '">' +
           '<span class="cur' + (FX_SWAP ? '' : ' on') + '">¥</span>' +
           '<span class="ar">⇄</span>' +
-          '<span class="cur' + (FX_SWAP ? ' on' : '') + '">₫</span>' +
+          '<span class="cur' + (FX_SWAP ? ' on' : '') + '">' + c.sym + '</span>' +
         '</button></div>' +
       '<label class="fxb-field">' +
         '<input id="fxAmt" type="text" inputmode="numeric" autocomplete="off" value="' + fxGroup(fxDigits(amt)) + '">' +
-        '<span>' + (FX_SWAP ? '₫' : '¥') + '</span>' +
+        '<span>' + from + '</span>' +
       '</label>' +
-      '<div class="fxb-out"><b id="fxOut">' + shown + '</b><span>' + (FX_SWAP ? '¥' : '₫') + '</span></div>' +
-      '<p class="fxb-note">Tỷ giá đang dùng: 1 ¥ = ' + rate.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₫</p>' +
-      '<p class="fxb-hint">chạm ra ngoài để quay lại biểu đồ</p>' +
+      '<div class="fxb-out"><b id="fxOut">' + shown + '</b><span>' + to + '</span></div>' +
+      '<p class="fxb-note">' + T('fx.note') + '' + fxNum(rate, c.dec === 0 ? 2 : 4) + ' ' + c.sym + '</p>' +
+      '<p class="fxb-hint">' + T('fx.hint') + '</p>' +
       '</div>';
   }
 
@@ -550,9 +667,9 @@
     var d = fxRead();
     if (!d || !d.rate) {
       /* chưa có dữ liệu: vẫn cho lật sang máy quy đổi */
-      var head0 = '<div class="fx-head"><b>Tỷ giá JPY → VND</b>' +
-        '<button class="fx-refresh" data-act="fx" aria-label="Cập nhật tỷ giá">↻</button></div>' +
-        '<p class="fx-note">Đang tải tỷ giá…</p>';
+      var head0 = '<div class="fx-head"><b>' + fxTitle() + '</b>' +
+        '<button class="fx-refresh" data-act="fx" aria-label="' + T('fx.refresh') + '">↻</button></div>' +
+        '<p class="fx-note">' + T('fx.loading') + '</p>';
       return '<section class="fx-flip' + (FX_FLIP ? ' back' : '') + (anim ? ' ' + anim : '') + '" id="fxBox" data-act="fxflip">' +
         '<div class="fx-inner">' +
           '<div class="fx-face fx-front">' + head0 + '</div>' +
@@ -570,16 +687,16 @@
     var stamp = (d && d.updatedLabel) ? d.updatedLabel : 'dữ liệu lưu sẵn';
     var stale = !d || d.stale;
 
-    var front = '<div class="fx-head"><b>Tỷ giá JPY → VND</b>' +
-      '<button class="fx-refresh" data-act="fx" aria-label="Cập nhật tỷ giá">↻</button></div>' +
-      '<div class="fx-top"><div class="fx-rate">' + Math.round(rate).toLocaleString('vi-VN') +
-      '<small>₫ / 1 ¥</small></div>' +
+    var front = '<div class="fx-head"><b>' + fxTitle() + '</b>' +
+      '<button class="fx-refresh" data-act="fx" aria-label="' + T('fx.refresh') + '">↻</button></div>' +
+      '<div class="fx-top"><div class="fx-rate">' + fxNum(rate, fxCur().dec === 0 ? 0 : 4) +
+      '<small>' + fxCur().sym + ' / 1 ¥</small></div>' +
       '<div class="fx-chg ' + (chg > 0 ? 'fx-up' : chg < 0 ? 'fx-down' : '') + '">' +
-      (chg > 0 ? '+' : '') + pct.toFixed(2) + '% · 90 ngày</div>' +
+      (chg > 0 ? '+' : '') + pct.toFixed(2) + '% · 90' + T('fx.days90') + '</div>' +
       '</div>' +
       fxLine(series) +
-      '<p class="fx-note">Cập nhật ' + esc(stamp) + ' · nguồn: er-api / currency-api' +
-      (stale ? ' · số liệu lưu sẵn' : '') + ' · <b>chạm để quy đổi</b></p>';
+      '<p class="fx-note">' + T('fx.updated') + esc(stamp) + T('fx.src') +
+      (stale ? T('fx.stale') : '') + ' · <b>' + T('fx.tap') + '</b></p>';
 
     return '<section class="fx-flip' + (FX_FLIP ? ' back' : '') + (anim ? ' ' + anim : '') + '" id="fxBox" data-act="fxflip">' +
       '<div class="fx-inner">' +
@@ -596,9 +713,7 @@
     var rate = fxRate2();
     var v = parseFloat(fxDigits(el.value)) || 0;
     var r = FX_SWAP ? (rate ? v / rate : 0) : v * rate;
-    out.textContent = FX_SWAP
-      ? r.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : Math.round(r).toLocaleString('vi-VN');
+    out.textContent = FX_SWAP ? fxNum(r, 0) : fxNum(r, fxCur().dec === 0 ? 0 : 2);
   }
 
   var amtEl = null;
@@ -662,7 +777,8 @@
     return fetch('https://open.er-api.com/v6/latest/JPY', { mode: 'cors' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        return (j && j.rates && j.rates.VND) ? { d: fxIso(new Date()), v: j.rates.VND } : null;
+        var c = fxCur().code;
+        return (j && j.rates && j.rates[c]) ? { d: fxIso(new Date()), v: j.rates[c] } : null;
       })
       .catch(function () { return null; })
       .then(function (x) {
@@ -670,7 +786,8 @@
         return fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/jpy.min.json', { mode: 'cors' })
           .then(function (r) { return r.json(); })
           .then(function (j) {
-            return (j && j.jpy && j.jpy.vnd) ? { d: j.date, v: j.jpy.vnd } : null;
+            var c2 = fxCur().code.toLowerCase();
+            return (j && j.jpy && j.jpy[c2]) ? { d: j.date, v: j.jpy[c2] } : null;
           })
           .catch(function () { return null; });
       });
@@ -691,10 +808,11 @@
         .then(function (r) { return r.text(); })
         .then(function (txt) {
           var ds = txt.match(/"date":"\d{4}-\d{2}-\d{2}"/g) || [];
-          var vs = txt.match(/"vnd":[0-9.]+/g) || [];
+          var cc = fxCur().code.toLowerCase();
+          var vs = txt.match(new RegExp('"' + cc + '":[0-9.]+', 'g')) || [];
           var out = [];
           for (var k = 0; k < Math.min(ds.length, vs.length); k++) {
-            out.push({ d: ds[k].slice(8, 18), v: parseFloat(vs[k].slice(6)) });
+            out.push({ d: ds[k].slice(8, 18), v: parseFloat(vs[k].slice(cc.length + 3)) });
           }
           return out;
         })
@@ -720,7 +838,7 @@
     ]).then(function (res) {
       var x = res[0], hist = res[1] || [];
       var map = {};
-      FX_DEFAULT.forEach(function (p) { map[p[0]] = p[1]; });
+      fxDefaultSeries().forEach(function (p) { map[p.d] = p.v; });
       if (d && d.series) { d.series.forEach(function (p) { map[p.d] = p.v; }); }
       hist.forEach(function (p) { map[p.d] = p.v; });
       if (x) { map[x.d] = x.v; }
@@ -735,7 +853,7 @@
         stale: !x,
         updatedLabel: x
           ? fxPad(now.getHours()) + ':' + fxPad(now.getMinutes()) + ' ' + fxPad(now.getDate()) + '/' + fxPad(now.getMonth() + 1)
-          : 'dữ liệu lưu sẵn'
+          : T('fx.saved')
       });
       fxReplace();
     });
@@ -764,6 +882,7 @@
   }
 
   function hanViet(term) {
+    if (LANG !== 'vi') { return ''; }
     var map = window.HANVIET || {};
     var out = [];
     for (var i = 0; i < term.length; i++) {
@@ -775,14 +894,14 @@
 
   function vocabInner(term, idx, total) {
     var v = VOCAB[term] || { r: '', m: '' };
-    return '<div class="vrot-head"><span class="vrot-label">Từ vựng quan trọng</span>' +
+    return '<div class="vrot-head"><span class="vrot-label">' + T('vocab.label') + '</span>' +
       '<span class="vrot-count">' + (idx + 1) + '/' + total + '</span></div>' +
       '<div class="vrot-line">' +
         '<button class="vrot-term" data-act="vocab" data-w="' + esc(term) + '">' + esc(term) + '</button>' +
         (hanViet(term) ? '<span class="vrot-hv">' + esc(hanViet(term)) + '</span>' : '') +
       '</div>' +
       (v.r ? '<div class="vrot-read">' + esc(v.r) + '</div>' : '') +
-      '<p class="vrot-mean">' + esc(v.m) + '</p>';
+      '<p class="vrot-mean">' + esc(vMean(term, v)) + '</p>';
   }
 
   function vocabBlock() {
@@ -849,6 +968,40 @@
     if (!win) { window.location.href = url; }
   }
 
+  function homeTiles(wrongN, o) {
+    function tile(act, icon, title, sub, extra) {
+      return '<button class="tile" data-act="' + act + '"' + (extra || '') + '>' +
+        '<span class="tile-icon">' + icon + '</span>' +
+        '<span class="tile-body"><h3>' + title + '</h3><p>' + sub + '</p></span>' +
+        '<span class="chev">›</span>' +
+        '</button>';
+    }
+    return '<div class="tiles">' +
+      tile('go-practice', '📚', T('tile.practice'), CATS.length + ' ' + T('tile.practice.sub') + ' · ' + Q.length + ' ' + T('fact.q')) +
+      tile('start-review', '🔁', T('tile.review'), wrongN ? wrongN + ' ' + T('tile.review.sub') : T('tile.review.none'), wrongN ? '' : ' disabled') +
+      tile('go-stats', '📈', T('tile.stats'), o.n + ' ' + T('tile.stats.sub') + ' · ' + o.rate + '%') +
+      tile('go-law', '⚖️', T('tile.law'), T('tile.law.sub')) +
+      tile('go-info', '🇯🇵', T('tile.info'), T('tile.info.sub')) +
+      tile('go-checklist', '✅', T('tile.check'), CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length + '/' + CHECKLIST.length + ' ' + T('tile.check.sub')) +
+      tile('go-sos', '📕', T('tile.sos'), SITS.length + ' ' + T('tile.sos.sub')) +
+      tile('go-connect', '📲', T('tile.connect'), T('tile.connect.sub')) +
+      '</div>';
+  }
+
+  function homeRows() {
+    function row(act, icon, title, sub) {
+      return '<button class="catrow" data-act="' + act + '">' +
+        '<span class="catrow-icon">' + icon + '</span>' +
+        '<span class="catrow-main"><h3>' + title + '</h3><p>' + sub + '</p></span>' +
+        '<span class="chev">›</span></button>';
+    }
+    return '<div class="catlist home-extra">' +
+      row('go-models', '🏍️', T('row.models'), MODELS.length + ' ' + T('row.models.sub')) +
+      row('go-gear', '🧥', T('row.gear'), T('row.gear.sub')) +
+      row('go-emg', '📞', T('row.emergency'), T('row.emergency.sub')) +
+      '</div>';
+  }
+
   function viewHome() {
     var o = overall();
     var wrongN = db.wrong.filter(function (id) { return qById[id]; }).length;
@@ -856,104 +1009,44 @@
     return '' +
       '<header class="topbar">' +
         '<div class="brand"><span class="brand-mark">原</span>' +
-          '<span class="brand-text"><b>原付免許</b><i>50cc · luyện thi</i></span></div>' +
+          '<span class="brand-text"><b>原付免許</b><i>' + T('app.sub') + '</i></span></div>' +
         '<div class="topbar-actions">' +
           '<button class="icon-btn" id="installBtn" data-act="install" aria-label="Cài đặt app" style="display:none">⬇️</button>' +
+          langSel() +
           themeBtn() + '</div>' +
       '</header>' +
       '<main class="wrap">' +
         '<section class="hero">' +
-          '<div class="hero-eyebrow">学科試験 · 46 câu + 2 câu hình</div>' +
-          '<h1>Đỗ bằng lái<br>xe 50cc tại Nhật</h1>' +
-          '<p class="hero-sub">Luyện từng nhóm kiến thức, rồi thi thử đúng 48 câu trong 30 phút.</p>' +
+          '<div class="hero-eyebrow">' + T('hero.eyebrow') + '</div>' +
+          '<h1>' + T('hero.title') + '</h1>' +
+          '<p class="hero-sub">' + T('hero.sub') + '</p>' +
           '<div class="facts">' +
-            '<div class="fact"><b>48</b><span>câu hỏi</span></div>' +
-            '<div class="fact"><b>30′</b><span>thời gian</span></div>' +
-            '<div class="fact"><b>45</b><span>điểm đỗ</span></div>' +
+            '<div class="fact"><b>48</b><span>' + T('fact.q') + '</span></div>' +
+            '<div class="fact"><b>30′</b><span>' + T('fact.t') + '</span></div>' +
+            '<div class="fact"><b>45</b><span>' + T('fact.p') + '</span></div>' +
           '</div>' +
         '</section>' +
 
         '<button class="cta" data-act="start-exam">' +
           '<span class="cta-main">' +
-            '<span class="cta-title">Thi thử ngay</span>' +
+            '<span class="cta-title">' + T('cta.title') + '</span>' +
             '<span class="cta-sub">' + (last
-              ? 'Lần gần nhất: ' + last.score + '/' + last.total + ' điểm'
-              : 'Đề ngẫu nhiên · chấm điểm như thi thật') + '</span>' +
+              ? T('cta.last') + last.score + '/' + last.total
+              : T('cta.sub')) + '</span>' +
           '</span>' +
           '<span class="cta-arrow">→</span>' +
         '</button>' +
 
-        '<div class="tiles">' +
-          '<button class="tile" data-act="go-practice">' +
-            '<span class="tile-icon">📚</span>' +
-            '<span class="tile-body"><h3>Luyện theo nhóm</h3><p>' + CATS.length + ' nhóm · ' + Q.length + ' câu</p></span>' +
-            '<span class="chev">›</span>' +
-          '</button>' +
-          '<button class="tile" data-act="start-review"' + (wrongN ? '' : ' disabled') + '>' +
-            '<span class="tile-icon">🔁</span>' +
-            '<span class="tile-body"><h3>Ôn câu sai</h3><p>' + (wrongN ? wrongN + ' câu cần xem lại' : 'Chưa có câu sai') + '</p></span>' +
-            '<span class="chev">›</span>' +
-          '</button>' +
-          '<button class="tile" data-act="go-stats">' +
-            '<span class="tile-icon">📈</span>' +
-            '<span class="tile-body"><h3>Tiến độ</h3><p>' + o.n + ' lượt trả lời · đúng ' + o.rate + '%</p></span>' +
-            '<span class="chev">›</span>' +
-          '</button>' +
-          '<button class="tile" data-act="go-law">' +
-            '<span class="tile-icon">⚖️</span>' +
-            '<span class="tile-body"><h3>Luật mới & khác biệt</h3><p>新基準原付 · Việt Nam vs Nhật</p></span>' +
-            '<span class="chev">›</span>' +
-          '</button>' +
-          '<button class="tile" data-act="go-info">' +
-            '<span class="tile-icon">🇯🇵</span>' +
-            '<span class="tile-body"><h3>Thủ tục & mẹo thi</h3><p>Giấy tờ, lệ phí, 原付講習</p></span>' +
-            '<span class="chev">›</span>' +
-          '</button>' +
-          '<button class="tile" data-act="go-checklist">' +
-            '<span class="tile-icon">✅</span>' +
-            '<span class="tile-body"><h3>Checklist đi thi</h3><p>' +
-              CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length + '/' + CHECKLIST.length +
-              ' mục đã xong</p></span>' +
-            '<span class="chev">›</span>' +
-          '</button>' +
-          '<button class="tile" data-act="go-sos">' +
-            '<span class="tile-icon">📕</span>' +
-            '<span class="tile-body"><h3>Sổ tay tình huống</h3><p>' + SITS.length + ' tình huống · câu tiếng Nhật</p></span>' +
-            '<span class="chev">›</span>' +
-          '</button>' +
-          '<button class="tile" data-act="go-connect">' +
-            '<span class="tile-icon">📲</span>' +
-            '<span class="tile-body"><h3>Cài app & góp ý</h3><p>Quét QR · báo lỗi câu hỏi</p></span>' +
-            '<span class="chev">›</span>' +
-          '</button>' +
-        '</div>' +
+        homeTiles(wrongN, o) +
 
-
-
-        '<p class="footnote">Bộ câu hỏi tự biên soạn từ luật, không sao chép từ trang khác. Luôn đối chiếu với 免許センター nơi bạn thi.</p>' +
+        '<p class="footnote">' + T('foot') + '</p>' +
+        
         vocabBlock() +
         quoteBlock() +
         fxCard() +
-        '<div class="catlist home-extra">' +
-          '<button class="catrow" data-act="go-models">' +
-            '<span class="catrow-icon">🏍️</span>' +
-            '<span class="catrow-main"><h3>Các mẫu xe phổ biến <em>原付車種</em></h3>' +
-              '<p>' + MODELS.length + ' mẫu · 125cc và 50cc · link trang hãng</p></span>' +
-            '<span class="chev">›</span></button>' +
-          '<button class="catrow" data-act="go-gear">' +
-            '<span class="catrow-icon">🧥</span>' +
-            '<span class="catrow-main"><h3>Trang phục khi đi xe <em>服装</em></h3>' +
-              '<p>Mũ, găng, áo, giày · nên và không nên mặc</p></span>' +
-            '<span class="chev">›</span></button>' +
-          '<button class="catrow" data-act="go-emg">' +
-            '<span class="catrow-icon">📞</span>' +
-            '<span class="catrow-main"><h3>Số khẩn cấp <em>緊急電話</em></h3>' +
-              '<p>110 · 119 · đại sứ quán · hotline bảo hộ</p></span>' +
-            '<span class="chev">›</span></button>' +
-        '</div>' +
+        homeRows() +
         '<p class="terms"><b>© 2026 Nghiệm Trần</b>' +
-          'Đây là dự án miễn phí vì cộng đồng. Vui lòng chỉ dùng cá nhân, ' +
-          'không sao chép/tái bản, không dùng để kiếm tiền. ' +
+          T('terms') + ' ' +
           '<span class="ver">v' + APP_VER + '</span></p>' +
       '</main>';
   }
@@ -972,20 +1065,20 @@
     var special =
       '<button class="catrow catrow-special" data-act="gram">' +
         '<span class="catrow-icon">🔤</span>' +
-        '<span class="catrow-main"><h3>Bẫy ngôn ngữ <em>表現</em></h3>' +
-          '<p>' + GQ.length + ' câu · ' + (gs.n ? 'đúng ' + gs.rate + '%' : 'mẹo đọc câu hỏi') + '</p>' +
+        '<span class="catrow-main"><h3>' + T('nav.gram') + ' <em>表現</em></h3>' +
+          '<p>' + GQ.length + ' ' + T('unit.q') + ' · ' + (gs.n ? T('gr.done') + ' ' + gs.rate + '%' : T('pr.tip')) + '</p>' +
           '<span class="bar"><i style="width:' + gs.rate + '%"></i></span></span>' +
         '<span class="chev">›</span></button>' +
       '<button class="catrow catrow-special" data-act="cards">' +
         '<span class="catrow-icon">🃏</span>' +
-        '<span class="catrow-main"><h3>Flashcard từ vựng <em>単語</em></h3>' +
-          '<p>12 thẻ mỗi lượt · ưu tiên thẻ còn khó</p>' +
+        '<span class="catrow-main"><h3>' + T('nav.cards') + ' <em>単語</em></h3>' +
+          '<p>' + T('pr.cards') + '</p>' +
           '<span class="bar"><i style="width:0%"></i></span></span>' +
         '<span class="chev">›</span></button>' +
       '<button class="catrow catrow-special" data-act="hard">' +
         '<span class="catrow-icon">🔥</span>' +
-        '<span class="catrow-main"><h3>Đề khó <em>難問</em></h3>' +
-          '<p>20 câu dài và khó nhất trong kho</p>' +
+        '<span class="catrow-main"><h3>' + T('pr.hard') + ' <em>難問</em></h3>' +
+          '<p>' + T('pr.hardSub') + '</p>' +
           '<span class="bar"><i style="width:0%"></i></span></span>' +
         '<span class="chev">›</span></button>';
 
@@ -995,22 +1088,22 @@
       return '<button class="catrow" data-act="start-cat" data-cat="' + c.id + '">' +
         '<span class="catrow-icon">' + c.icon + '</span>' +
         '<span class="catrow-main">' +
-          '<h3>' + c.vi + ' <em>' + c.ja + '</em></h3>' +
-          '<p>' + list.length + ' câu · ' + (st.n ? 'đúng ' + st.rate + '%' : 'chưa làm') + '</p>' +
+          '<h3>' + catName(c) + ' <em>' + c.ja + '</em></h3>' +
+          '<p>' + list.length + ' ' + T('unit.q') + ' · ' + (st.n ? T('gr.done') + ' ' + st.rate + '%' : T('gr.notyet')) + '</p>' +
           '<span class="bar"><i style="width:' + st.rate + '%"></i></span>' +
         '</span>' +
         '<span class="chev">›</span></button>';
     }).join('');
-    return topbar('Chọn nhóm kiến thức') +
+    return topbar(T('nav.practice')) +
       '<main class="wrap"><div class="catlist">' + special + rows + '</div>' +
-      '<p class="footnote">Mỗi câu trả lời được lưu trên máy này. Trả lời sai sẽ tự vào mục “Ôn câu sai”.</p></main>';
+      '<p class="footnote">' + T('pr.foot') + '</p></main>';
   }
 
   function scoreSoFar() {
     if (!S) { return ''; }
     var ok = 0;
     S.picks.forEach(function (p, i) { if (p !== undefined && qById[S.ids[i]].a === p) { ok++; } });
-    return '<span class="mini">' + ok + ' đúng</span>';
+    return '<span class="mini">' + ok + ' ' + T('hdr.ok') + '</span>';
   }
 
   function viewQuiz() {
@@ -1018,7 +1111,9 @@
     var anim = S.anim || '';
     S.anim = '';
     if (S.mode === 'exam' && S.phase === 'ill') { return viewIll(); }
-    var q = qById[S.ids[S.i]];
+    var q = localizeQ(qById[S.ids[S.i]]);
+    var answeredNow = S.picks[S.i] !== undefined;
+    var backTxt = trQ(q.id);
     var cat = catById[q.cat] || { vi: '', ja: '', icon: '' };
     var total = S.ids.length;
     var picked = S.picks[S.i];
@@ -1034,48 +1129,50 @@
     if (!showFb) {
       answers = '<div class="answers">' +
         '<button class="ans' + (picked === 1 ? ' sel' : '') + '" data-act="answer" data-v="1">' +
-          '<span class="glyph">○</span><span class="lbl">Đúng</span></button>' +
+          '<span class="glyph">○</span><span class="lbl">' + T('den.yes') + '</span></button>' +
         '<button class="ans' + (picked === 0 ? ' sel' : '') + '" data-act="answer" data-v="0">' +
-          '<span class="glyph">×</span><span class="lbl">Sai</span></button>' +
+          '<span class="glyph">×</span><span class="lbl">' + T('den.no') + '</span></button>' +
         '</div>';
     } else {
       answers = '<div class="answers done">' +
         '<div class="ans' + (q.a === 1 ? ' correct' : '') + (picked === 1 && q.a !== 1 ? ' wrong' : '') + '">' +
-          '<span class="glyph">○</span><span class="lbl">Đúng</span></div>' +
+          '<span class="glyph">○</span><span class="lbl">' + T('den.yes') + '</span></div>' +
         '<div class="ans' + (q.a === 0 ? ' correct' : '') + (picked === 0 && q.a !== 0 ? ' wrong' : '') + '">' +
-          '<span class="glyph">×</span><span class="lbl">Sai</span></div>' +
+          '<span class="glyph">×</span><span class="lbl">' + T('den.no') + '</span></div>' +
         '</div>';
     }
 
     return '' +
       '<header class="quizbar">' +
         '<button class="icon-btn" data-act="quit" aria-label="Thoát">✕</button>' +
-        '<div class="qmeta"><b>Câu ' + (S.i + 1) + '<span>/' + total + '</span></b>' +
-          '<i>' + (isExam ? 'Thi thử' : (S.label || cat.vi)) + '</i></div>' +
+        '<div class="qmeta"><b>' + T('hdr.q') + ' ' + (S.i + 1) + '<span>/' + total + '</span></b>' +
+          '<i>' + (isExam ? T('exam.label') : (S.cat === 'gram' ? T('nav.gram') : (S.cat ? catName(cat) : (S.label || cat.vi)))) + '</i></div>' +
         (isExam ? '<div class="timer" id="timer">30:00</div>' : '<div class="timer soft">' + scoreSoFar() + '</div>') +
       '</header>' +
       '<div class="progress"><i style="width:' + (((S.i + (answered ? 1 : 0)) / total) * 100) + '%"></i></div>' +
       '<main class="wrap quizwrap">' +
         '<article class="qcard' + (anim ? ' ' + anim : '') + '">' +
-          '<span class="qtag cat-' + q.cat + '">' + cat.icon + ' ' + cat.vi + '</span>' +
+          '<span class="qtag cat-' + q.cat + '">' + cat.icon + ' ' + catName(cat) + '</span>' +
           sign +
           '<div class="qflip' + (S.viOn ? ' back' : '') + viAnimCls + '">' +
             '<div class="qflip-inner">' +
               '<div class="qflip-face qflip-front"><p class="qtext">' + mark(esc(q.q)) + '</p></div>' +
               '<div class="qflip-face qflip-back">' +
-                '<p class="qtext qtext-vi">' + esc(VI[q.id] || 'Chưa có bản dịch cho câu này.') + '</p>' +
-                '<span class="qflip-note">' + (VI_MANUAL[q.id] ? 'Bản dịch biên soạn' : 'Bản dịch tự động · tham khảo') + '</span>' +
+                '<p class="qtext qtext-vi">' + esc(backTxt) + '</p>' +
+                '<span class="qflip-note">' + (LANG === 'vi' ? (VI_MANUAL[q.id] ? 'Bản dịch biên soạn' : 'Bản dịch tự động · tham khảo') : T('q.trans')) + '</span>' +
               '</div>' +
             '</div>' +
           '</div>' +
           '<div class="qctl">' +
-            '<button class="qctl-btn" data-act="tts">🔊 Đọc câu</button>' +
-            '<button class="qctl-btn' + (furiOn() ? ' on' : '') + '" data-act="furi">あ Phiên âm</button>' +
-            '<button class="qctl-btn' + (S.viOn ? ' on' : '') + '" data-act="vi">🌐 Dịch</button>' +
+            '<button class="qctl-btn" data-act="tts">' + T('q.tts') + '</button>' +
+            '<button class="qctl-btn' + (furiOn() ? ' on' : '') + '" data-act="furi">' + T('q.furi') + '</button>' +
+            (backTxt
+              ? '<button class="qctl-btn' + (S.viOn ? ' on' : '') + '" data-act="vi">' + T('q.vi') + '</button>'
+              : '') +
           '</div>' +
-          '<p class="qhint">' + (isExam ? 'Chọn ○ nếu đúng, × nếu sai' : 'Câu này đúng hay sai?') +
-            ' · <span class="w-tip">chạm từ để tra nghĩa' +
-              (isExam ? '' : ' · lướt ngang để đổi câu') + '</span></p>' +
+          '<p class="qhint">' + (isExam ? '' + T('q.hint.exam') + '' : '' + T('q.hint.live') + '') +
+            ' · <span class="w-tip">' + T('q.tip') + '' +
+              (isExam ? '' : T('q.tip.swipe')) + '</span></p>' +
           answers +
         '</article>' +
         (showFb ? feedback(q, picked) : '') +
@@ -1093,10 +1190,10 @@
       var p = picks[k];
       return '<div class="ill-sub">' +
         '<p class="ill-q"><b>' + (k + 1) + '.</b> ' + mark(esc(s.q)) +
-          (s.vi ? '<span class="ill-vi' + (S.viOn ? '' : ' vi-off') + '">' + esc(s.vi) + '</span>' : '') + '</p>' +
+          (LANG === 'vi' && s.vi ? '<span class="ill-vi' + (S.viOn ? '' : ' vi-off') + '">' + esc(s.vi) + '</span>' : '') + '</p>' +
         '<div class="ill-ans">' +
-          '<button class="pill-ans' + (p === 1 ? ' sel' : '') + '" data-act="ill" data-k="' + k + '" data-v="1">○ Đúng</button>' +
-          '<button class="pill-ans' + (p === 0 ? ' sel' : '') + '" data-act="ill" data-k="' + k + '" data-v="0">× Sai</button>' +
+          '<button class="pill-ans' + (p === 1 ? ' sel' : '') + '" data-act="ill" data-k="' + k + '" data-v="1">' + T('q.yes') + '</button>' +
+          '<button class="pill-ans' + (p === 0 ? ' sel' : '') + '" data-act="ill" data-k="' + k + '" data-v="0">' + T('q.no') + '</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -1104,8 +1201,8 @@
     return '' +
       '<header class="quizbar">' +
         '<button class="icon-btn" data-act="quit" aria-label="Thoát">✕</button>' +
-        '<div class="qmeta"><b>Câu ' + (S.ids.length + S.j + 1) + '<span>/' + totalQ + '</span></b>' +
-          '<i>Câu hình · 危険予測 · 2 điểm</i></div>' +
+        '<div class="qmeta"><b>' + T('hdr.q') + ' ' + (S.ids.length + S.j + 1) + '<span>/' + totalQ + '</span></b>' +
+          '<i>' + T('ill.hdr') + '</i></div>' +
         '<div class="timer" id="timer">30:00</div>' +
       '</header>' +
       '<div class="progress"><i style="width:' + (((S.ids.length + S.j) / totalQ) * 100) + '%"></i></div>' +
@@ -1115,11 +1212,13 @@
           ((window.ILL_ART && window.ILL_ART[set.id])
             ? '<div class="ill-art">' + window.ILL_ART[set.id] + '</div>' : '') +
           '<p class="ill-scene">' + mark(esc(set.scene)) +
-            (set.sceneVi ? '<span class="ill-vi' + (S.viOn ? '' : ' vi-off') + '">' + esc(set.sceneVi) + '</span>' : '') + '</p>' +
-          '<div class="qctl ill-ctl">' +
-            '<button class="qctl-btn' + (S.viOn ? ' on' : '') + '" data-act="vi">🌐 Dịch</button>' +
-          '</div>' +
-          '<p class="qhint">Ba nhận định dưới đây đúng hay sai? Đúng cả 3 mới được 2 điểm.</p>' +
+            (LANG === 'vi' && set.sceneVi ? '<span class="ill-vi' + (S.viOn ? '' : ' vi-off') + '">' + esc(set.sceneVi) + '</span>' : '') + '</p>' +
+          (LANG === 'vi'
+            ? '<div class="qctl ill-ctl"><button class="qctl-btn' + (S.viOn ? ' on' : '') + '" data-act="vi">' + T('q.vi') + '</button></div>'
+            : (picks.length === 3 && picks.every(function (p) { return p !== undefined; })
+              ? '<p class="ill-exp show"><b>' + T('q.explain') + '</b> ' + esc(((window.ILL_EXP_I18N || {})[set.id] || {})[LANG] || '') + '</p>'
+              : '')) +
+          '<p class="qhint">' + T('ill.hint') + '</p>' +
           subs +
         '</article>' +
         examFooter() +
@@ -1127,6 +1226,7 @@
   }
 
   function explainRows(q) {
+    q = localizeQ(q);
     var yes = q.a === 1 ? q.exp : q.trap;
     var no = q.a === 0 ? q.exp : q.trap;
     function tidy(s) {
@@ -1139,20 +1239,20 @@
         '</div>';
     }
     return '<div class="exps">' +
-      row('○', q.a === 1 ? 'Đáp án đúng' : 'Vì sao sai', yes, q.a === 1) +
-      row('×', q.a === 0 ? 'Đáp án đúng' : 'Vì sao sai', no, q.a === 0) +
+      row('○', q.a === 1 ? T('fb.right') : T('fb.why'), yes, q.a === 1) +
+      row('×', q.a === 0 ? T('fb.right') : T('fb.why'), no, q.a === 0) +
       '</div>';
   }
 
   function feedback(q, picked) {
     var ok = q.a === picked;
     return '<section class="fb ' + (ok ? 'ok' : 'ng') + '">' +
-      '<div class="fb-head"><b>' + (ok ? 'Chính xác' : 'Sai rồi') + '</b>' +
-        '<span>Đáp án đúng: <b class="ansmark">' + (q.a ? '○' : '×') + '</b></span></div>' +
+      '<div class="fb-head"><b>' + (ok ? T('fb.ok') : T('fb.no')) + '</b>' +
+        '<span>' + T('fb.correctIs') + ' <b class="ansmark">' + (q.a ? '○' : '×') + '</b></span></div>' +
       explainRows(q) +
       (q.ref ? '<p class="fb-ref">' + esc(q.ref) + '</p>' : '') +
       '<button class="btn btn-primary" data-act="next">' +
-        (S.i + 1 >= S.ids.length ? 'Xem kết quả' : 'Câu tiếp') + ' →</button>' +
+        (S.i + 1 >= S.ids.length ? T('fb.seeResult') : T('res.next').replace(' →','')) + ' →</button>' +
       '</section>';
   }
 
@@ -1176,15 +1276,15 @@
     });
     var btns;
     if (S.phase === 'text') {
-      btns = '<button class="btn btn-ghost" data-act="prev"' + (S.i === 0 ? ' disabled' : '') + '>← Trước</button>' +
+      btns = '<button class="btn btn-ghost" data-act="prev"' + (S.i === 0 ? ' disabled' : '') + '>' + T('btn.prev') + '</button>' +
         '<button class="btn btn-primary" data-act="' + (allText ? 'to-ill' : 'next') + '">' +
-          (allText ? 'Câu hình →' : 'Tiếp →') + '</button>';
+          (allText ? T('btn.toIll') : T('btn.next')) + '</button>';
     } else {
       var lastIll = S.j >= S.ills.length - 1;
-      btns = '<button class="btn btn-ghost" data-act="prev">← Trước</button>' +
+      btns = '<button class="btn btn-ghost" data-act="prev">' + T('btn.prev') + '</button>' +
         (lastIll
-          ? '<button class="btn btn-primary" data-act="submit">Nộp bài</button>'
-          : '<button class="btn btn-primary" data-act="next">Tiếp →</button>');
+          ? '<button class="btn btn-primary" data-act="submit">' + T('btn.submit') + '</button>'
+          : '<button class="btn btn-primary" data-act="next">' + T('btn.next') + '</button>');
     }
     /* giữ chỗ nút "nộp sớm" ở mọi trạng thái để chân trang không nhảy */
     var early = S.phase === 'text';
@@ -1192,7 +1292,7 @@
       '<div class="dots">' + dots + '</div>' +
       '<div class="examnav-btns">' + btns + '</div>' +
       '<button class="linkbtn' + (early ? '' : ' inv') + '" data-act="submit"' +
-        (early ? '' : ' tabindex="-1" aria-hidden="true"') + '>Nộp bài sớm</button>' +
+        (early ? '' : ' tabindex="-1" aria-hidden="true"') + '>' + T('btn.submitEarly') + '</button>' +
       '</div>';
   }
 
@@ -1298,7 +1398,7 @@
     var bdRows = Object.keys(bd).map(function (cid) {
       var c = catById[cid] || { vi: cid, icon: '' };
       var p = Math.round((bd[cid].ok / bd[cid].n) * 100);
-      return '<div class="bdrow"><span class="bdname">' + c.icon + ' ' + c.vi + '</span>' +
+      return '<div class="bdrow"><span class="bdname">' + c.icon + ' ' + catName(c) + '</span>' +
         '<span class="bar"><i style="width:' + p + '%"></i></span>' +
         '<span class="bdnum">' + bd[cid].ok + '/' + bd[cid].n + '</span></div>';
     }).join('');
@@ -1310,35 +1410,35 @@
       return '<details class="wcard"><summary>' +
         '<span class="wmark">' + (q.a ? '○' : '×') + '</span>' +
         '<span class="wq">' + esc(q.q) + '</span></summary>' +
-        '<div class="wbody"><p class="wans">Bạn chọn <b>' + mine + '</b> · đáp án <b>' + (q.a ? '○' : '×') + '</b></p>' +
+        '<div class="wbody"><p class="wans">' + T('res.youPicked') + '<b>' + mine + '</b>' + T('res.answerIs') + '<b>' + (q.a ? '○' : '×') + '</b></p>' +
         explainRows(q) + '</div></details>';
-    }).join('') : '<p class="empty">Không có câu sai. Quá tốt!</p>';
+    }).join('') : '<p class="empty">' + T('res.none') + '</p>';
 
     var verdict, sub;
     if (isExam) {
-      verdict = pass ? 'Đỗ' : 'Chưa đỗ';
+      verdict = pass ? T('res.pass') : T('res.fail');
       sub = pass
-        ? 'Trên mức ' + PASS + '/' + r.total + ' — giữ phong độ này khi vào phòng thi.'
-        : 'Cần thêm ' + Math.max(0, PASS - r.score) + ' câu đúng nữa để đạt ' + PASS + '/' + r.total + '.';
+        ? T('res.passMsg2') + PASS + '/' + r.total + T('res.passMsg3')
+        : T('res.needMore') + Math.max(0, PASS - r.score) + T('res.needMore2') + PASS + '/' + r.total + '.';
     } else {
       verdict = r.score + '/' + r.total;
-      sub = 'Số câu đúng trong lượt luyện này.';
+      sub = T('res.practiceSub');
     }
 
     var illHtml = '';
     if (r.ill && r.ill.length) {
-      illHtml = '<section class="panel"><h3 class="panel-title">Câu hình · 危険予測</h3>' +
+      illHtml = '<section class="panel"><h3 class="panel-title">' + T('res.ill') + '</h3>' +
         r.ill.map(function (x) {
           var set = illById[x.id];
           return '<div class="illres ' + (x.ok ? 'ok' : 'ng') + '">' +
             '<div class="illres-head">' + (x.ok ? '✓ +2 điểm' : '✗ 0 điểm') + ' · ' + esc(set.title) +
               (set.titleVi ? ' · ' + esc(set.titleVi) : '') + '</div>' +
-            '<p>' + esc(set.exp) + '</p></div>';
+            '<p>' + esc(((window.ILL_EXP_I18N || {})[set.id] || {})[LANG] || set.exp) + '</p></div>';
         }).join('') + '</section>';
     }
 
     return '<header class="topbar simple"><div class="topbar-title">' +
-        (isExam ? 'Kết quả thi thử' : 'Kết quả luyện tập') + '</div></header>' +
+        (isExam ? T('res.exam') : T('res.practice')) + '</div></header>' +
       '<main class="wrap">' +
         '<section class="result">' +
           '<div class="ring" style="--p:' + pct + ';--c:' + (pass ? '#157f52' : isExam ? '#c8102e' : '#1f1d1b') + '">' +
@@ -1347,14 +1447,14 @@
           '<h2 class="verdict">' + verdict + '</h2>' +
           '<p class="verdict-sub">' + sub + '</p>' +
         '</section>' +
-        '<section class="panel"><h3 class="panel-title">Theo nhóm kiến thức</h3>' + bdRows + '</section>' +
+        '<section class="panel"><h3 class="panel-title">' + T('res.cats') + '</h3>' + bdRows + '</section>' +
         illHtml +
-        '<section class="panel"><h3 class="panel-title">Câu sai (' + wrong.length + ')</h3>' + wrongHtml + '</section>' +
+        '<section class="panel"><h3 class="panel-title">' + T('res.wrong') + ' (' + wrong.length + ')</h3>' + wrongHtml + '</section>' +
         '<div class="btnrow">' +
           '<button class="btn btn-primary" data-act="' + (isExam ? 'start-exam' : 'again') + '">' +
-            (isExam ? 'Thi lại' : 'Làm lại nhóm này') + '</button>' +
-          '<button class="btn btn-ghost" data-act="share">Chia sẻ kết quả</button>' +
-          '<button class="btn btn-ghost" data-act="back" data-to="home">Về trang chủ</button>' +
+            (isExam ? T('res.again') : T('res.again')) + '</button>' +
+          '<button class="btn btn-ghost" data-act="share">' + T('res.share') + '</button>' +
+          '<button class="btn btn-ghost" data-act="back" data-to="home">' + T('res.home') + '</button>' +
         '</div>' +
       '</main>';
   }
@@ -1377,17 +1477,17 @@
     var r = readiness();
     var label, desc;
     if (r.state === 'none') {
-      label = 'Chưa đủ dữ liệu';
-      desc = 'Thi thử ít nhất 3 đề để biết mức sẵn sàng. Mục tiêu: 5 đề liên tiếp đều từ 47/50.';
+      label = T('rd.none');
+      desc = T('st.ready');
     } else if (r.state === 'ready') {
-      label = 'Sẵn sàng thi';
-      desc = '5 đề gần nhất đều đạt 47/50 trở lên. Giữ phong độ này khi vào phòng thi.';
+      label = T('rd.ready');
+      desc = T('rd.readyDesc');
     } else if (r.state === 'close') {
-      label = 'Gần đạt';
-      desc = 'Trung bình ' + r.avg + '/50, thấp nhất ' + r.min + '. Cần cả 5 đề đạt 47 trở lên mới tính là sẵn sàng.';
+      label = T('rd.close');
+      desc = T('rd.close1') + r.avg + T('rd.close2') + r.min + T('rd.close3');
     } else {
-      label = 'Chưa sẵn sàng';
-      desc = 'Trung bình ' + r.avg + '/50. Ngưỡng đỗ là 45/50, nhưng nên luyện tới 47+ cho chắc.';
+      label = T('rd.no');
+      desc = T('rd.no1') + r.avg + T('rd.no2');
     }
     var dots = '';
     for (var i = 0; i < 5; i++) {
@@ -1403,7 +1503,7 @@
       '<div class="ready-top"><span class="ready-dot"></span><b>' + label + '</b></div>' +
       '<p class="ready-desc">' + desc + '</p>' +
       '<div class="ready-dots">' + dots + '</div>' +
-      '<p class="ready-note">5 đề thi thử gần nhất · điểm đỗ 45/50</p>' +
+      '<p class="ready-note">' + T('rd.note') + '</p>' +
       '</section>';
   }
 
@@ -1413,10 +1513,10 @@
       var st = catStat(c.id);
       var total = (byCat[c.id] || []).length;
       var studied = (byCat[c.id] || []).filter(function (q) { return db.answers[q.id]; }).length;
-      return '<div class="bdrow"><span class="bdname">' + c.icon + ' ' + c.vi + '</span>' +
+      return '<div class="bdrow"><span class="bdname">' + c.icon + ' ' + catName(c) + '</span>' +
         '<span class="bar"><i style="width:' + st.rate + '%"></i></span>' +
         '<span class="bdnum">' + st.rate + '%</span>' +
-        '<span class="bdsub">' + studied + '/' + total + ' câu</span></div>';
+        '<span class="bdsub">' + studied + '/' + total + ' ' + T('unit.q') + '</span></div>';
     }).join('');
 
     var hist = db.exams.length ? db.exams.slice(0, 6).map(function (e) {
@@ -1424,95 +1524,95 @@
       var dd = ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2);
       return '<div class="histrow"><span>' + dd + '</span>' +
         '<b class="' + (e.pass ? 'ok' : 'ng') + '">' + e.score + '/' + e.total + '</b>' +
-        '<span class="pill">' + (e.pass ? 'Đỗ' : 'Trượt') + '</span></div>';
-    }).join('') : '<p class="empty">Chưa thi thử lần nào.</p>';
+        '<span class="pill">' + (e.pass ? T('st.pass') : T('st.fail')) + '</span></div>';
+    }).join('') : '<p class="empty">' + T('st.empty') + '</p>';
 
-    return topbar('Tiến độ học') +
+    return topbar(T('nav.stats')) +
       '<main class="wrap">' +
         streakChip() +
         '<section class="stats">' +
-          '<div class="stat"><b>' + o.n + '</b><span>lượt trả lời</span></div>' +
-          '<div class="stat"><b>' + o.rate + '%</b><span>tỉ lệ đúng</span></div>' +
-          '<div class="stat"><b>' + o.studied + '/' + Q.length + '</b><span>câu đã học</span></div>' +
+          '<div class="stat"><b>' + o.n + '</b><span>' + T('st.answers') + '</span></div>' +
+          '<div class="stat"><b>' + o.rate + '%</b><span>' + T('st.rate') + '</span></div>' +
+          '<div class="stat"><b>' + o.studied + '/' + Q.length + '</b><span>' + T('st.studied') + '</span></div>' +
         '</section>' +
         readyCard() +
-        '<section class="panel"><h3 class="panel-title">Tỉ lệ đúng theo nhóm</h3>' + rows + '</section>' +
-        '<section class="panel"><h3 class="panel-title">Lịch sử thi thử</h3>' + hist + '</section>' +
+        '<section class="panel"><h3 class="panel-title">' + T('st.bycat') + '</h3>' + rows + '</section>' +
+        '<section class="panel"><h3 class="panel-title">' + T('st.hist') + '</h3>' + hist + '</section>' +
         '<div class="btnrow">' +
-          '<button class="btn btn-ghost" data-act="export">Xuất dữ liệu (.json)</button>' +
-          '<button class="btn btn-danger" data-act="reset">Xoá toàn bộ tiến độ</button>' +
+          '<button class="btn btn-ghost" data-act="export">' + T('st.export') + '</button>' +
+          '<button class="btn btn-danger" data-act="reset">' + T('st.reset') + '</button>' +
         '</div>' +
       '</main>';
   }
 
   function chkList() {
+    var tr = ((window.CHECKLIST_I18N || {})[LANG]) || null;
     return CHECKLIST.map(function (x, i) {
       var on = !!db.checklist['c' + i];
       return '<button class="chk-item' + (on ? ' done' : '') + '" data-act="check" data-k="c' + i + '">' +
-        '<span class="chk-box">' + (on ? '✓' : '') + '</span><span>' + esc(x) + '</span></button>';
+        '<span class="chk-box">' + (on ? '✓' : '') + '</span><span>' + esc(tr && tr[i] ? tr[i] : x) + '</span></button>';
     }).join('');
   }
 
   function viewChecklist() {
     var done = CHECKLIST.filter(function (x, i) { return db.checklist['c' + i]; }).length;
-    return topbar('Checklist đi thi') +
+    return topbar(T('nav.check')) +
       '<main class="wrap">' +
         '<section class="panel">' +
-          '<h2>Chuẩn bị trước ngày thi</h2>' +
+          '<h2>' + T('chk.head') + '</h2>' +
           '<p class="muted" id="chkCount">' + done + '/' + CHECKLIST.length +
-            ' mục đã xong — lưu trên máy này.</p>' +
+            T('chk.done') + '</p>' +
           '<div class="chk">' + chkList() + '</div>' +
         '</section>' +
       '</main>';
   }
 
   function viewSos() {
-    return topbar('Sổ tay tình huống') +
+    return topbar(T('nav.sos')) +
       '<main class="wrap">' +
         '<section class="panel">' +
-          '<h2>Câu tiếng Nhật dùng được ngay</h2>' +
-          '<p class="muted">Chạm vào từng tình huống để mở.</p>' +
-          '<button class="btn btn-ghost emg-link" data-act="go-emg">📞 Số khẩn cấp — Nhật & Việt Nam</button>' +
+          '<h2>' + T('sos.head') + '</h2>' +
+          '<p class="muted">' + T('sos.lead') + '</p>' +
+          '<button class="btn btn-ghost emg-link" data-act="go-emg">📞 ' + T('emg.head') + '</button>' +
           SITS.map(function (s) {
-            return '<details class="sos">' +
-              '<summary><span class="sos-icon">' + esc(s.icon) + '</span>' + esc(s.vi) + '</summary>' +
-              '<p class="sos-tip">' + esc(s.tip) + '</p>' +
-              '<ul class="sos-list">' +
-                s.phrases.map(function (ph) {
-                  return '<li><span class="sos-ja">' + esc(ph.ja) + '</span>' +
-                    '<span class="sos-r">' + esc(ph.r) + '</span>' +
-                    '<span class="sos-vi">' + esc(ph.vi) + '</span></li>';
-                }).join('') +
-              '</ul>' +
-            '</details>';
+      var tr = ((window.SITUATIONS_I18N || {})[s.id] || {})[LANG] || null;
+      return '<details class="sos">' +
+        '<summary><span class="sos-icon">' + esc(s.icon) + '</span>' + esc(tr ? tr.title : s.vi) + '</summary>' +
+        '<p class="sos-tip">' + esc(tr ? tr.tip : s.tip) + '</p>' +
+        '<ul class="sos-list">' +
+          s.phrases.map(function (ph, k) {
+            return '<li><span class="sos-ja">' + esc(ph.ja) + '</span>' +
+              '<span class="sos-r">' + esc(ph.r) + '</span>' +
+              '<span class="sos-vi">' + esc(tr && tr.phrases[k] ? tr.phrases[k] : ph.vi) + '</span></li>';
           }).join('') +
+        '</ul>' +
+      '</details>';
+    }).join('') +
         '</section>' +
       '</main>';
   }
 
   function viewLaw() {
-    return topbar('Luật mới & khác biệt') +
+    var L = ((window.LAW_I18N || {})[LANG]) || ((window.LAW_I18N || {}).vi) || null;
+    if (!L) { return viewHome(); }
+    var bullets = L.bullets.map(function (x) { return '<li>' + x + '</li>'; }).join('');
+    var rows = L.rows.map(function (x) {
+      return '<div class="cmp-row"><span>' + esc(x.a) + '</span>' +
+        '<span><b>' + esc(x.b) + '</b><i>' + esc(x.n) + '</i></span></div>';
+    }).join('');
+    return topbar(T('nav.law')) +
       '<main class="wrap info">' +
-'<section class="panel">' +
-          '<h2>Luật mới cần biết</h2>' +
-          '<ul>' +
-            '<li><b>新基準原付 (từ 1/4/2025):</b> xe 125cc trở xuống, công suất tối đa <b>4.0kW</b> — lái được bằng bằng 原付. ' +
-              'Vẫn 30km/h, vẫn 二段階右折, vẫn 1 người, biển số trắng. Xe 125cc không giới hạn công suất vẫn cần bằng 普通二輪.</li>' +
-            '<li><b>特定小型原付 (từ 1/7/2023):</b> xe điện tối đa 20km/h, từ 16 tuổi, <b>không cần bằng</b>, ' +
-              'đội mũ là <b>努力義務</b> (không bắt buộc như 原付 thường), đi dưới lòng đường là nguyên tắc.</li>' +
-            '<li><b>最低速度</b> chỉ áp dụng cho 自動車 — 原付 không bị ràng buộc bởi biển tốc độ tối thiểu.</li>' +
-          '</ul>' +
-          '<p class="muted">Nguồn: 道路交通法施行規則第1条の2, 道路交通法第23条・第71条の4, 警察庁 (2025).</p>' +
+        '<section class="panel">' +
+          '<h2>' + esc(L.h1) + '</h2>' +
+          '<ul>' + bullets + '</ul>' +
+          '<p class="muted">' + esc(L.src) + '</p>' +
         '</section>' +
-'<section class="panel">' +
-          '<h2>Thói quen Việt Nam vs Nhật Bản</h2>' +
-          '<p class="muted">Những phản xạ ở Việt Nam sẽ làm bạn trượt hoặc bị phạt ở Nhật.</p>' +
+        '<section class="panel">' +
+          '<h2>' + esc(L.h2) + '</h2>' +
+          '<p class="muted">' + esc(L.lead) + '</p>' +
           '<div class="cmp">' +
-            '<div class="cmp-row cmp-head"><span>Ở Việt Nam</span><span>Ở Nhật</span></div>' +
-            COMPARE.map(function (x) {
-              return '<div class="cmp-row"><span>' + esc(x.vi) + '</span>' +
-                '<span><b>' + esc(x.jp) + '</b><i>' + esc(x.note) + '</i></span></div>';
-            }).join('') +
+            '<div class="cmp-row cmp-head"><span>' + esc(L.head1) + '</span><span>' + esc(L.head2) + '</span></div>' +
+            rows +
           '</div>' +
         '</section>' +
         penaltyBlock() +
@@ -1528,61 +1628,60 @@
     if (!PENALTIES.length) { return ''; }
     var rows = PENALTIES.map(function (p) {
       var pts = p.points
-        ? '<span class="pen-pts">' + p.points + ' điểm</span>'
-        : '<span class="pen-pts pen-zero">0 điểm</span>';
+        ? '<span class="pen-pts">' + p.points + ' ' + T('pen.pt') + '</span>'
+        : '<span class="pen-pts pen-zero">0 ' + T('pen.pt') + '</span>';
       var fine = p.fine
         ? '<span class="pen-fine">' + yen(p.fine) + '</span>'
-        : '<span class="pen-fine pen-no">không có</span>';
+        : '<span class="pen-fine pen-no">' + T('pen.no') + '</span>';
       return '<div class="pen-row">' +
-        '<div class="pen-main"><b>' + esc(p.ja) + '</b><span>' + esc(p.vi) + '</span>' +
-          (p.note ? '<i class="pen-note">' + esc(p.note) + '</i>' : '') + '</div>' +
+        '<div class="pen-main"><b>' + esc(p.ja) + '</b><span>' + esc(p[LANG] || p.vi) + '</span>' +
+          (p.note ? '<i class="pen-note">' + esc(p.note[LANG] || p.note.vi) + '</i>' : '') + '</div>' +
         '<div class="pen-side">' + fine + pts + '</div>' +
       '</div>';
     }).join('');
 
     var heavy = PENALTIES_HEAVY.map(function (p) {
       return '<div class="pen-heavy-row">' +
-        '<div class="pen-main"><b>' + esc(p.ja) + '</b><span>' + esc(p.vi) + '</span></div>' +
-        '<div class="pen-heavy-pun">' + esc(p.punish) + '</div>' +
-        '<div class="pen-heavy-pts">' + esc(p.points) + '</div>' +
+        '<div class="pen-main"><b>' + esc(p.ja) + '</b><span>' + esc(p[LANG] || p.vi) + '</span></div>' +
+        '<div class="pen-heavy-pun">' + esc(p.punish[LANG] || p.punish.vi) + '</div>' +
+        '<div class="pen-heavy-pts">' + esc(p.points[LANG] || p.points.vi) + '</div>' +
       '</div>';
     }).join('');
 
-    var notes = PENALTY_NOTES.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('');
+    var notes = PENALTY_NOTES.map(function (n) { return '<li>' + esc(n[LANG] || n.vi) + '</li>'; }).join('');
 
     return '<section class="panel">' +
-        '<h2>Vi phạm thường gặp & mức phạt</h2>' +
-        '<p class="muted">Mức áp cho <b>原付</b> (biển trắng). Đây là 反則金 — nộp trong thời hạn thì không bị truy tố.</p>' +
+        '<h2>' + T('pen.title') + '</h2>' +
+        '<p class="muted">' + T('pen.lead') + '</p>' +
         '<div class="pen-list">' + rows + '</div>' +
       '</section>' +
       '<section class="panel">' +
-        '<h2>Lỗi nặng — ra tòa, không còn 反則金</h2>' +
+        '<h2>' + T('pen.heavy') + '</h2>' +
         '<div class="pen-heavy">' + heavy + '</div>' +
         '<ul class="pen-notes">' + notes + '</ul>' +
-        '<p class="muted">Nguồn: 警視庁 — bảng 反則金 và 点数, cập nhật 4/2026. Mức phạt có thể thay đổi theo luật.</p>' +
+        '<p class="muted">' + T('pen.src') + '</p>' +
       '</section>';
   }
 
   function viewConnect() {
-    return topbar('Cài app & góp ý') +
+    return topbar(T('nav.connect')) +
       '<main class="wrap info">' +
 '<section class="panel">' +
-          '<h2>Quét QR để cài app</h2>' +
-          '<p class="muted">Đưa điện thoại quét mã này, hoặc gửi cho bạn bè cùng học.</p>' +
+          '<h2>' + T('conn.qr') + '</h2>' +
+          '<p class="muted">' + T('conn.qrLead') + '</p>' +
           '<div class="qrbox"><img src="assets/qr.png" alt="Mã QR mở app 原付 50cc" width="240" height="240" loading="lazy"></div>' +
           '<p class="qrurl">tranthenghiem27892-afk.github.io/50cc</p>' +
           '<ol class="w-steps">' +
-            '<li><b>Android:</b> quét xong mở bằng Chrome → bấm nút ⬇️ trên app để cài</li>' +
-            '<li><b>iPhone:</b> mở bằng Safari → nút Chia sẻ → <b>Thêm vào Màn hình chính</b></li>' +
-            '<li>Nếu đang trong Zalo/Facebook: bấm “Mở bằng trình duyệt” trước</li>' +
+            '<li>' + T('conn.step1') + '</li>' +
+            '<li>' + T('conn.step2') + '</li>' +
+            '<li>' + T('conn.step3') + '</li>' +
           '</ol>' +
-          '<button class="btn btn-primary qrshare" data-act="share-app">Chia sẻ link cài app</button>' +
+          '<button class="btn btn-primary qrshare" data-act="share-app">' + T('conn.share') + '</button>' +
         '</section>' +
 '<section class="panel">' +
-          '<h2>Cộng đồng & góp ý</h2>' +
-          '<p>Thấy câu nào sai nghĩa, giải thích khó hiểu, hay muốn góp thêm câu hỏi? ' +
-            'Nhắn tin cho tác giả — mọi báo lỗi đều được xem lại và sửa trong bản cập nhật.</p>' +
-          '<p class="muted">Khi báo lỗi, gửi kèm mã câu (ví dụ <b>s23</b>) hoặc chụp màn hình để sửa nhanh hơn.</p>' +
+          '<h2>' + T('conn.comm') + '</h2>' +
+          '<p>' + T('conn.p1') + '</p>' +
+          '<p class="muted">' + T('conn.p2') + '</p>' +
         '</section>' +
         creditBlock() +
         changelogBlock() +
@@ -1591,22 +1690,28 @@
 
   function modelCard(m) {
     var brand = (window.MODEL_BRANDS || {})[m.brand] || {};
+    var tr = ((window.MODELS_I18N || {})[m.id] || {})[LANG] || null;
+    var type = tr ? tr.type : m.type;
+    var desc = tr ? tr.desc : m.desc;
+    var specs = tr ? tr.specs : m.specs;
+    var fit = tr ? tr.fit : m.fit;
+    var note = tr ? tr.note : m.note;
     return '<article class="model">' +
       '<div class="model-body">' +
         '<div class="model-head"><span class="model-brand">' + esc(m.brand) + '</span>' +
-          '<h3>' + esc(m.name) + '</h3></div>' +
-        '<p class="model-romaji">' + esc(m.romaji) + ' · ' + esc(m.type) + '</p>' +
+          '<h3>' + esc(String(m.name).replace('(dự kiến)', T('models.planned'))) + '</h3></div>' +
+        '<p class="model-romaji">' + esc(m.romaji) + ' · ' + esc(type) + '</p>' +
         '<div class="model-facts">' +
           '<span><b>' + esc(m.cc) + '</b></span>' +
-          '<span><b>' + esc(m.power) + '</b></span>' +
-          '<span><b>' + esc(m.price) + '</b></span>' +
+          '<span><b>' + esc(String(m.power).replace('(dự kiến)', T('models.planned'))) + '</b></span>' +
+          '<span><b>' + esc(String(m.price).replace(/^xe cũ /, T('models.used'))) + '</b></span>' +
         '</div>' +
-        '<p class="model-desc">' + esc(m.desc) + '</p>' +
-        '<ul class="model-specs">' + m.specs.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' +
-        '<p class="model-fit"><b>Phù hợp:</b> ' + esc(m.fit) + '</p>' +
-        '<p class="model-note">' + esc(m.note) + '</p>' +
+        '<p class="model-desc">' + esc(desc) + '</p>' +
+        '<ul class="model-specs">' + specs.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>' +
+        '<p class="model-fit"><b>' + T('models.fit') + '</b> ' + esc(fit) + '</p>' +
+        '<p class="model-note">' + esc(note) + '</p>' +
         '<a class="btn btn-ghost model-link" href="' + esc(m.url || brand.url || '#') + '" target="_blank" rel="noopener noreferrer">' +
-          esc(brand.label || 'Trang hãng') + ' ↗</a>' +
+          T('models.link') + ' ' + esc(m.brand) + ' ↗</a>' +
       '</div>' +
     '</article>';
   }
@@ -1616,18 +1721,17 @@
     var news = MODELS.filter(function (m) { return m.group === 'new'; });
     var olds = MODELS.filter(function (m) { return m.group !== 'new'; });
 
-    return topbar('Các mẫu xe phổ biến') +
+    return topbar(T('nav.models')) +
       '<main class="wrap">' +
         '<section class="panel">' +
-          '<h2>Xe lái được bằng bằng 原付</h2>' +
-          '<p class="muted">Từ 1/4/2025, <b>125cc trở xuống và công suất ≤ 4,0 kW</b> cũng thuộc nhóm 原付 — gọi là <b>新基準原付</b>. ' +
-            'Vẫn biển trắng, 30 km/h, rẽ phải hai bước, 1 người.</p>' +
-          '<p class="muted">Giá là giá niêm yết tham khảo, đã gồm thuế. Bấm nút cuối mỗi mục để sang trang hãng xem chi tiết.</p>' +
+          '<h2>' + T('models.title') + '</h2>' +
+          '<p class="muted">' + T('models.lead1') + ' ' + T('models.lead3') + '</p>' +
+          '<p class="muted">' + T('models.lead2') + '</p>' +
         '</section>' +
-        '<h3 class="group-title">新基準原付 · 125cc (đang bán)</h3>' +
+        '<h3 class="group-title">' + T('models.group1') + '</h3>' +
         news.map(modelCard).join('') +
-        '<h3 class="group-title">50cc (đã ngừng sản xuất 10/2025)</h3>' +
-        '<p class="muted group-note">Vẫn mua được xe cũ và vẫn hợp pháp, nhưng phụ tùng sẽ khan dần.</p>' +
+        '<h3 class="group-title">' + T('models.group2') + '</h3>' +
+        '<p class="muted group-note">' + T('models.note') + '</p>' +
         olds.map(modelCard).join('') +
       '</main>';
   }
@@ -1635,29 +1739,31 @@
   function viewGear() {
     if (!GEAR.length) { return viewHome(); }
     var items = GEAR.map(function (g) {
+      var tr = ((window.GEAR_I18N || {})[g.ja] || {})[LANG] || null;
       return '<article class="gear-item">' +
         '<div class="gear-icon">' + esc(g.icon) + '</div>' +
         '<div class="gear-body">' +
           '<div class="gear-head"><h3>' + esc(g.ja) + '</h3>' +
-            (g.must ? '<span class="gear-must">bắt buộc</span>' : '<span class="gear-opt">nên có</span>') + '</div>' +
-          '<p class="gear-vi">' + esc(g.vi) + '</p>' +
-          '<p class="gear-desc">' + esc(g.desc) + '</p>' +
-          '<p class="gear-tip">' + esc(g.tip) + '</p>' +
+            (g.must ? '<span class="gear-must">' + T('gear.must') + '</span>' : '<span class="gear-opt">' + T('gear.opt') + '</span>') + '</div>' +
+          '<p class="gear-vi">' + esc(tr ? tr.label : g.vi) + '</p>' +
+          '<p class="gear-desc">' + esc(tr ? tr.desc : g.desc) + '</p>' +
+          '<p class="gear-tip">' + esc(tr ? tr.tip : g.tip) + '</p>' +
         '</div>' +
       '</article>';
     }).join('');
 
-    var avoid = GEAR_AVOID.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('');
+    var avoidList = ((window.GEAR_AVOID_I18N || {})[LANG]) || GEAR_AVOID;
+    var avoid = avoidList.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('');
 
-    return topbar('Trang phục khi đi xe') +
+    return topbar(T('nav.gear')) +
       '<main class="wrap">' +
         '<section class="panel">' +
-          '<h2>Mặc gì khi đi 原付</h2>' +
-          '<p class="muted">Nguyên tắc: <b>che kín càng nhiều càng tốt</b> và <b>phải nhìn thấy từ xa</b>.</p>' +
+          '<h2>' + T('gear.title') + '</h2>' +
+          '<p class="muted">' + T('gear.lead') + '</p>' +
         '</section>' +
         items +
         '<section class="panel gear-avoid">' +
-          '<h2>Không nên</h2>' +
+          '<h2>' + T('gear.avoid') + '</h2>' +
           '<ul>' + avoid + '</ul>' +
         '</section>' +
       '</main>';
@@ -1665,15 +1771,17 @@
 
   function changelogBlock() {
     if (!CHANGELOG.length) { return ''; }
-    var rows = CHANGELOG.map(function (c) {
+    var tr = ((window.CHANGELOG_I18N || {})[LANG]) || null;
+    var rows = CHANGELOG.map(function (c, i) {
+      var src = (tr && tr[i]) ? tr[i] : { t: c.title, i: c.items };
       return '<details class="cl">' +
-        '<summary><b>' + esc(c.v) + '</b><span>' + esc(c.title) + '</span></summary>' +
-        '<ul>' + c.items.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+        '<summary><b>' + esc(c.v) + '</b><span>' + esc(src.t) + '</span></summary>' +
+        '<ul>' + src.i.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
       '</details>';
     }).join('');
     return '<section class="panel">' +
-      '<h2>Lịch sử cập nhật</h2>' +
-      '<p class="muted">Từ bản đầu tiên đến hôm nay — chạm để mở từng bản.</p>' +
+      '<h2>' + T('cl.title') + '</h2>' +
+      '<p class="muted">' + T('cl.lead') + '</p>' +
       rows +
       '</section>';
   }
@@ -1684,68 +1792,39 @@
         return '<a class="emg-row" href="tel:' + esc(x.tel) + '">' +
           '<span class="emg-num">' + esc(x.num) + '</span>' +
           '<span class="emg-txt"><b>' + esc(x.ja) + '</b>' +
-            '<i>' + esc(x.vi) + '</i>' +
-            '<em>' + esc(x.note) + '</em></span>' +
+            '<i>' + esc(x[LANG] || x.vi) + '</i>' +
+            '<em>' + esc((x.note && (x.note[LANG] || x.note.vi)) || '') + '</em></span>' +
           '<span class="emg-call">📞</span>' +
         '</a>';
       }).join('');
-      return '<section class="panel emg-group"><h2>' + esc(g.group) + '</h2>' + rows + '</section>';
+      return '<section class="panel emg-group"><h2>' + esc(g[LANG] || g.vi) + '</h2>' + rows + '</section>';
     }).join('');
 
-    var tips = EMERGENCY_TIPS.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('');
+    var tips = EMERGENCY_TIPS.map(function (x) { return '<li>' + esc(x[LANG] || x.vi) + '</li>'; }).join('');
 
-    return topbar('Số khẩn cấp') +
+    return topbar(T('nav.emg')) +
       '<main class="wrap info">' +
         '<section class="panel">' +
-          '<h2>Gọi khi cần — Nhật & Việt Nam</h2>' +
-          '<p class="muted">Bấm vào số để gọi luôn. Lưu sẵn vào danh bạ trước khi cần.</p>' +
+          '<h2>' + T('emg.head') + '</h2>' +
+          '<p class="muted">' + T('emg.lead') + '</p>' +
         '</section>' +
         blocks +
-        '<section class="panel"><h2>Khi gọi thì nói gì</h2><ul class="emg-tips">' + tips + '</ul></section>' +
+        '<section class="panel"><h2>' + T('emg.tips') + '</h2><ul class="emg-tips">' + tips + '</ul></section>' +
       '</main>';
   }
 
   function viewInfo() {
-    return topbar('Thủ tục & mẹo thi') +
-      '<main class="wrap info">' +
-        '<section class="panel">' +
-          '<h2>Thi lý thuyết 原付 (50cc)</h2>' +
-          '<p>Đề gồm <b>46 câu chữ ○×</b> (1 điểm/câu) và <b>2 câu hình 危険予測</b> (2 điểm/câu, mỗi câu có 3 tiểu hỏi — ' +
-          'đúng cả 3 mới được 2 điểm). Tổng <b>48 câu, 50 điểm, 45 điểm là đỗ</b>, làm trong <b>30 phút</b>.</p>' +
-          '<p>Không có thi thực hành — chỉ lý thuyết tại 運転免許試験場. Tỷ lệ đỗ toàn quốc khoảng <b>58,7%</b> (năm 2025).</p>' +
-          '<p class="muted">Nguồn tham khảo: trang 学科試験 của 高知県警察 (30 phút, 50 điểm, 45 điểm đỗ).</p>' +
-        '</section>' +
-        
-        '<section class="panel">' +
-          '<h2>Điều kiện & thủ tục</h2>' +
-          '<ul>' +
-            '<li>Đủ <b>16 tuổi</b> trở lên.</li>' +
-            '<li>Học <b>原付講習</b> (khoảng 3 giờ) tại trường dạy lái — bắt buộc, lệ phí tham khảo <b>5.250 yên</b>. ' +
-              'Nhiều tỉnh cho phép học trước hoặc sau khi thi, nhưng phải có giấy chứng nhận mới được cấp bằng.</li>' +
-            '<li>Thi 学科 tại 免許センター: lệ phí thi khoảng <b>1.600 yên</b>, lệ phí cấp bằng khoảng <b>2.350 yên</b> (khác nhau theo tỉnh).</li>' +
-            '<li>Giấy tờ: 住民票 (có 本籍), 在留カード, ảnh 3×2,4cm, tiền mặt.</li>' +
-            '<li>Thi xong thường biết kết quả trong ngày, nhận bằng cùng ngày nếu đã có 原付講習.</li>' +
-          '</ul>' +
-          '<p class="warn">Số liệu có thể thay đổi theo tỉnh và theo thời điểm — hãy kiểm tra trang web của 免許センター nơi bạn thi trước khi đi.</p>' +
-        '</section>' +
-        '<section class="panel">' +
-          '<h2>Mẹo làm bài</h2>' +
-          '<ul>' +
-            '<li>Câu hỏi luôn có một ý “tuyệt đối” (必ず, 絶対に, いつでも) — thường là câu <b>sai</b>.</li>' +
-            '<li>Nhóm câu về <b>二段階右折</b> xuất hiện rất nhiều: nhớ “3 làn trở lên” và “có đèn tín hiệu”.</li>' +
-            '<li>Phân biệt 駐車禁止 (chỉ cấm đỗ) và 駐停車禁止 (cấm cả dừng).</li>' +
-            '<li>Không bỏ trống câu nào — sai không bị trừ điểm.</li>' +
-          '</ul>' +
-        '</section>' +
-        
-        '<section class="panel">' +
-          '<h2>Về bộ câu hỏi này</h2>' +
-          '<p>Toàn bộ câu hỏi được biên soạn lại bằng tiếng Nhật từ nội dung luật (道路交通法), có giải thích tiếng Việt. ' +
-          'Không sao chép văn bản từ trang luyện thi nào.</p>' +
-        '</section>' +
-        
-        
-      '</main>';
+    var secs = ((window.INFO_I18N || {})[LANG]) || ((window.INFO_I18N || {}).vi) || [];
+    var html = secs.map(function (sec) {
+      var body = '';
+      (sec.ps || []).forEach(function (x) { body += '<p>' + esc(x) + '</p>'; });
+      if (sec.lis && sec.lis.length) {
+        body += '<ul>' + sec.lis.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+      }
+      if (sec.warn) { body += '<p class="warn">' + esc(sec.warn) + '</p>'; }
+      return '<section class="panel"><h2>' + esc(sec.h) + '</h2>' + body + '</section>';
+    }).join('');
+    return topbar(T('nav.info')) + '<main class="wrap info">' + html + '</main>';
   }
 
   /* ---------------- actions ---------------- */
@@ -1814,14 +1893,14 @@
   function viewCards() {
     if (!F) { return viewHome(); }
     if (F.i >= F.keys.length) {
-      return topbar('Flashcard từ vựng') +
+      return topbar(T('nav.cards')) +
         '<main class="wrap"><section class="panel fcdone">' +
-          '<h2>Xong lượt thẻ</h2>' +
-          '<p>Đã nhớ <b>' + F.ok + '</b> thẻ · còn khó <b>' + F.no + '</b> thẻ.</p>' +
-          '<p class="muted">Thẻ “còn khó” sẽ xuất hiện lại sớm hơn ở lượt sau.</p>' +
+          '<h2>' + T('cards.done') + '</h2>' +
+          '<p>' + T('cards.ok1') + ' <b>' + F.ok + '</b> ' + T('cards.ok2') + ' <b>' + F.no + '</b> ' + T('cards.ok3') + '</p>' +
+          '<p class="muted">' + T('cards.note') + '</p>' +
           '<div class="btnrow">' +
-            '<button class="btn btn-primary" data-act="cards-again">Lượt mới</button>' +
-            '<button class="btn btn-ghost" data-act="back" data-to="home">Về trang chủ</button>' +
+            '<button class="btn btn-primary" data-act="cards-again">' + T('cards.new') + '</button>' +
+            '<button class="btn btn-ghost" data-act="back" data-to="home">' + T('res.home') + '</button>' +
           '</div>' +
         '</section></main>';
     }
@@ -1834,29 +1913,29 @@
     F.anim = '';
     F.flip = '';
 
-    return topbar('Flashcard từ vựng') +
+    return topbar(T('nav.cards')) +
       '<main class="wrap fcmain">' +
-        '<div class="fc-meta">Thẻ ' + (F.i + 1) + '/' + F.keys.length +
-          ' · hộp ' + (box || 1) + '/3</div>' +
+        '<div class="fc-meta">' + T('cards.meta') + ' ' + (F.i + 1) + '/' + F.keys.length +
+          ' · ' + T('cards.box') + ' ' + (box || 1) + '/3</div>' +
         '<div class="fc3d' + (F.open ? ' back' : '') + (anim ? ' ' + anim : '') + flipCls + '" data-act="flip">' +
           '<div class="fc3d-inner">' +
             '<div class="fc-face fc-front">' +
               '<span class="fc-term">' + esc(k) + '</span>' +
-              '<span class="fc-hint">chạm để lật thẻ · lướt để đổi thẻ</span>' +
+              '<span class="fc-hint">' + T('cards.hint') + '</span>' +
             '</div>' +
             '<div class="fc-face fc-back">' +
               '<span class="fc-term">' + esc(k) + '</span>' +
               '<span class="fc-read">' + esc(v.r) + (hv ? ' · ' + esc(hv) : '') + '</span>' +
-              '<span class="fc-mean">' + esc(v.m) + '</span>' +
+              '<span class="fc-mean">' + esc(vMean(k, v)) + '</span>' +
             '</div>' +
           '</div>' +
         '</div>' +
         (F.open
           ? '<div class="btnrow fc-btns">' +
-              '<button class="btn btn-ghost" data-act="card-no">Chưa nhớ</button>' +
-              '<button class="btn btn-primary" data-act="card-yes">Đã nhớ</button>' +
+              '<button class="btn btn-ghost" data-act="card-no">' + T('cards.hard') + '</button>' +
+              '<button class="btn btn-primary" data-act="card-yes">' + T('cards.easy') + '</button>' +
             '</div>'
-          : '<button class="btn btn-primary fc-show" data-act="flip">Lật thẻ</button>') +
+          : '<button class="btn btn-primary fc-show" data-act="flip">' + T('cards.flip') + '</button>') +
       '</main>';
   }
 
@@ -1883,6 +1962,14 @@
     if (!el) { return; }
     cardPtr = { x: e.clientX, y: e.clientY, t: Date.now() };
   });
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'langSel') {
+      applyLang(e.target.value);
+      render(true);
+      try { fxLoad(false); } catch (err) { }
+    }
+  });
+
   document.addEventListener('pointerup', function (e) {
     if (!cardPtr) { return; }
     var dx = e.clientX - cardPtr.x;
@@ -1907,18 +1994,18 @@
       return '<button class="catrow" data-act="gram-pat" data-pat="' + esc(pat) + '">' +
         '<span class="catrow-icon">🔤</span>' +
         '<span class="catrow-main"><h3>' + esc(pat) + '</h3>' +
-          '<p>' + list.length + ' câu · ' + (n ? 'đúng ' + rate + '%' : 'chưa làm') + '</p>' +
+          '<p>' + list.length + ' ' + T('unit.q') + ' · ' + (n ? T('gr.done') + ' ' + rate + '%' : T('gr.notyet')) + '</p>' +
           '<span class="bar"><i style="width:' + rate + '%"></i></span></span>' +
         '<span class="chev">›</span></button>';
     }).join('');
 
-    return topbar('Bẫy ngôn ngữ') +
+    return topbar(T('nav.gram')) +
       '<main class="wrap">' +
         '<section class="panel gramintro">' +
-          '<h2>Đọc câu hỏi cho đúng</h2>' +
-          '<p>Đề 原付 gài bẫy bằng <b>cấu trúc câu</b> chứ không phải bằng luật. Nắm 8 mẫu dưới đây là nắm phần lớn câu khó.</p>' +
-          '<p class="muted">' + GQ.length + ' câu · ' + (st.n ? 'đúng ' + st.rate + '%' : 'chưa làm câu nào') + '</p>' +
-          '<button class="btn btn-primary" data-act="gram-all">Làm tất cả ' + GQ.length + ' câu</button>' +
+          '<h2>' + T('gr.intro') + '</h2>' +
+          '<p>' + T('gr.lead') + '</p>' +
+          '<p class="muted">' + GQ.length + ' ' + T('unit.q') + ' · ' + (st.n ? T('gr.done') + ' ' + st.rate + '%' : T('gr.none')) + '</p>' +
+          '<button class="btn btn-primary" data-act="gram-all">' + T('gr.all1') + ' ' + GQ.length + ' ' + T('gr.all2') + '</button>' +
         '</section>' +
         '<div class="catlist">' + rows + '</div>' +
       '</main>';
@@ -1950,7 +2037,7 @@
     if (S.picks[S.i] !== undefined) { return; }
     S.picks[S.i] = v;
     if (S.mode !== 'exam') {
-      var q = qById[S.ids[S.i]];
+      var q = localizeQ(qById[S.ids[S.i]]);
       record(q.id, q.a === v);
     }
     render(true);
@@ -2342,6 +2429,8 @@
 
   /* ?demo=... — chỉ dùng để chụp ảnh/giới thiệu, không ảnh hưởng lúc dùng thật */
   var demo = new URLSearchParams(location.search).get('demo');
+  var qLang = new URLSearchParams(location.search).get('lang');
+  if (qLang) { applyLang(qLang); }
   var themeParam = new URLSearchParams(location.search).get('theme');
   if (themeParam === 'dark' || themeParam === 'light') { applyTheme(themeParam); }
   try { if (localStorage.getItem('gentsuki.furi') === '1') { document.documentElement.classList.add('furi'); } } catch (e) { }
@@ -2421,6 +2510,16 @@
   (function () {
     var qa = new URLSearchParams(location.search).get('amt');
     if (qa) { FX_AMT = qa; }
+  })();
+
+  document.title = T('page.title');
+  (function () {
+    var md = document.querySelector('meta[name="description"]');
+    if (md) { md.setAttribute('content', T('meta.desc')); }
+    var og = document.querySelector('meta[property="og:description"]');
+    if (og) { og.setAttribute('content', T('meta.desc')); }
+    var ot = document.querySelector('meta[property="og:title"]');
+    if (ot) { ot.setAttribute('content', T('page.title')); }
   })();
 
   if (!cssFresh()) { warnStaleCss(); }
