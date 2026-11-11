@@ -107,7 +107,7 @@
     t38: 'Ở nơi có biển cấm xe cắt ngang đường, xe không được đi ngang qua.',
     t39: 'Ở nơi cấm xe cắt ngang, vẫn có thể đi ngang để vào cây xăng.',
     t40: 'Ở nơi cấm cắt ngang, phải đi vòng ra tới giao lộ.',
-    t41: 'Biển cấm cắt ngang chỉ áp dụng cho người đi bộ.',
+    t41: 'Biển 「車両横断禁止」 chỉ áp dụng cho người đi bộ.',
     t42: 'Trên đường có dải phân cách, chỗ có thể băng qua bị hạn chế.',
     t43: 'Khi xe ưu tiên hú còi tiến đến gần, phải nhường đường.',
     t44: 'Nếu đang ở trong giao lộ mà xe ưu tiên đến, phải nhanh chóng ra khỏi giao lộ.',

@@ -92,7 +92,7 @@
     n28: 'Quy định có biển phụ "trừ 原付" thì không áp dụng cho 原付.',
     n29: 'Quy định ghi "原付" cũng áp dụng cho 新基準原付.',
     n30: 'Ký hiệu "自二輪" trên biển phụ bao gồm cả 新基準原付.',
-    n31: '原付二種 (51–125cc) có thể lái bằng bằng 原付.',
+    n31: 'Xe 51–125cc có công suất trên 4,0kW (原付二種) lái được bằng bằng 原付.',
     n32: '原付二種 từ trên 90cc đến 125cc có biển số màu hồng nhạt.',
     n33: 'Mọi loại 原付 đều có màu biển số giống nhau.',
     s101: 'Đường có biển cấm xe hai bánh và 原付 đi lại thì 原付 cũng không được đi.',

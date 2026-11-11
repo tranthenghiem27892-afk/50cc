@@ -17,7 +17,7 @@ window.TRAPS = {
   b12: 'Biển số là một phần của đăng ký xe, thiếu là vi phạm.',
   b13: 'Không có loại bằng lái nào ở Nhật tồn tại vĩnh viễn.',
   b14: 'Bằng lái Nhật dùng được trên toàn quốc.',
-  b15: '125cc thuộc 原付二種, phải có bằng khác.',
+  b15: '125cc chỉ lái được bằng bằng 原付 khi công suất ≤ 4,0kW (新基準原付). Trên mức đó vẫn cần bằng 小型自動二輪.',
   b16: 'Tùy tỉnh có tổ chức ở 警察署, đừng mặc định chỉ có 試験場.',
   b17: '若葉マーク chỉ bắt buộc với ô tô trong năm đầu.',
   b18: 'Cấm vĩnh viễn, không phải chỉ năm đầu.',
@@ -69,7 +69,7 @@ window.TRAPS = {
   s37: '標示 nằm trên mặt đường; 標識 mới gắn trên cột.',
   s38: 'Đèn xanh không cho phép cản người đi bộ.',
 
-  c01: 'Từ 3 làn trở lên là bắt buộc, không phải tùy chọn.',
+  c01: 'Bắt buộc khi có đèn tín hiệu (hoặc cảnh sát điều khiển). Giao lộ 3 làn mà không có đèn thì không bắt buộc.',
   c02: 'Không đèn và không có cảnh sát điều khiển thì không bắt buộc hai bước.',
   c03: 'Đó chính là cách rẽ hai bước.',
   c04: 'Từ đường một chiều thì rẽ kiểu thường.',

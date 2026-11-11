@@ -93,8 +93,8 @@ window.QUESTIONS.push(
     exp: 'Đúng. Cấm cắt ngang đường.', trap: 'Không phải cấm rẽ.' },
     { id: 't40', cat: 'sign', a: 1, q: '横断禁止の場所では、遠回りして交差点まで行く。',
     exp: 'Đúng. Cách đúng là đi vòng.', trap: 'Không cắt ngang cho nhanh.' },
-  { id: 't41', cat: 'sign', a: 0, q: '横断禁止の標識は、歩行者だけに適用される。',
-    exp: 'Sai. Biển này áp dụng cho xe.', trap: 'Không nhầm với biển cho người đi bộ.' },
+  { id: 't41', cat: 'sign', a: 0, q: '「車両横断禁止」の標識は、歩行者だけに適用される。',
+    exp: 'Sai. Biển này cấm XE cắt ngang đường; người đi bộ không thuộc phạm vi biển này.', trap: 'Người đi bộ có biển riêng (歩行者横断禁止).' },
   { id: 't42', cat: 'sign', a: 1, q: '中央分離帯がある道路では、横断できる場所が限られる。',
     exp: 'Đúng. Phải tìm chỗ có vạch hoặc giao lộ.', trap: 'Không leo qua dải phân cách.' },
 

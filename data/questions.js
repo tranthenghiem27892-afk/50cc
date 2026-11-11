@@ -37,7 +37,7 @@ window.QUESTIONS = [
   /* ---------- 原付のきまり ---------- */
   { id: 'b01', cat: 'basic', a: 1,
     q: '原動機付自転車（原付）とは、排気量50cc以下、または定格出力0.6kW以下の二輪車をいう。',
-    exp: 'Đây là định nghĩa của 原付 — loại xe mà bằng 原付 cho phép lái. Xe điện có công suất định mức từ 0.6kW trở xuống cũng thuộc nhóm này.',
+    exp: 'Đây là định nghĩa gốc trong 道路交通法. Từ 1/4/2025 có thêm 新基準原付: xe 125cc trở xuống với công suất ≤ 4,0kW cũng được lái bằng bằng 原付 — nên định nghĩa này nay chưa bao trùm hết.',
     ref: '道路交通法第2条' },
 
   { id: 'b02', cat: 'basic', a: 1,
@@ -133,7 +133,7 @@ window.QUESTIONS = [
 
   /* ---------- 交差点・右左折 ---------- */
   { id: 'c01', cat: 'cross', a: 1,
-    q: '片側3車線以上の道路の交差点で右折するときは、二段階右折をしなければならない。',
+    q: '信号機のある片側3車線以上の交差点で右折するときは、二段階右折をしなければならない。',
     exp: 'Từ 3 làn trở lên theo một chiều (kể cả đường một chiều) thì bắt buộc rẽ phải 2 bước: đi thẳng qua giao lộ, dừng ở mép trái phía bên kia rồi mới rẽ.',
     ref: '道路交通法第34条' },
 
@@ -361,8 +361,8 @@ window.QUESTIONS = [
     ref: '' },
 
   { id: 'b15', cat: 'basic', a: 1,
-    q: '原付一種の免許で、125ccのバイクを運転することはできない。',
-    exp: 'Đúng. Xe 51–125cc (原付二種) cần 小型自動二輪免許, không dùng bằng 原付 được.',
+    q: '最高出力が4.0kWを超える125ccのバイクは、原付一種の免許では運転できない。',
+    exp: 'Đúng. Từ 1/4/2025, xe 125cc trở xuống NHƯNG công suất từ 4,0kW trở xuống (新基準原付) mới lái được bằng 原付. Xe 4kW vượt mức đó vẫn cần 小型自動二輪.',
     ref: '道路交通法第84条' },
 
   { id: 'b16', cat: 'basic', a: 1,
