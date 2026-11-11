@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '83';
+  var APP_VER = '102';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -25,6 +25,9 @@
   var PATS = Object.keys(byPat);
 
   var MODELS = window.MODELS || [];
+  var EMERGENCY = window.EMERGENCY || [];
+  var CHANGELOG = window.CHANGELOG || [];
+  var EMERGENCY_TIPS = window.EMERGENCY_TIPS || [];
   var PENALTIES = window.PENALTIES || [];
   var PENALTIES_HEAVY = window.PENALTIES_HEAVY || [];
   var PENALTY_NOTES = window.PENALTY_NOTES || [];
@@ -942,6 +945,11 @@
             '<span class="catrow-main"><h3>Trang phục khi đi xe <em>服装</em></h3>' +
               '<p>Mũ, găng, áo, giày · nên và không nên mặc</p></span>' +
             '<span class="chev">›</span></button>' +
+          '<button class="catrow" data-act="go-emg">' +
+            '<span class="catrow-icon">📞</span>' +
+            '<span class="catrow-main"><h3>Số khẩn cấp <em>緊急電話</em></h3>' +
+              '<p>110 · 119 · đại sứ quán · hotline bảo hộ</p></span>' +
+            '<span class="chev">›</span></button>' +
         '</div>' +
         '<p class="terms"><b>© 2026 Nghiệm Trần</b>' +
           'Đây là dự án miễn phí vì cộng đồng. Vui lòng chỉ dùng cá nhân, ' +
@@ -1007,6 +1015,8 @@
 
   function viewQuiz() {
     if (!S) { return viewHome(); }
+    var anim = S.anim || '';
+    S.anim = '';
     if (S.mode === 'exam' && S.phase === 'ill') { return viewIll(); }
     var q = qById[S.ids[S.i]];
     var cat = catById[q.cat] || { vi: '', ja: '', icon: '' };
@@ -1046,7 +1056,7 @@
       '</header>' +
       '<div class="progress"><i style="width:' + (((S.i + (answered ? 1 : 0)) / total) * 100) + '%"></i></div>' +
       '<main class="wrap quizwrap">' +
-        '<article class="qcard">' +
+        '<article class="qcard' + (anim ? ' ' + anim : '') + '">' +
           '<span class="qtag cat-' + q.cat + '">' + cat.icon + ' ' + cat.vi + '</span>' +
           sign +
           '<div class="qflip' + (S.viOn ? ' back' : '') + viAnimCls + '">' +
@@ -1064,7 +1074,8 @@
             '<button class="qctl-btn' + (S.viOn ? ' on' : '') + '" data-act="vi">🌐 Dịch</button>' +
           '</div>' +
           '<p class="qhint">' + (isExam ? 'Chọn ○ nếu đúng, × nếu sai' : 'Câu này đúng hay sai?') +
-            ' · <span class="w-tip">chạm từ tiếng Nhật để tra nghĩa</span></p>' +
+            ' · <span class="w-tip">chạm từ để tra nghĩa' +
+              (isExam ? '' : ' · lướt ngang để đổi câu') + '</span></p>' +
           answers +
         '</article>' +
         (showFb ? feedback(q, picked) : '') +
@@ -1081,7 +1092,8 @@
     var subs = set.subs.map(function (s, k) {
       var p = picks[k];
       return '<div class="ill-sub">' +
-        '<p class="ill-q"><b>' + (k + 1) + '.</b> ' + mark(esc(s.q)) + '</p>' +
+        '<p class="ill-q"><b>' + (k + 1) + '.</b> ' + mark(esc(s.q)) +
+          (s.vi ? '<span class="ill-vi' + (S.viOn ? '' : ' vi-off') + '">' + esc(s.vi) + '</span>' : '') + '</p>' +
         '<div class="ill-ans">' +
           '<button class="pill-ans' + (p === 1 ? ' sel' : '') + '" data-act="ill" data-k="' + k + '" data-v="1">○ Đúng</button>' +
           '<button class="pill-ans' + (p === 0 ? ' sel' : '') + '" data-act="ill" data-k="' + k + '" data-v="0">× Sai</button>' +
@@ -1100,7 +1112,13 @@
       '<main class="wrap quizwrap">' +
         '<article class="qcard">' +
           '<span class="qtag cat-bike">🎬 ' + esc(set.title) + '</span>' +
-          '<p class="ill-scene">' + mark(esc(set.scene)) + '</p>' +
+          ((window.ILL_ART && window.ILL_ART[set.id])
+            ? '<div class="ill-art">' + window.ILL_ART[set.id] + '</div>' : '') +
+          '<p class="ill-scene">' + mark(esc(set.scene)) +
+            (set.sceneVi ? '<span class="ill-vi' + (S.viOn ? '' : ' vi-off') + '">' + esc(set.sceneVi) + '</span>' : '') + '</p>' +
+          '<div class="qctl ill-ctl">' +
+            '<button class="qctl-btn' + (S.viOn ? ' on' : '') + '" data-act="vi">🌐 Dịch</button>' +
+          '</div>' +
           '<p class="qhint">Ba nhận định dưới đây đúng hay sai? Đúng cả 3 mới được 2 điểm.</p>' +
           subs +
         '</article>' +
@@ -1148,7 +1166,8 @@
     S.ills.forEach(function (id, j) {
       var ok = S.illPicks[j].every(function (p) { return p !== undefined; });
       var cls = 'dot ill' + (ok ? ' done' : '') + (S.phase === 'ill' && j === S.j ? ' cur' : '');
-      dots += '<span class="' + cls + '">' + (S.ids.length + j + 1) + '</span>';
+      dots += '<button class="' + cls + '" data-act="jump-ill" data-j="' + j + '">' +
+        (S.ids.length + j + 1) + '</button>';
     });
 
     var allText = S.picks.every(function (p) { return p !== undefined; });
@@ -1161,8 +1180,11 @@
         '<button class="btn btn-primary" data-act="' + (allText ? 'to-ill' : 'next') + '">' +
           (allText ? 'Câu hình →' : 'Tiếp →') + '</button>';
     } else {
-      btns = '<button class="btn btn-ghost" data-act="to-text">← Trước</button>' +
-        '<button class="btn btn-primary" data-act="submit"' + (allIll ? '' : ' disabled') + '>Nộp bài</button>';
+      var lastIll = S.j >= S.ills.length - 1;
+      btns = '<button class="btn btn-ghost" data-act="prev">← Trước</button>' +
+        (lastIll
+          ? '<button class="btn btn-primary" data-act="submit">Nộp bài</button>'
+          : '<button class="btn btn-primary" data-act="next">Tiếp →</button>');
     }
     /* giữ chỗ nút "nộp sớm" ở mọi trạng thái để chân trang không nhảy */
     var early = S.phase === 'text';
@@ -1309,7 +1331,8 @@
         r.ill.map(function (x) {
           var set = illById[x.id];
           return '<div class="illres ' + (x.ok ? 'ok' : 'ng') + '">' +
-            '<div class="illres-head">' + (x.ok ? '✓ +2 điểm' : '✗ 0 điểm') + ' · ' + esc(set.title) + '</div>' +
+            '<div class="illres-head">' + (x.ok ? '✓ +2 điểm' : '✗ 0 điểm') + ' · ' + esc(set.title) +
+              (set.titleVi ? ' · ' + esc(set.titleVi) : '') + '</div>' +
             '<p>' + esc(set.exp) + '</p></div>';
         }).join('') + '</section>';
     }
@@ -1449,6 +1472,7 @@
         '<section class="panel">' +
           '<h2>Câu tiếng Nhật dùng được ngay</h2>' +
           '<p class="muted">Chạm vào từng tình huống để mở.</p>' +
+          '<button class="btn btn-ghost emg-link" data-act="go-emg">📞 Số khẩn cấp — Nhật & Việt Nam</button>' +
           SITS.map(function (s) {
             return '<details class="sos">' +
               '<summary><span class="sos-icon">' + esc(s.icon) + '</span>' + esc(s.vi) + '</summary>' +
@@ -1561,6 +1585,7 @@
           '<p class="muted">Khi báo lỗi, gửi kèm mã câu (ví dụ <b>s23</b>) hoặc chụp màn hình để sửa nhanh hơn.</p>' +
         '</section>' +
         creditBlock() +
+        changelogBlock() +
       '</main>';
   }
 
@@ -1635,6 +1660,48 @@
           '<h2>Không nên</h2>' +
           '<ul>' + avoid + '</ul>' +
         '</section>' +
+      '</main>';
+  }
+
+  function changelogBlock() {
+    if (!CHANGELOG.length) { return ''; }
+    var rows = CHANGELOG.map(function (c) {
+      return '<details class="cl">' +
+        '<summary><b>' + esc(c.v) + '</b><span>' + esc(c.title) + '</span></summary>' +
+        '<ul>' + c.items.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+      '</details>';
+    }).join('');
+    return '<section class="panel">' +
+      '<h2>Lịch sử cập nhật</h2>' +
+      '<p class="muted">Từ bản đầu tiên đến hôm nay — chạm để mở từng bản.</p>' +
+      rows +
+      '</section>';
+  }
+
+  function viewEmergency() {
+    var blocks = EMERGENCY.map(function (g) {
+      var rows = g.items.map(function (x) {
+        return '<a class="emg-row" href="tel:' + esc(x.tel) + '">' +
+          '<span class="emg-num">' + esc(x.num) + '</span>' +
+          '<span class="emg-txt"><b>' + esc(x.ja) + '</b>' +
+            '<i>' + esc(x.vi) + '</i>' +
+            '<em>' + esc(x.note) + '</em></span>' +
+          '<span class="emg-call">📞</span>' +
+        '</a>';
+      }).join('');
+      return '<section class="panel emg-group"><h2>' + esc(g.group) + '</h2>' + rows + '</section>';
+    }).join('');
+
+    var tips = EMERGENCY_TIPS.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('');
+
+    return topbar('Số khẩn cấp') +
+      '<main class="wrap info">' +
+        '<section class="panel">' +
+          '<h2>Gọi khi cần — Nhật & Việt Nam</h2>' +
+          '<p class="muted">Bấm vào số để gọi luôn. Lưu sẵn vào danh bạ trước khi cần.</p>' +
+        '</section>' +
+        blocks +
+        '<section class="panel"><h2>Khi gọi thì nói gì</h2><ul class="emg-tips">' + tips + '</ul></section>' +
       '</main>';
   }
 
@@ -1886,8 +1953,30 @@
       var q = qById[S.ids[S.i]];
       record(q.id, q.a === v);
     }
-    render();
+    render(true);
   }
+
+  /* vuốt ngang để đổi câu khi luyện theo nhóm */
+  var pracSwipe = null;
+  document.addEventListener('pointerdown', function (e) {
+    if (!S || S.mode !== 'practice' || screen !== 'quiz') { return; }
+    if (e.target.closest('button, a, input, textarea')) { return; }
+    pracSwipe = { x: e.clientX, y: e.clientY, t: Date.now() };
+  });
+  document.addEventListener('pointerup', function (e) {
+    if (!pracSwipe) { return; }
+    var dx = e.clientX - pracSwipe.x;
+    var dy = e.clientY - pracSwipe.y;
+    var dt = Date.now() - pracSwipe.t;
+    pracSwipe = null;
+    if (dt > 900 || Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) { return; }
+    if (dx < 0) {
+      if (S && S.i + 1 < S.ids.length) { S.anim = 'in-left'; next(); }
+    } else {
+      S.anim = 'in-right';
+      prev();
+    }
+  });
 
   function next() {
     if (!S) { return; }
@@ -1957,8 +2046,9 @@
   }
 
   /* ---------------- render ---------------- */
-  function render() {
+  function render(keepScroll) {
     var app = document.getElementById('app');
+    var y = window.scrollY || window.pageYOffset || 0;
     var html;
     if (screen === 'practice') { html = viewPractice(); }
     else if (screen === 'quiz') { html = viewQuiz(); }
@@ -1973,9 +2063,16 @@
     else if (screen === 'connect') { html = viewConnect(); }
     else if (screen === 'models') { html = viewModels(); }
     else if (screen === 'gear') { html = viewGear(); }
+    else if (screen === 'emg') { html = viewEmergency(); }
     else { html = viewHome(); }
     app.innerHTML = html;
-    window.scrollTo(0, 0);
+    if (keepScroll) {
+      /* giữ nguyên vị trí cuộn khi chỉ bật/tắt bản dịch, phiên âm */
+      window.scrollTo(0, y);
+      requestAnimationFrame(function () { window.scrollTo(0, y); });
+    } else {
+      window.scrollTo(0, 0);
+    }
     if (screen === 'home') {
       fxLoad(false);
       startVocabRotate();
@@ -2009,7 +2106,7 @@
       return;
     }
     if (act === 'furi') { toggleFuri(); return; }
-    if (act === 'vi') { if (S) { S.viOn = !S.viOn; S.viAnim = true; render(); } return; }
+    if (act === 'vi') { if (S) { S.viOn = !S.viOn; S.viAnim = true; render(true); } return; }
     if (act === 'fx') { fxLoad(true); return; }
     if (act === 'fxflip') {
       if (e.target.closest('input, button, a')) { return; }
@@ -2034,7 +2131,7 @@
     }
     if (act === 'theme') {
       applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
-      render();
+      render(true);
       return;
     }
 
@@ -2048,6 +2145,7 @@
     if (act === 'go-connect') { go('connect'); return; }
     if (act === 'go-models') { go('models'); return; }
     if (act === 'go-gear') { go('gear'); return; }
+    if (act === 'go-emg') { go('emg'); return; }
     if (act === 'check') {
       var ck = t.dataset.k;
       db.checklist[ck] = !db.checklist[ck];
@@ -2096,7 +2194,7 @@
       if (F) {
         F.open = !F.open;
         F.flip = F.open ? 'flip-to-back' : 'flip-to-front';
-        render();
+        render(true);
       }
       return;
     }
@@ -2125,7 +2223,7 @@
     if (act === 'ill') {
       if (!S || S.phase !== 'ill') { return; }
       S.illPicks[S.j][Number(t.dataset.k)] = Number(t.dataset.v);
-      render();
+      render(true);
       return;
     }
     if (act === 'next') { next(); return; }
@@ -2133,8 +2231,16 @@
     if (act === 'to-ill') { S.phase = 'ill'; S.j = 0; render(); return; }
     if (act === 'to-text') { S.phase = 'text'; S.i = S.ids.length - 1; render(); return; }
     if (act === 'jump') {
-      if (S.mode === 'exam' && S.phase !== 'text') { return; }
-      S.i = Number(t.dataset.i); render(); return;
+      S.phase = 'text';
+      S.i = Number(t.dataset.i);
+      render();
+      return;
+    }
+    if (act === 'jump-ill') {
+      S.phase = 'ill';
+      S.j = Number(t.dataset.j);
+      render();
+      return;
     }
     if (act === 'submit') {
       var left = S.ids.filter(function (id, i) { return S.picks[i] === undefined; }).length;
@@ -2255,6 +2361,7 @@
   else if (demo === 'models') { go('models'); }
   else if (demo === 'fxback') { FX_FLIP = true; go('home'); }
   else if (demo === 'gear') { go('gear'); }
+  else if (demo === 'emg') { go('emg'); }
   else if (demo === 'connect') { go('connect'); }
   else if (demo === 'sos') { go('sos'); }
   else if (demo === 'cards') {
