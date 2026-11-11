@@ -1,6 +1,6 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const VERSION = '102';
+const VERSION = '156';
 const CACHE = 'gentsuki-v' + VERSION;
 
 const ASSETS = [
@@ -36,6 +36,39 @@ const ASSETS = [
   './data/penalties.js',
   './data/emergency.js',
   './data/changelog.js',
+  './data/changelog_i18n.js',
+  './data/changelog_i18n_extra.js',
+  './data/i18n.js',
+  './data/qtext_i18n_1.js',
+  './data/qtext_i18n_2.js',
+  './data/qtext_i18n_3.js',
+  './data/qtext_i18n_4.js',
+  './data/qtext_i18n_5.js',
+  './data/qtext_i18n_6.js',
+  './data/grammar_i18n.js',
+  './data/exp_i18n_1.js',
+  './data/exp_i18n_2.js',
+  './data/exp_i18n_3.js',
+  './data/exp_i18n_4.js',
+  './data/exp_i18n_5.js',
+  './data/exp_i18n_6.js',
+  './data/exp_i18n_7.js',
+  './data/exp_i18n_8.js',
+  './data/exp_i18n_9.js',
+  './data/law_i18n.js',
+  './data/ill_exp_i18n.js',
+  './data/trap_i18n_1.js',
+  './data/trap_i18n_3.js',
+  './data/trap_i18n_2.js',
+  './data/vocab_i18n_1.js',
+  './data/vocab_i18n_2.js',
+  './data/vocab_i18n_3.js',
+  './data/vocab_i18n_4.js',
+  './data/quote_i18n_1.js',
+  './data/quote_i18n_2.js',
+  './data/catalog_i18n.js',
+  './data/sos_i18n.js',
+  './data/info_i18n.js',
   './data/models.js',
   './data/illustrations.js',
   './data/ill-art.js',
