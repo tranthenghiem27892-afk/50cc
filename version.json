@@ -1,6 +1,6 @@
 {
-  "version": "156",
-  "cache": "gentsuki-v156",
+  "version": "158",
+  "cache": "gentsuki-v158",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v156: tỷ giá và máy đổi tiền theo ngôn ngữ (VND/CNY/PHP)."
+  "note": "v158: tương phản hộp thoại + sửa vuốt mobile."
 }
