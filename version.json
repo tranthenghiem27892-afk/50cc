@@ -1,6 +1,6 @@
 {
-  "version": "83",
-  "cache": "gentsuki-v83",
+  "version": "102",
+  "cache": "gentsuki-v102",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v83: thêm mục vi phạm thường gặp và khung xử phạt trong Luật mới & khác biệt."
+  "note": "v102: hiệu ứng lướt đổi câu khi luyện giống flashcard."
 }

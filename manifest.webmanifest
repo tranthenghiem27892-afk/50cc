@@ -1,7 +1,7 @@
 {
   "name": "原付免許 50cc — Luyện thi bằng lái xe 50cc",
   "short_name": "原付 50cc",
-  "description": "278 câu hỏi ○× tiếng Nhật, giải thích tiếng Việt, thi thử 50 câu trong 30 phút.",
+  "description": "619 câu hỏi ○× tiếng Nhật, giải thích tiếng Việt, thi thử 48 câu (46 chữ + 2 hình) trong 30 phút.",
   "lang": "vi",
   "start_url": "./",
   "scope": "./",
