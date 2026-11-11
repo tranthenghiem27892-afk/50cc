@@ -1,4 +1,4 @@
-/* gentsuki-css v70 */
+/* gentsuki-css v102 */
 /* ============================================================
    原付免許 50cc — styles
    ============================================================ */
@@ -1662,3 +1662,81 @@ html.furi .w rt { visibility: visible; }
 .pen-notes { margin: 12px 0 0 18px; padding: 0; font-size: 12px; line-height: 1.7; color: var(--ink-soft); }
 [data-theme="dark"] .pen-pts { background: #2a2622; color: #c9c3b8; }
 [data-theme="dark"] .pen-heavy-row { background: #2c1c20; border-color: #47262d; }
+
+/* ---------- hình minh hoạ câu 47/48 ---------- */
+.ill-art {
+  margin: 12px 0 4px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #dfe7ef;
+  line-height: 0;
+}
+.ill-art svg { width: 100%; height: auto; display: block; }
+[data-theme="dark"] .ill-art { background: #1b2027; border-color: #2b3138; }
+
+/* bản dịch phụ dưới câu tiếng Nhật (câu hình) */
+.ill-vi {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.ill-ctl { margin: 8px 0 0; }
+
+/* bản dịch câu hình: luôn giữ chỗ để bật/tắt không đổi kích thước khối */
+.ill-vi.vi-off { visibility: hidden; }
+
+/* ---------- số khẩn cấp ---------- */
+.emg-group h2 { margin-bottom: 6px; }
+.emg-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--line);
+  text-decoration: none; color: inherit;
+}
+.emg-row:last-child { border-bottom: 0; }
+.emg-num {
+  flex: none; min-width: 104px;
+  font-size: 17px; font-weight: 800; letter-spacing: -.01em;
+  color: var(--red); font-variant-numeric: tabular-nums;
+}
+.emg-txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.emg-txt b { font-size: 13px; color: var(--ink); }
+.emg-txt i { font-style: normal; font-size: 11.5px; color: var(--ink-soft); }
+.emg-txt em { font-style: normal; font-size: 10.5px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+.emg-call { margin-left: auto; flex: none; font-size: 15px; opacity: .5; }
+.emg-row:active { background: #faf6ef; }
+.emg-tips { margin: 8px 0 0 18px; padding: 0; font-size: 12.5px; line-height: 1.75; color: var(--ink-soft); }
+[data-theme="dark"] .emg-row:active { background: #241f1b; }
+
+.emg-link { display: block; width: 100%; margin: 4px 0 12px; text-align: center; }
+
+/* ---------- lịch sử cập nhật ---------- */
+.cl {
+  border: 1px solid var(--line); border-radius: 12px;
+  margin-top: 8px; background: var(--card); overflow: hidden;
+}
+.cl > summary {
+  list-style: none; cursor: pointer;
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 11px 13px;
+}
+.cl > summary::-webkit-details-marker { display: none; }
+.cl > summary::after {
+  content: '›'; margin-left: auto; color: var(--muted);
+  font-size: 16px; line-height: 1; transform: rotate(90deg); transition: transform .2s;
+}
+.cl[open] > summary::after { transform: rotate(-90deg); }
+.cl > summary b {
+  flex: none; font-size: 11.5px; font-weight: 800; letter-spacing: .02em;
+  color: var(--red); background: #fdeef0; border-radius: 999px; padding: 2px 8px;
+}
+.cl > summary span { font-size: 13px; font-weight: 600; color: var(--ink); }
+.cl ul { margin: 0 0 12px 32px; padding: 0; font-size: 12.5px; line-height: 1.7; color: var(--ink-soft); }
+.cl ul li { margin-bottom: 3px; }
+[data-theme="dark"] .cl > summary b { background: #3a1d23; color: #ff8fa3; }
+
+/* hiệu ứng lướt đổi câu — giống thẻ flashcard */
+.qcard.in-left { animation: fcInL .28s ease both; }
+.qcard.in-right { animation: fcInR .28s ease both; }
