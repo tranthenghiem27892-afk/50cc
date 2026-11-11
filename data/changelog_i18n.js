@@ -23,7 +23,9 @@ window.CHANGELOG_I18N = {
       '汇率卡与换算器按语言切换币种：越南语 → VND，中文 → CNY，Filipino → PHP',
       '汇率、90 天图表与缓存按币种分开保存',
       '切换语言时自动加载新币种的汇率'
-    ] }
+    ] },
+    { t: '应用内对话框与手机滑动', i: ['提前交卷改用应用内对话框 — 不再显示网址', '交卷、退出考试、清除进度提示按语言显示', '修复手机滑动换题：可从题干文字开始滑，补 touch-action 与触摸处理', '单词卡也启用 touch-action，手机上更顺'] },
+    { t: '对话框对比度', i: ['深色模式下确认框改用浅色底，更易阅读'] }
   ],
   fil: [
     { t: 'Unang bersyon', i: ['278 ○× na tanong sa Hapon, 8 kategorya', 'Mock exam tulad ng tunay: 46 text + 2 larawan, 50 puntos, 45 passing, 30 minuto', 'Naka-save sa device ang progreso at history'] },
@@ -40,6 +42,8 @@ window.CHANGELOG_I18N = {
     { t: 'Malalim na salin at paglilinis', i: ['Isinalin ang bagong batas at 12 ilustrasyon', 'Isinalin ang label ng Stats, Grammar, modelo, rate card', 'Itinago ang Hán-Việt at Vietnamese kapag 中文 / Filipino', 'Meta description ayon sa wika'] },
     { t: 'Tapos ang “bakit mali” at ayos sa Salin button', i: ['293/293 “bakit mali” naisalin', 'Naayos ang expTxt: paliwanag ayon sa wika', 'Hindi na blangko ang Salin; larawan pagkatapos ng 3 sagot', 'Dinagdag ang salin sa practice page at feedback'] },
     { t: 'Isinalin lahat ng 619 tanong', i: ['619/619 tanong sa 中文 at Filipino (6 batch)', 'Bumalik ang Salin button: salin ng tanong sa likod', 'Kung walang salin, nakatago ang button', 'Vietnamese pa rin kapag Tiếng Việt'] },
-    { t: 'Pera ayon sa wika', i: ['Pinagsama ang v104–v119 changelog, 40 naging 14', 'Rate card at converter ayon sa wika: Vietnamese → VND, 中文 → CNY, Filipino → PHP', 'Hiwalay ang rate, 90-araw na chart at cache kada pera', 'Pagpalit ng wika, awtomatikong naglo-load ng bagong rate'] }
+    { t: 'Pera ayon sa wika', i: ['Pinagsama ang v104–v119 changelog, 40 naging 14', 'Rate card at converter ayon sa wika: Vietnamese → VND, 中文 → CNY, Filipino → PHP', 'Hiwalay ang rate, 90-araw na chart at cache kada pera', 'Pagpalit ng wika, awtomatikong naglo-load ng bagong rate'] },
+    { t: 'Dialog sa app at swipe sa mobile', i: ['Ang paalala sa maagang submit ay dialog na sa app — wala nang URL', 'Isinalin ang submit, exit at reset na paalala ayon sa wika', 'Ayos sa swipe sa mobile: puwedeng magsimula sa salita sa tanong, may touch-action at touch handling', 'May touch-action din ang flashcard para swabe sa phone'] },
+    { t: 'Kontrast ng dialog', i: ['Maliwanag ang background ng confirm sa dark mode, mas madaling basahin'] }
   ]
 };

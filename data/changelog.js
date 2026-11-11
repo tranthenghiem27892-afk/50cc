@@ -142,5 +142,21 @@ window.CHANGELOG = [
       'Tỷ giá, biểu đồ 90 ngày và bộ nhớ đệm tách riêng cho từng loại tiền',
       'Đổi ngôn ngữ là tự tải tỷ giá của tiền tệ mới'
     ]
+  },
+  {
+    v: 'v157', title: 'Hộp thoại trong app & vuốt trên mobile',
+    items: [
+      'Cảnh báo nộp bài sớm chuyển sang hộp thoại trong app — không còn hiện địa chỉ trang web',
+      'Dịch cảnh báo nộp bài, thoát bài thi và xoá tiến độ theo ngôn ngữ',
+      'Sửa vuốt đổi câu trên mobile: bắt đầu được từ chữ trong câu hỏi, thêm touch-action và xử lý chạm',
+      'Flashcard cũng được bật touch-action để vuốt mượt trên điện thoại'
+    ]
+  },
+  {
+    v: 'v158', title: 'Tương phản hộp thoại',
+    items: [
+      'Hộp thoại xác nhận có nền sáng ở chế độ tối, dễ đọc hơn'
+    ]
   }
+
 ];
