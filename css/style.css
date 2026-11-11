@@ -1,4 +1,4 @@
-/* gentsuki-css v156 */
+/* gentsuki-css v158 */
 /* ============================================================
    原付免許 50cc — styles
    ============================================================ */
@@ -1756,3 +1756,29 @@ html.furi .w rt { visibility: visible; }
 [data-theme="dark"] .lang-sel { background-color: #262220; border-color: #352f2a; color: #c9c3b8; }
 
 .lang-note { font-size: 11px; line-height: 1.6; margin: 2px 2px 10px; }
+
+/* ---------- hộp thoại xác nhận trong app (không lộ URL trình duyệt) ---------- */
+.cfm-wrap {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,.42);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.cfm {
+  background: var(--card); color: var(--ink);
+  border-radius: 16px; padding: 18px 16px 14px;
+  width: min(360px, 100%);
+  box-shadow: 0 18px 50px rgba(0,0,0,.28);
+}
+.cfm p { margin: 0 0 14px; font-size: 14px; line-height: 1.55; }
+.cfm-btns { display: flex; gap: 8px; justify-content: flex-end; }
+.cfm-btns .btn { padding: 9px 14px; font-size: 13px; }
+
+/* cho phép vuốt ngang trên thẻ câu hỏi, vẫn cuộn dọc bình thường */
+.qcard, .qcard .qtext { touch-action: pan-y; }
+.qcard .qtext button, .qcard .mark { touch-action: pan-y; }
+.fc3d, .fc3d-inner { touch-action: pan-y; }
+
+.cfm { background: #ffffff; color: #14120f; border: 1px solid rgba(0,0,0,.08); }
+[data-theme="dark"] .cfm { background: #2b2723; color: #f4f0e8; border-color: #3b352f; }
+[data-theme="dark"] .cfm-btns .btn-ghost { background: #353029; color: #f4f0e8; }
