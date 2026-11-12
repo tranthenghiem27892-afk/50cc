@@ -1,6 +1,6 @@
 /* Service worker — cho phép dùng offline sau lần mở đầu tiên.
    Đổi CACHE khi sửa nội dung để buộc tải bản mới. */
-const VERSION = '165';
+const VERSION = '192';
 const CACHE = 'gentsuki-v' + VERSION;
 
 const ASSETS = [
@@ -38,6 +38,12 @@ const ASSETS = [
   './data/changelog.js',
   './data/changelog_i18n.js',
   './data/changelog_i18n_extra.js',
+  './data/faq.js',
+  './data/law_faq.js',
+  './data/faq_alias.js',
+  './data/trouble_faq.js',
+  './data/care_faq.js',
+  './data/care_alias.js',
   './data/i18n.js',
   './data/qtext_i18n_1.js',
   './data/qtext_i18n_2.js',
@@ -59,6 +65,7 @@ const ASSETS = [
   './data/ill_exp_i18n.js',
   './data/trap_i18n_1.js',
   './data/trap_i18n_3.js',
+  './data/trap_i18n_4.js',
   './data/trap_i18n_2.js',
   './data/vocab_i18n_1.js',
   './data/vocab_i18n_2.js',

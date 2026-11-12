@@ -166,5 +166,43 @@ window.CHANGELOG = [
       'Đổi ngôn ngữ cập nhật luôn tiêu đề tab và mô tả trang',
       'Nút sáng/tối có thêm chế độ “Theo máy”; tự đổi khi hệ thống đổi giao diện'
     ]
+  },
+  {
+    v: 'v163 – v166', title: 'Đồng hồ, thời tiết & chatbox hỏi đáp',
+    items: [
+      'Khung lớn có đồng hồ và thời tiết theo vị trí, tự cập nhật mỗi 30 phút, dự phòng định vị theo IP',
+      'Chatbox hỏi đáp offline: 19 chủ đề thường gặp + tìm trong kho 619 câu, mở đúng màn hoặc đúng câu',
+      'Tuỳ chọn AI (Gemini / OpenRouter) bằng API key lưu trên máy; lỗi thì tự quay về dữ liệu app',
+      'Có cảnh báo bảo mật khi dùng key và không gửi dữ liệu cá nhân'
+    ]
+  },
+  {
+    v: 'v167 – v172', title: 'Nút chat & mở rộng kiến thức luật',
+    items: [
+      'Nút chat đặt sẵn trong HTML, có CSS dự phòng nên luôn hiện kể cả khi JS/CSS cũ',
+      'Thiết kế lại nút: viên gradient có chữ trên máy tính, tròn trên điện thoại, quầng sáng nhẹ',
+      'Chatbox mở rộng lên 45 chủ đề luật: đèn tín hiệu, biển báo, ưu tiên, vượt xe, tốc độ, đường sắt, chở người, chở hàng, cao tốc, điểm phạt, 特定小型原付…',
+      'Câu không khớp sẽ gợi ý 4 chủ đề gần nhất để bấm tiếp'
+    ]
+  },
+  {
+    v: 'v173 – v182', title: 'Mở rộng kho kiến thức chatbox',
+    items: [
+      'Thêm 26 chủ đề luật: đèn tín hiệu, biển báo, ưu tiên, vượt xe, tốc độ, đường sắt, chở người, cao tốc, điểm phạt…',
+      'Tra cứu mức phạt từ bảng 反則金: đèn đỏ, tốc độ, điện thoại, mũ, chở 2, không đèn, xi nhan, rượu, vô bằng, bảo hiểm',
+      'Thêm 16 tình huống sự cố: thủng lốp, hết xăng, ắc quy, kẹt ga, đứt xích, ngã xe, cứu hộ JAF…',
+      'Thêm 19 chủ đề bảo dưỡng & tự sửa: dầu máy, áp suất lốp, má phanh, bugi, cầu chì, chạy roda, vá tạm',
+      'Chatbox hiểu câu hỏi tiếng Trung/Filipino; tổng cộng 80 chủ đề'
+    ]
+  },
+  {
+    v: 'v183 – v191', title: 'Sửa lỗi & tinh gọn giao diện',
+    items: [
+      'Sửa lỗi nút “Câu tiếp” không chạy do biến next che hàm next',
+      'Dịch đủ 619/619 giải thích “vì sao sai” sang zh và fil',
+      'Chặn kéo-xuống-làm-mới ở mọi màn, chỉ cho phép ở trang chủ',
+      'Máy đổi tiền hiện dấu chấm phân cách ngay khi gõ',
+      'Khung đầu trang gọn hơn ~30%, tiêu đề về một hàng ở cả 3 ngôn ngữ'
+    ]
   }
 ];

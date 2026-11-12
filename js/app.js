@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '165';
+  var APP_VER = '192';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -405,7 +405,9 @@
 
     document.documentElement.setAttribute('lang', l === 'vi' ? 'vi' : l === 'zh' ? 'zh-Hans' : 'fil');
     try {
-      document.title = T('page.title');
+      try { chatMount(); } catch (err) { }
+
+  document.title = T('page.title');
       var md = document.querySelector('meta[name="description"]');
       if (md) { md.setAttribute('content', T('meta.desc')); }
       var og = document.querySelector('meta[property="og:description"]');
@@ -452,6 +454,7 @@
     }
     if (eTxt) { copy.exp = eTxt; }
     if (tp) { copy.trap = tp; }
+    else { copy.trap = ''; }
     return copy;
   }
 
@@ -556,10 +559,11 @@
   function quoteInner(q) {
     var tr = ((window.QUOTE_I18N || [])[lastQuote]) || null;
     var text = (tr && tr[LANG]) ? tr[LANG] : q.t;
+    var author = q.a && q.a.indexOf('Tục ngữ') >= 0 ? T('quote.jp') : q.a;
     return '<div class="quote-emoji">' + q.e + '</div>' +
       '<div class="quote-body">' +
         '<p class="quote-text">' + esc(text) + '</p>' +
-        (q.a ? '<p class="quote-author">— ' + esc(q.a) + '</p>' : '') +
+        (author ? '<p class="quote-author">— ' + esc(author) + '</p>' : '') +
       '</div>';
   }
 
@@ -813,14 +817,20 @@
 
   function fxFormatNow(el) {
     if (!el) { return; }
-    var digits = fxDigits(el.value).slice(0, 12);
+    var raw = el.value;
+    var digits = fxDigits(raw).slice(0, 12);
     var out = fxGroup(digits);
-    if (out === el.value) { return; }
-    var atEnd = (el.selectionStart === el.value.length);
+    if (out === raw) { return; }
+    var caret = el.selectionStart === null ? raw.length : el.selectionStart;
+    var before = fxDigits(raw.slice(0, caret)).length;
     el.value = out;
-    if (atEnd) {
-      try { el.setSelectionRange(out.length, out.length); } catch (err) { }
+    var pos = 0, seen = 0;
+    for (var i = 0; i < out.length; i++) {
+      if (out.charAt(i) >= '0' && out.charAt(i) <= '9') { seen++; }
+      if (seen >= before) { pos = i + 1; break; }
     }
+    if (before === 0) { pos = 0; }
+    try { el.setSelectionRange(pos, pos); } catch (err) { }
     FX_AMT = out;
   }
 
@@ -845,9 +855,9 @@
   document.addEventListener('input', function (e) {
     if (!e.target || e.target.id !== 'fxAmt') { return; }
     var el = e.target;
+    if (!amtComposing) { fxFormatNow(el); }   /* dấu chấm hiện ngay khi gõ */
     FX_AMT = el.value;
-    fxConvert();               /* kết quả cập nhật ngay, không bao giờ bị chặn */
-    if (!amtComposing) { fxSchedule(el); }
+    fxConvert();
   });
 
   document.addEventListener('focusout', function (e) {
@@ -2407,9 +2417,462 @@
   }
 
   /* ---------------- render ---------------- */
+
+  /* chặn pull-to-refresh của trình duyệt trên màn hình chính */
+  var PTR_Y = null;
+  document.addEventListener('touchstart', function (e) {
+    PTR_Y = null;
+    if (document.documentElement.classList.contains('sc-home')) { return; }
+    if (!e.touches || e.touches.length !== 1) { return; }
+    if (e.target.closest('#chatPanel, .chat-panel, .sheet, .sheet-wrap, input, textarea, select, .cnt-scroll')) { return; }
+    if ((window.scrollY || window.pageYOffset || 0) > 0) { return; }
+    PTR_Y = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchmove', function (e) {
+    if (PTR_Y === null || !e.touches || !e.touches.length) { return; }
+    if ((window.scrollY || window.pageYOffset || 0) > 0) { PTR_Y = null; return; }
+    var dy = e.touches[0].clientY - PTR_Y;
+    if (dy > 6 && e.cancelable) { e.preventDefault(); }
+  }, { passive: false });
+  document.addEventListener('touchend', function () { PTR_Y = null; }, { passive: true });
+  document.addEventListener('touchcancel', function () { PTR_Y = null; }, { passive: true });
+
+  /* ---------------- trợ lý hỏi đáp (offline + AI tuỳ chọn) ---------------- */
+  var CHAT = { open: false, msgs: [], busy: false };
+  var AI_CFG_KEY = 'gentsuki.ai.v1';
+
+  function aiCfg() {
+    try { return JSON.parse(localStorage.getItem(AI_CFG_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function aiSave(c) {
+    try { localStorage.setItem(AI_CFG_KEY, JSON.stringify(c)); } catch (e) { }
+  }
+  function chatNorm(s) {
+    return String(s || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9\u3040-\u30ff\u4e00-\u9fff]+/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+  }
+  function chatLang() { return LANG === 'zh' ? 'zh' : LANG === 'fil' ? 'fil' : 'vi'; }
+
+  function chatCjkGrams(n) {
+    var out = [];
+    var stop = { '可以': 1, '什么': 1, '怎么': 1, '是否': 1, '多少': 1, '请问': 1, '这个': 1, '那个': 1, '一下': 1, '怎样': 1, '如何': 1, '为什': 1, '吗吗': 1 };
+    var cjk = n.replace(/[^\u4e00-\u9fff]/g, '');
+    for (var i = 0; i + 1 < cjk.length; i++) {
+      var g = cjk.slice(i, i + 2);
+      if (!stop[g]) { out.push(g); }
+    }
+    return out;
+  }
+
+  function chatFaq(text) {
+    var n = chatNorm(text), best = null, bestScore = 0;
+    var grams = LANG === 'vi' ? [] : chatCjkGrams(n);
+    var stopFil = { 'ang': 1, 'mga': 1, 'ng': 1, 'sa': 1, 'ay': 1, 'at': 1, 'na': 1, 'ba': 1, 'po': 1, 'ko': 1, 'mo': 1, 'si': 1, 'ni': 1, 'sa': 1, 'para': 1, 'hindi': 1, 'may': 1, 'pag': 1, 'ito': 1, 'iyan': 1 };
+    var toks = LANG === 'vi' ? [] : n.split(' ').filter(function (w) { return w.length >= 4 && !stopFil[w]; });
+    (window.FAQ || []).forEach(function (f) {
+      var sc = 0;
+      var aliases = ((window.FAQ_ALIAS || {})[f.id] || {})[LANG] || [];
+      (f.kw || []).concat(aliases).forEach(function (k) {
+        var kk = chatNorm(k);
+        if (kk && n.indexOf(kk) >= 0) {
+          var w = kk.length + (/[\u3040-\u30ff\u4e00-\u9fff]/.test(kk) ? 3 : 0);
+          if (/^[a-z0-9 ]+$/.test(kk)) {
+            var esc2 = kk.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            try {
+              if (new RegExp('(^|[^a-z0-9])' + esc2 + '([^a-z0-9]|$)').test(n)) { w += 2; }
+            } catch (e) { }
+          }
+          sc += Math.max(4, w);
+        }
+      });
+      if (LANG !== 'vi') {
+        var ans = chatNorm((f.a && (f.a[chatLang()] || f.a.vi)) || '');
+        grams.forEach(function (g) { if (ans.indexOf(g) >= 0) { sc += 6; } });
+        toks.forEach(function (w) { if (ans.indexOf(w) >= 0) { sc += 3; } });
+      }
+      if (sc > 0 && sc >= bestScore) { bestScore = sc; best = f; }
+    });
+    return bestScore >= 6 ? best : null;
+  }
+
+  function chatSearchQ(text) {
+    var n = chatNorm(text);
+    var toks = n.split(' ').filter(function (w) { return w.length >= 2; });
+    if (!toks.length || !window.Q) { return []; }
+    var out = [];
+    window.Q.forEach(function (q) {
+      var hay = chatNorm((VI[q.id] || '') + ' ' + (q.exp || '') + ' ' + (q.trap || '') + ' ' + (q.q || ''));
+      var sc = 0;
+      toks.forEach(function (w) { if (hay.indexOf(w) >= 0) { sc += 1; } });
+      if (sc >= 2) { out.push({ q: q, sc: sc }); }
+    });
+    out.sort(function (a, b) { return b.sc - a.sc; });
+    return out.slice(0, 3);
+  }
+
+  var PEN_TOPICS = [
+    { k: ['den do', 'vuot den', 'red light', '红灯', 'pula', 'lumampas sa pula'], q: '信号無視' },
+    { k: ['toc do', 'speed', '超速', 'bilis', 'sobra sa bilis'], q: '速度超過' },
+    { k: ['dien thoai', 'cellphone', '手机', 'telepono'], q: '携帯電話' },
+    { k: ['mu bao hiem', 'helmet', '头盔', 'sombrero', 'walang helmet'], q: 'ヘルメット' },
+    { k: ['cho 2', 'hai nguoi', 'cho nguoi', 'angkas', 'pasahero', '载人'], q: '乗車積載' },
+    { k: ['khong bat den', 'den xe', 'ilaw', '未开灯', 'walang ilaw'], q: '無灯火' },
+    { k: ['xi nhan', 'signal', '转向灯'], q: '合図' },
+    { k: ['dung lai', '止まれ', 'stop', 'tigil'], q: '一時不停止' },
+    { k: ['ruou', 'con ', 'alcohol', '酒', 'alak', 'lasing'], q: '酒' },
+    { k: ['khong co bang', 'vo bang', '無免許', 'walang lisensya'], q: '無免許' },
+    { k: ['bao hiem', 'insurance', '自賠責', 'seguro'], q: '無保険' },
+    { k: ['bo chay', 'hit and run', '逃逸', 'takas'], q: '救護義務' }
+  ];
+
+  function penItem(text, key) {
+    var n = chatNorm(text);
+    var hit = null;
+    PEN_TOPICS.forEach(function (tp) {
+      if (hit) { return; }
+      tp.k.forEach(function (k) {
+        if (!hit && n.indexOf(chatNorm(k)) >= 0) { hit = tp.q; }
+      });
+    });
+    var list = [];
+    if (window.PENALTIES) { list = list.concat(window.PENALTIES); }
+    if (window.PENALTIES_HEAVY) { list = list.concat(window.PENALTIES_HEAVY); }
+    var found = [];
+    list.forEach(function (it) {
+      var hay = chatNorm([it.vi, it.zh, it.fil, it.ja].filter(Boolean).join(' '));
+      if (hay.indexOf(chatNorm(key || hit || '')) >= 0 && (key || hit)) { found.push(it); }
+    });
+    return found.length ? found : null;
+  }
+
+  function penLine(it) {
+    var lang = chatLang();
+    var name = it[lang] || it.vi || it.ja;
+    var out = '<b>' + esc(name) + '</b>';
+    if (it.fine !== undefined) {
+      if (it.fine > 0) {
+        out += ' — ¥' + it.fine.toLocaleString('en-US') + ' · ' + it.points + ' ' + T('chat.pen.pts');
+      } else {
+        var note = (it.note && (it.note[lang] || it.note.vi)) || T('chat.pen.court');
+        out += ' — ' + esc(note) + ' · ' + it.points + ' ' + T('chat.pen.pts');
+      }
+    } else {
+      var punish = (it.punish && (it.punish[lang] || it.punish.vi)) || '';
+      var pts = (it.points && (it.points[lang] || it.points.vi)) || '';
+      out += ' — ' + esc(punish) + (pts ? ' · ' + esc(pts) : '');
+    }
+    return '<div class="chat-pen">' + out + '</div>';
+  }
+
+  function chatPenalty(text, allowGeneric) {
+    var n = chatNorm(text);
+    var asks = /phat|vi pham|muc phat|tien phat|反則|罰|点|multa|fine|penalt|suspens|revoke|扣分/.test(n);
+    var items = penItem(text);
+    if (!items && !(allowGeneric && asks)) { return ''; }
+    var body = '';
+    if (items) {
+      body = items.slice(0, 3).map(penLine).join('');
+    } else {
+      var picks = ['信号無視', '速度超過（15〜20km/h未満）', '携帯電話', 'ヘルメット', '乗車積載'];
+      var list = (window.PENALTIES || []).filter(function (it) {
+        return picks.some(function (pk) { return (it.ja || '').indexOf(pk) >= 0; });
+      });
+      body = (list.length ? list : (window.PENALTIES || []).slice(0, 5)).map(penLine).join('');
+      body = '<p class="chat-sub">' + T('chat.pen.list') + '</p>' + body +
+        '<p class="chat-sub">' + T('chat.pen.more') + '</p>';
+    }
+    return '<p class="chat-sub">' + T('chat.pen.head') + '</p>' + body +
+      '<p class="chat-pnote">' + T('chat.pen.note') + '</p>';
+  }
+
+  function chatAnswer(text) {
+    var pen = chatPenalty(text, false);
+    if (pen) { return pen; }
+    var f = chatFaq(text);
+    if (f) {
+      var ans = (f.a && (f.a[chatLang()] || f.a.vi)) || '';
+      var btn = f.screen
+        ? '<button class="chat-link" data-act="chat-go" data-screen="' + f.screen + '">' + T('chat.openSec') + ' →</button>'
+        : '';
+      return '<p>' + esc(ans) + '</p>' + btn;
+    }
+    pen = chatPenalty(text, true);
+    if (pen) { return pen; }
+    var hits = chatSearchQ(text);
+    if (hits.length) {
+      var cards = hits.map(function (h) {
+        var q = localizeQ(h.q);
+        var exp = String(q.exp || '').replace(/^(Đúng|Sai)\.\s+/i, '').slice(0, 110);
+        return '<button class="chat-q" data-act="chat-q" data-id="' + esc(q.id) + '">' +
+          '<b>' + esc(String(q.q || '').slice(0, 70)) + '…</b>' +
+          '<i>' + esc(exp) + '</i>' +
+          '<span>' + T('chat.openQ') + ' →</span>' +
+        '</button>';
+      }).join('');
+      return '<p class="chat-sub">' + T('chat.found') + '</p>' + cards;
+    }
+    var sug = ['signal', 'passenger', 'railway', 'expressway'];
+    var chips = sug.map(function (id) {
+      var f = (window.FAQ || []).filter(function (x) { return x.id === id; })[0];
+      if (!f) { return ''; }
+      var label = (f.a && f.a[chatLang()] ? f.a[chatLang()] : '').split(/[.:：]/)[0].slice(0, 26);
+      return '<button class="chat-chip" data-act="chat-chip" data-text="' + esc(label) + '">' + esc(label) + '…</button>';
+    }).join('');
+    return '<p>' + T('chat.unknown') + '</p>' + (chips ? '<div class="chat-sug">' + chips + '</div>' : '');
+  }
+
+  function chatAI(text) {
+    var cfg = aiCfg();
+    var langName = LANG === 'zh' ? 'Simplified Chinese' : LANG === 'fil' ? 'Filipino' : 'Vietnamese';
+    var sys = 'You are a study assistant for the Japanese 50cc moped licence (原付免許) exam. ' +
+      'Answer in ' + langName + ', max 120 words, practical and specific about Japanese traffic law. ' +
+      'If unsure, say so and suggest checking the 免許センター. Never invent article numbers.';
+    if (cfg.provider === 'openrouter') {
+      return fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+        body: JSON.stringify({
+          model: cfg.model || 'openai/gpt-4o-mini',
+          messages: [{ role: 'system', content: sys }, { role: 'user', content: text }],
+          temperature: 0.2, max_tokens: 500
+        })
+      }).then(function (r) {
+        if (!r.ok) { throw r.status; }
+        return r.json();
+      }).then(function (j) {
+        return (j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
+      });
+    }
+    var model = cfg.model || 'gemini-2.0-flash';
+    return fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) +
+      ':generateContent?key=' + encodeURIComponent(cfg.key), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: sys }] },
+        contents: [{ role: 'user', parts: [{ text: text }] }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 512 }
+      })
+    }).then(function (r) {
+      if (!r.ok) { throw r.status; }
+      return r.json();
+    }).then(function (j) {
+      var c = j && j.candidates && j.candidates[0];
+      return (c && c.content && c.content.parts) ? c.content.parts.map(function (p) { return p.text || ''; }).join('') : '';
+    });
+  }
+
+  function chatBubble(role, html) {
+    var m = { role: role, html: html };
+    CHAT.msgs.push(m);
+    var body = document.getElementById('chatBody');
+    if (body) {
+      var el = document.createElement('div');
+      el.className = 'chat-msg ' + role;
+      el.innerHTML = html;
+      body.appendChild(el);
+      body.scrollTop = body.scrollHeight;
+      m.el = el;
+    }
+    return m;
+  }
+
+  function chatSwap(m, html) {
+    m.html = html;
+    if (m.el) {
+      m.el.innerHTML = html;
+      var body = document.getElementById('chatBody');
+      if (body) { body.scrollTop = body.scrollHeight; }
+    }
+  }
+
+  function chatSend(text) {
+    text = String(text || '').trim();
+    if (!text || CHAT.busy) { return; }
+    chatBubble('me', '<p>' + esc(text) + '</p>');
+    var cfg = aiCfg();
+    var useAI = !!(cfg.on && cfg.key);
+    CHAT.busy = true;
+    var m = chatBubble('bot', '<p class="chat-typing">' + T('chat.thinking') + '</p>');
+
+    function finish(html, tag) {
+      chatSwap(m, '<div class="chat-tag">' + esc(tag) + '</div>' + html);
+      CHAT.busy = false;
+    }
+
+    if (useAI) {
+      chatAI(text).then(function (ans) {
+        if (ans) { finish('<p>' + esc(ans) + '</p>', T('chat.aiTag')); }
+        else { finish(chatAnswer(text), T('chat.fromApp')); }
+      }).catch(function (code) {
+        var err = code === 401 ? T('chat.keyBad') : code === 429 ? T('chat.quota') : T('chat.aiErr');
+        finish(chatAnswer(text) + '<p class="chat-err">' + esc(err) + '</p>', T('chat.fromApp'));
+      });
+      return;
+    }
+    setTimeout(function () { finish(chatAnswer(text), T('chat.fromApp')); }, 180);
+  }
+
+  function chatSettingsHTML() {
+    var cfg = aiCfg();
+    return '<div class="chat-set" id="chatSet" hidden>' +
+      '<b>' + T('chat.aiTitle') + '</b>' +
+      '<p class="chat-warn">' + T('chat.aiDesc') + '</p>' +
+      '<label class="chat-row"><span>' + T('chat.provider') + '</span>' +
+        '<select id="aiProv"><option value="gemini">Gemini</option><option value="openrouter">OpenRouter</option></select></label>' +
+      '<label class="chat-row"><span>' + T('chat.key') + '</span><input id="aiKey" type="password" autocomplete="off" placeholder="AIza… / sk-or-…"></label>' +
+      '<label class="chat-row"><span>' + T('chat.model') + '</span><input id="aiModel" type="text" placeholder="gemini-2.0-flash"></label>' +
+      '<p class="chat-priv">' + T('chat.privacy') + '</p>' +
+      '<div class="chat-setbtns">' +
+        '<button class="btn btn-primary" data-act="chat-save">' + T('chat.save') + '</button>' +
+        '<button class="btn btn-ghost" data-act="chat-clear">' + T('chat.clear') + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function chatPanelHTML() {
+    var chips = [T('chat.chip1'), T('chat.chip2'), T('chat.chip3'), T('chat.chip4'), T('chat.chip5'), T('chat.chip6')]
+      .map(function (c) { return '<button class="chat-chip" data-act="chat-chip" data-text="' + esc(c) + '">' + esc(c) + '</button>'; }).join('');
+    return '<div class="chat-head">' +
+        '<span class="chat-ava" aria-hidden="true">原</span>' +
+        '<div class="chat-ttl"><b>' + T('chat.title') + '</b><i>' + T('chat.sub') + '</i></div>' +
+        '<div class="chat-hbtns">' +
+          '<button data-act="chat-set" aria-label="' + T('chat.set') + '">⚙</button>' +
+          '<button data-act="chat-close" aria-label="Close">✕</button>' +
+        '</div></div>' +
+      '<div class="chat-body" id="chatBody"></div>' +
+      '<div class="chat-chips" id="chatChips">' + chips + '</div>' +
+      '<form class="chat-form" id="chatForm">' +
+        '<input id="chatInput" type="text" autocomplete="off" placeholder="' + T('chat.ph') + '">' +
+        '<button type="submit" aria-label="' + T('chat.send') + '">→</button>' +
+      '</form>' +
+      '<p class="chat-note">' + T('chat.note') + '</p>' +
+      chatSettingsHTML();
+  }
+
+  function chatMount() {
+    if (document.getElementById('chatPanel')) { return; }
+    var d = document.createElement('section');
+    d.className = 'chat-panel';
+    d.id = 'chatPanel';
+    d.innerHTML = chatPanelHTML();
+    document.body.appendChild(d);
+    var body = document.getElementById('chatBody');
+    CHAT.msgs.forEach(function (m) {
+      var el = document.createElement('div');
+      el.className = 'chat-msg ' + m.role;
+      el.innerHTML = m.html;
+      m.el = el;
+      if (body) { body.appendChild(el); }
+    });
+    chatFabLabel();
+  }
+
+  function chatFabLabel() {
+    var f = document.getElementById('chatFab');
+    if (!f) { return; }
+    f.setAttribute('aria-label', T('chat.open'));
+    var tx = f.querySelector('.cf-txt');
+    if (tx) { tx.textContent = T('chat.title'); }
+  }
+
+  function chatOpen() {
+    chatMount();
+    var panel = document.getElementById('chatPanel');
+    if (panel) { panel.classList.add('open'); }
+    document.body.classList.add('chat-open');
+    CHAT.open = true;
+    var body = document.getElementById('chatBody');
+    if (body) { body.scrollTop = body.scrollHeight; }
+    var inp = document.getElementById('chatInput');
+    if (inp) { setTimeout(function () { inp.focus(); }, 200); }
+  }
+  function chatClose() {
+    var panel = document.getElementById('chatPanel');
+    if (panel) { panel.classList.remove('open'); }
+    document.body.classList.remove('chat-open');
+    CHAT.open = false;
+  }
+  function chatGoChat() {
+    chatClose();
+    go('home');
+  }
+
+  document.addEventListener('click', function (e) {
+    var t2 = e.target.closest('[data-act^="chat-"]');
+    if (!t2) { return; }
+    var act = t2.getAttribute('data-act');
+    if (act === 'chat-open') { chatOpen(); return; }
+    if (act === 'chat-close') { chatClose(); return; }
+    if (act === 'chat-chip') { chatSend(t2.getAttribute('data-text') || t2.textContent); return; }
+    if (act === 'chat-go') {
+      var sc = t2.getAttribute('data-screen');
+      chatClose();
+      if (sc) { go(sc); }
+      return;
+    }
+    if (act === 'chat-q') {
+      var id = t2.getAttribute('data-id');
+      var q = id ? qById[id] : null;
+      chatClose();
+      if (q) {
+        S = { mode: 'practice', cat: q.cat, ids: [q.id], i: 0, picks: [undefined] };
+        go('quiz');
+      }
+      return;
+    }
+    if (act === 'chat-set') {
+      var s2 = document.getElementById('chatSet');
+      if (!s2) { return; }
+      s2.hidden = !s2.hidden;
+      if (!s2.hidden) {
+        var cfg = aiCfg();
+        var prov = document.getElementById('aiProv');
+        var key = document.getElementById('aiKey');
+        var mod = document.getElementById('aiModel');
+        if (prov) { prov.value = cfg.provider || 'gemini'; }
+        if (key) { key.value = cfg.key || ''; }
+        if (mod) { mod.value = cfg.model || ''; }
+      }
+      return;
+    }
+    if (act === 'chat-save') {
+      var p2 = document.getElementById('aiProv');
+      var k2 = document.getElementById('aiKey');
+      var m2 = document.getElementById('aiModel');
+      var key2 = (k2 && k2.value || '').trim();
+      aiSave({ on: !!key2, provider: (p2 && p2.value) || 'gemini', key: key2, model: (m2 && m2.value || '').trim() });
+      var st = document.getElementById('chatSet');
+      if (st) { st.hidden = true; }
+      chatBubble('bot', '<p>' + (key2 ? 'AI ✓' : 'AI ✕') + '</p>');
+      return;
+    }
+    if (act === 'chat-clear') {
+      aiSave({ on: false });
+      var st2 = document.getElementById('chatSet');
+      if (st2) { st2.hidden = true; }
+      chatBubble('bot', '<p>AI ✕</p>');
+      return;
+    }
+  });
+
+  document.addEventListener('submit', function (e) {
+    if (!e.target || e.target.id !== 'chatForm') { return; }
+    e.preventDefault();
+    var inp = document.getElementById('chatInput');
+    if (!inp) { return; }
+    var v = inp.value;
+    inp.value = '';
+    chatSend(v);
+  });
+
   setInterval(wxTick, 1000);
 
   function render(keepScroll) {
+    try { document.documentElement.classList.toggle('sc-home', screen === 'home'); } catch (e) { }
     var app = document.getElementById('app');
     var y = window.scrollY || window.pageYOffset || 0;
     var html;
@@ -2497,8 +2960,8 @@
     if (act === 'theme') {
       var order = ['auto', 'dark', 'light'];
       var cur = themeMode();
-      var next = order[(order.indexOf(cur) + 1) % order.length];
-      applyMode(next, true);
+      var nextMode = order[(order.indexOf(cur) + 1) % order.length];
+      applyMode(nextMode, true);
       render(true);
       return;
     }

@@ -26,7 +26,11 @@ window.CHANGELOG_I18N = {
     ] },
     { t: '应用内对话框与手机滑动', i: ['提前交卷改用应用内对话框 — 不再显示网址', '交卷、退出考试、清除进度提示按语言显示', '修复手机滑动换题：可从题干文字开始滑，补 touch-action 与触摸处理', '单词卡也启用 touch-action，手机上更顺'] },
     { t: '对话框对比度', i: ['深色模式下确认框改用浅色底，更易阅读'] },
-    { t: '页脚、语言选择与自动主题', i: ['保留页脚「仅供个人使用，请勿复制、转载」', '全新语言选择：SVG 国旗按钮、圆角菜单、勾选当前语言', '切换语言同时更新标签页标题与描述', '明暗按钮新增「跟随系统」，系统切换时自动跟随'] }
+    { t: '页脚、语言选择与自动主题', i: ['保留页脚「仅供个人使用，请勿复制、转载」', '全新语言选择：SVG 国旗按钮、圆角菜单、勾选当前语言', '切换语言同时更新标签页标题与描述', '明暗按钮新增「跟随系统」，系统切换时自动跟随'] },
+    { t: '时钟、天气与问答助手', i: ['首页大卡新增时钟与按位置的天气，每 30 分钟自动更新，IP 兜底', '离线问答助手：19 个常见主题 + 搜索 619 道题，可打开对应页面或题目', '可选 AI（Gemini / OpenRouter），key 只存本机；出错自动回退到应用数据', '使用 key 时有安全提示，不发送个人数据'] },
+    { t: '聊天按钮与交通法扩展', i: ['聊天按钮直接写在 HTML 并有备用样式，即使 JS/CSS 旧版也会显示', '重新设计按钮：电脑为带文字的胶囊，手机为圆形，带柔和光晕', '问答扩展到 45 个交通法主题：信号灯、标志、优先、超车、限速、铁路、载人、载货、高速、扣分、特定小型原付…', '未匹配的问题会推荐 4 个相近主题，方便继续点'] },
+    { t: '扩展问答知识库', i: ['新增 26 个交通法主题：信号灯、标志、优先、超车、限速、铁路、载人、高速、扣分…', '按 反則金 表查罚款：闯红灯、超速、手机、头盔、载人、未开灯、转向灯、酒驾、无证、保险', '新增 16 种故障处理：爆胎、没油、电瓶、油门卡住、断链、摔倒、JAF 救援…', '新增 19 个保养与自助维修主题：机油、胎压、刹车片、火花塞、保险丝、磨合、临时补胎', '问答支持中文/Filipino 提问；共 80 个主题'] },
+    { t: '修错与界面精简', i: ['修复「下一题」按钮失效（变量 next 覆盖函数）', '补全 619/619 条「为什么错」的中文与 Filipino 译文', '除首页外禁止下拉刷新', '换算器输入时立即显示千位分隔点', '首屏大卡缩小约 30%，三种语言标题都保持一行'] }
   ],
   fil: [
     { t: 'Unang bersyon', i: ['278 ○× na tanong sa Hapon, 8 kategorya', 'Mock exam tulad ng tunay: 46 text + 2 larawan, 50 puntos, 45 passing, 30 minuto', 'Naka-save sa device ang progreso at history'] },
@@ -46,6 +50,10 @@ window.CHANGELOG_I18N = {
     { t: 'Pera ayon sa wika', i: ['Pinagsama ang v104–v119 changelog, 40 naging 14', 'Rate card at converter ayon sa wika: Vietnamese → VND, 中文 → CNY, Filipino → PHP', 'Hiwalay ang rate, 90-araw na chart at cache kada pera', 'Pagpalit ng wika, awtomatikong naglo-load ng bagong rate'] },
     { t: 'Dialog sa app at swipe sa mobile', i: ['Ang paalala sa maagang submit ay dialog na sa app — wala nang URL', 'Isinalin ang submit, exit at reset na paalala ayon sa wika', 'Ayos sa swipe sa mobile: puwedeng magsimula sa salita sa tanong, may touch-action at touch handling', 'May touch-action din ang flashcard para swabe sa phone'] },
     { t: 'Kontrast ng dialog', i: ['Maliwanag ang background ng confirm sa dark mode, mas madaling basahin'] },
-    { t: 'Footer, language picker at auto theme', i: ['Pinanatili ang footer na “personal use lamang, huwag kopyahin”', 'Bagong language picker: SVG flag na button, bilugan na menu, check sa napili', 'Pagpalit ng wika, naa-update din ang tab title at description', 'May “Ayon sa system” na mode ang light/dark button; awtomatikong sumasabay'] }
+    { t: 'Footer, language picker at auto theme', i: ['Pinanatili ang footer na “personal use lamang, huwag kopyahin”', 'Bagong language picker: SVG flag na button, bilugan na menu, check sa napili', 'Pagpalit ng wika, naa-update din ang tab title at description', 'May “Ayon sa system” na mode ang light/dark button; awtomatikong sumasabay'] },
+    { t: 'Orasan, panahon at chat assistant', i: ['May orasan at weather sa malaking card, 30 minuto ang update, IP fallback', 'Offline Q&A: 19 paksa + paghahanap sa 619 tanong, bukas ang tamang screen o tanong', 'Opsyonal na AI (Gemini / OpenRouter), key sa device lang; kapag error, balik sa app data', 'May babala sa seguridad at walang personal na datos na ipinapadala'] },
+    { t: 'Chat button at batas trapiko', i: ['Nasa HTML na ang chat button at may backup style, lalabas kahit luma ang JS/CSS', 'Bagong disenyo: pill na may text sa desktop, bilog sa phone, may glow', 'Pinalawak sa 45 paksa ng batas trapiko: ilaw, senyales, priority, pag- overtake, speed, riles, pasahero, karga, expressway, puntos, 特定小型原付…', 'Kapag walang tugma, may 4 na suhestiyon na paksa'] },
+    { t: 'Pinalawak ang Q&A', i: ['26 bagong paksa sa batas: ilaw, senyales, priority, overtake, speed, riles, pasahero, expressway, puntos…', 'Paghahanap ng multa mula sa 反則金: red light, speed, cellphone, helmet, pasahero, walang ilaw, signal, alak, walang lisensya, insurance', '16 na sitwasyon ng sira: flat, gas, battery, stuck throttle, putol chain, semplang, JAF rescue…', '19 paksa sa maintenance at DIY: langis, tire pressure, brake pad, spark plug, fuse, break-in, temporary patch', 'Sinusuportahan ang tanong sa 中文/Filipino; 80 paksa sa kabuuan'] },
+    { t: 'Pag-aayos at pinaikling UI', i: ['Naayos ang “Susunod” na button (variable next sumasapaw sa function)', 'Kumpleto na ang 619/619 na “bakit mali” sa 中文 at Filipino', 'Naka-block ang pull-to-refresh maliban sa home', 'Agad lumalabas ang thousand separator habang nagta-type sa converter', 'Mas maliit ang hero (~30%), isang linya ang pamagat sa 3 wika'] }
   ]
 };

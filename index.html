@@ -29,11 +29,20 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="原付 50cc">
-  <link rel="manifest" href="manifest.webmanifest?v=165">
-  <link rel="icon" href="icons/icon-192.png?v=165" type="image/png">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=165">
-  <link rel="stylesheet" href="css/fonts.css?v=165">
-  <link rel="stylesheet" href="css/style.css?v=165">
+  <link rel="manifest" href="manifest.webmanifest?v=192">
+  <link rel="icon" href="icons/icon-192.png?v=192" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=192">
+  <!-- nút chat: style dự phòng, để nút luôn hiện kể cả khi CSS chưa cập nhật -->
+  <style>
+    #chatFab{position:fixed;right:18px;bottom:18px;z-index:900;display:inline-flex;align-items:center;gap:8px;
+      height:54px;padding:0 18px;border:0;border-radius:999px;background:#d81b3d;color:#fff;cursor:pointer;
+      font:inherit;font-weight:800;font-size:13px;box-shadow:0 12px 26px -12px rgba(200,16,46,.8)}
+    #chatFab .cf-ico{width:22px;height:22px}
+    body.chat-open #chatFab{display:none}
+    @media (max-width:560px){#chatFab{padding:0;width:56px;justify-content:center}#chatFab .cf-txt{display:none}}
+  </style>
+  <link rel="stylesheet" href="css/fonts.css?v=192">
+  <link rel="stylesheet" href="css/style.css?v=192">
 </head>
 <body>
   <div id="app"></div>
@@ -46,78 +55,90 @@
       <div id="sheetBody"></div>
     </div>
   </div>
+<button id="chatFab" class="chat-fab" type="button" data-act="chat-open" aria-label="Hỏi đáp">
+    <span class="cf-glow" aria-hidden="true"></span>
+    <svg class="cf-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2c-4.9 0-8.8 3.5-8.8 7.8 0 2 .86 3.8 2.3 5.2l-.75 4.2 4.6-1.45c.83.24 1.7.36 2.65.36 4.9 0 8.8-3.5 8.8-7.8S16.9 3.2 12 3.2z" fill="currentColor"/><circle cx="8.4" cy="11" r="1.15" fill="#d81b3d"/><circle cx="12" cy="11" r="1.15" fill="#d81b3d"/><circle cx="15.6" cy="11" r="1.15" fill="#d81b3d"/></svg>
+    <span class="cf-txt">Hỏi đáp</span>
+  </button>
 
-  <script src="data/signs.js?v=165"></script>
-  <script src="data/questions.js?v=165"></script>
-  <script src="data/q2.js?v=165"></script>
-  <script src="data/q3.js?v=165"></script>
-  <script src="data/q4.js?v=165"></script>
-  <script src="data/q5.js?v=165"></script>
-  <script src="data/q7.js?v=165"></script>
-  <script src="data/q8.js?v=165"></script>
-  <script src="data/q9.js?v=165"></script>
-  <script src="data/q10.js?v=165"></script>
-  <script src="data/q11.js?v=165"></script>
-  <script src="data/q12.js?v=165"></script>
-  <script src="data/grammar.js?v=165"></script>
-  <script src="data/situations.js?v=165"></script>
-  <script src="data/models.js?v=165"></script>
-  <script src="data/gear.js?v=165"></script>
-  <script src="data/penalties.js?v=165"></script>
-  <script src="data/emergency.js?v=165"></script>
-  <script src="data/changelog.js?v=165"></script>
-  <script src="data/changelog_i18n.js?v=165"></script>
-  <script src="data/changelog_i18n_extra.js?v=165"></script>
-  <script src="data/i18n.js?v=165"></script>
-  <script src="data/qtext_i18n_1.js?v=165"></script>
-  <script src="data/qtext_i18n_2.js?v=165"></script>
-  <script src="data/qtext_i18n_3.js?v=165"></script>
-  <script src="data/qtext_i18n_4.js?v=165"></script>
-  <script src="data/qtext_i18n_5.js?v=165"></script>
-  <script src="data/qtext_i18n_6.js?v=165"></script>
-  <script src="data/grammar_i18n.js?v=165"></script>
-  <script src="data/exp_i18n_1.js?v=165"></script>
-  <script src="data/exp_i18n_2.js?v=165"></script>
-  <script src="data/exp_i18n_3.js?v=165"></script>
-  <script src="data/exp_i18n_4.js?v=165"></script>
-  <script src="data/exp_i18n_5.js?v=165"></script>
-  <script src="data/exp_i18n_6.js?v=165"></script>
-  <script src="data/exp_i18n_7.js?v=165"></script>
-  <script src="data/exp_i18n_8.js?v=165"></script>
-  <script src="data/exp_i18n_9.js?v=165"></script>
-  <script src="data/law_i18n.js?v=165"></script>
-  <script src="data/ill_exp_i18n.js?v=165"></script>
-  <script src="data/trap_i18n_1.js?v=165"></script>
-  <script src="data/trap_i18n_3.js?v=165"></script>
-  <script src="data/trap_i18n_2.js?v=165"></script>
-  <script src="data/vocab_i18n_1.js?v=165"></script>
-  <script src="data/vocab_i18n_2.js?v=165"></script>
-  <script src="data/vocab_i18n_3.js?v=165"></script>
-  <script src="data/vocab_i18n_4.js?v=165"></script>
-  <script src="data/quote_i18n_1.js?v=165"></script>
-  <script src="data/quote_i18n_2.js?v=165"></script>
-  <script src="data/catalog_i18n.js?v=165"></script>
-  <script src="data/sos_i18n.js?v=165"></script>
-  <script src="data/info_i18n.js?v=165"></script>
-  <script src="data/vocab.js?v=165"></script>
-  <script src="data/vocab2.js?v=165"></script>
-  <script src="data/vocab3.js?v=165"></script>
-  <script src="data/vocab4.js?v=165"></script>
-  <script src="data/vocab5.js?v=165"></script>
-  <script src="data/vocab6.js?v=165"></script>
-  <script src="data/hanviet.js?v=165"></script>
-  <script src="data/vi.js?v=165"></script>
-  <script src="data/vi2.js?v=165"></script>
-  <script src="data/vi3.js?v=165"></script>
-  <script src="data/vi4.js?v=165"></script>
-  <script src="data/vi5.js?v=165"></script>
-  <script src="data/vi6.js?v=165"></script>
-  <script src="data/traps.js?v=165"></script>
-  <script src="data/author.js?v=165"></script>
-  <script src="data/quotes.js?v=165"></script>
-  <script src="data/illustrations.js?v=165"></script>
-  <script src="data/ill-art.js?v=165"></script>
-  <script src="js/app.js?v=165"></script>
+  <script src="data/signs.js?v=192"></script>
+  <script src="data/questions.js?v=192"></script>
+  <script src="data/q2.js?v=192"></script>
+  <script src="data/q3.js?v=192"></script>
+  <script src="data/q4.js?v=192"></script>
+  <script src="data/q5.js?v=192"></script>
+  <script src="data/q7.js?v=192"></script>
+  <script src="data/q8.js?v=192"></script>
+  <script src="data/q9.js?v=192"></script>
+  <script src="data/q10.js?v=192"></script>
+  <script src="data/q11.js?v=192"></script>
+  <script src="data/q12.js?v=192"></script>
+  <script src="data/grammar.js?v=192"></script>
+  <script src="data/situations.js?v=192"></script>
+  <script src="data/models.js?v=192"></script>
+  <script src="data/gear.js?v=192"></script>
+  <script src="data/penalties.js?v=192"></script>
+  <script src="data/emergency.js?v=192"></script>
+  <script src="data/changelog.js?v=192"></script>
+  <script src="data/changelog_i18n.js?v=192"></script>
+  <script src="data/changelog_i18n_extra.js?v=192"></script>
+  <script src="data/faq.js?v=192"></script>
+  <script src="data/law_faq.js"></script>
+  <script src="data/faq_alias.js"></script>
+  <script src="data/trouble_faq.js"></script>
+  <script src="data/care_faq.js"></script>
+  <script src="data/care_alias.js"></script>
+  <script src="data/i18n.js?v=192"></script>
+  <script src="data/qtext_i18n_1.js?v=192"></script>
+  <script src="data/qtext_i18n_2.js?v=192"></script>
+  <script src="data/qtext_i18n_3.js?v=192"></script>
+  <script src="data/qtext_i18n_4.js?v=192"></script>
+  <script src="data/qtext_i18n_5.js?v=192"></script>
+  <script src="data/qtext_i18n_6.js?v=192"></script>
+  <script src="data/grammar_i18n.js?v=192"></script>
+  <script src="data/exp_i18n_1.js?v=192"></script>
+  <script src="data/exp_i18n_2.js?v=192"></script>
+  <script src="data/exp_i18n_3.js?v=192"></script>
+  <script src="data/exp_i18n_4.js?v=192"></script>
+  <script src="data/exp_i18n_5.js?v=192"></script>
+  <script src="data/exp_i18n_6.js?v=192"></script>
+  <script src="data/exp_i18n_7.js?v=192"></script>
+  <script src="data/exp_i18n_8.js?v=192"></script>
+  <script src="data/exp_i18n_9.js?v=192"></script>
+  <script src="data/law_i18n.js?v=192"></script>
+  <script src="data/ill_exp_i18n.js?v=192"></script>
+  <script src="data/trap_i18n_1.js?v=192"></script>
+  <script src="data/trap_i18n_3.js?v=192"></script>
+  <script src="data/trap_i18n_4.js"></script>
+  <script src="data/trap_i18n_2.js?v=192"></script>
+  <script src="data/vocab_i18n_1.js?v=192"></script>
+  <script src="data/vocab_i18n_2.js?v=192"></script>
+  <script src="data/vocab_i18n_3.js?v=192"></script>
+  <script src="data/vocab_i18n_4.js?v=192"></script>
+  <script src="data/quote_i18n_1.js?v=192"></script>
+  <script src="data/quote_i18n_2.js?v=192"></script>
+  <script src="data/catalog_i18n.js?v=192"></script>
+  <script src="data/sos_i18n.js?v=192"></script>
+  <script src="data/info_i18n.js?v=192"></script>
+  <script src="data/vocab.js?v=192"></script>
+  <script src="data/vocab2.js?v=192"></script>
+  <script src="data/vocab3.js?v=192"></script>
+  <script src="data/vocab4.js?v=192"></script>
+  <script src="data/vocab5.js?v=192"></script>
+  <script src="data/vocab6.js?v=192"></script>
+  <script src="data/hanviet.js?v=192"></script>
+  <script src="data/vi.js?v=192"></script>
+  <script src="data/vi2.js?v=192"></script>
+  <script src="data/vi3.js?v=192"></script>
+  <script src="data/vi4.js?v=192"></script>
+  <script src="data/vi5.js?v=192"></script>
+  <script src="data/vi6.js?v=192"></script>
+  <script src="data/traps.js?v=192"></script>
+  <script src="data/author.js?v=192"></script>
+  <script src="data/quotes.js?v=192"></script>
+  <script src="data/illustrations.js?v=192"></script>
+  <script src="data/ill-art.js?v=192"></script>
+  <script src="js/app.js?v=192"></script>
 
   <script>
     /* Chỉ đăng ký service worker khi chạy qua http(s) — mở file:// sẽ bỏ qua */

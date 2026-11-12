@@ -1,6 +1,6 @@
 {
-  "version": "165",
-  "cache": "gentsuki-v165",
+  "version": "192",
+  "cache": "gentsuki-v192",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v165: thời tiết fallback theo IP, tránh treo khi không có vị trí."
+  "note": "v192: changelog cập nhật v173–v191."
 }
