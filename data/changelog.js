@@ -204,5 +204,15 @@ window.CHANGELOG = [
       'Máy đổi tiền hiện dấu chấm phân cách ngay khi gõ',
       'Khung đầu trang gọn hơn ~30%, tiêu đề về một hàng ở cả 3 ngôn ngữ'
     ]
+  },
+  {
+    v: 'v193 – v195', title: 'Thêm tiếng Indonesia và Nepal',
+    items: [
+      '5 ngôn ngữ: Tiếng Việt · 中文 · Filipino · Bahasa Indonesia · नेपाली',
+      'Dịch toàn bộ giao diện, 619 câu hỏi, giải thích, “vì sao sai”, từ vựng, danh ngôn',
+      'Dịch chatbox, bảng phạt, số khẩn cấp, sổ tay tình huống, mẫu xe, bảo dưỡng',
+      'Tỷ giá tự đổi theo tiền tệ: Rupiah (IDR) và Rupee (NPR)',
+      'Bản dịch id/ne tạo tự động — nên nhờ người bản ngữ rà lại'
+    ]
   }
 ];
