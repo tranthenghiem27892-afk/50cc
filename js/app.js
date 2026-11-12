@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '158';
+  var APP_VER = '165';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -323,12 +323,56 @@
   function currentTheme() {
     return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   }
-  function applyTheme(t) {
+  function systemTheme() {
+    try {
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    } catch (e) { return 'light'; }
+  }
+  function themeMode() {
+    var m = null;
+    try { m = localStorage.getItem('gentsuki.themeMode'); } catch (e) { }
+    if (m === 'auto' || m === 'light' || m === 'dark') { return m; }
+    try {
+      var stored = localStorage.getItem('gentsuki.theme');
+      if (stored === 'dark' || stored === 'light') { return stored; }
+    } catch (e) { }
+    return 'auto';
+  }
+  function paintTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    try { localStorage.setItem('gentsuki.theme', t); } catch (e) { /* private mode */ }
     var m = document.querySelector('meta[name="theme-color"]');
     if (m) { m.setAttribute('content', t === 'dark' ? '#14120f' : '#f5f2ec'); }
   }
+  /* giữ cho ?theme= và tương thích cũ */
+  function applyTheme(t) {
+    paintTheme(t === 'dark' ? 'dark' : 'light');
+    try { localStorage.setItem('gentsuki.theme', t === 'dark' ? 'dark' : 'light'); } catch (e) { }
+  }
+  function applyMode(mode, save) {
+    if (mode !== 'auto' && mode !== 'light' && mode !== 'dark') { mode = 'auto'; }
+    var t = mode === 'auto' ? systemTheme() : mode;
+    paintTheme(t);
+    if (save !== false) {
+      try {
+        localStorage.setItem('gentsuki.themeMode', mode);
+        localStorage.setItem('gentsuki.theme', t);
+      } catch (e) { }
+    }
+  }
+  try {
+    var mqDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    var onSysTheme = function () {
+      if (themeMode() === 'auto') {
+        applyMode('auto', false);
+        try { render(true); } catch (e) { }
+      }
+    };
+    if (mqDark) {
+      if (mqDark.addEventListener) { mqDark.addEventListener('change', onSysTheme); }
+      else if (mqDark.addListener) { mqDark.addListener(onSysTheme); }
+    }
+  } catch (e) { }
+
   var LANGS = ['vi', 'zh', 'fil'];
 
   var LANG = (function () {
@@ -360,6 +404,13 @@
     try { localStorage.setItem('gentsuki.lang', l); } catch (e) { }
 
     document.documentElement.setAttribute('lang', l === 'vi' ? 'vi' : l === 'zh' ? 'zh-Hans' : 'fil');
+    try {
+      document.title = T('page.title');
+      var md = document.querySelector('meta[name="description"]');
+      if (md) { md.setAttribute('content', T('meta.desc')); }
+      var og = document.querySelector('meta[property="og:description"]');
+      if (og) { og.setAttribute('content', T('meta.desc')); }
+    } catch (err) { }
 
   }
 
@@ -404,25 +455,45 @@
     return copy;
   }
 
+  var LANG_META = {
+    vi: {
+      code: 'VI', name: 'Tiếng Việt', sub: 'Vietnamese',
+      flag: '<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#da251d"/><path d="M10 3.1l1.16 3.5h3.7l-3 2.18 1.1 3.5-3-2.18-3 2.18 1.1-3.5-3-2.18h3.7z" fill="#ffde00"/></svg>'
+    },
+    zh: {
+      code: '中', name: '中文', sub: 'Chinese',
+      flag: '<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#de2910"/><path d="M4 2.1l.72 2.2h2.3l-1.86 1.35.71 2.2L4 6.5 2.13 7.85l.71-2.2L.98 4.3h2.3z" fill="#ffde00"/><circle cx="8.6" cy="2.4" r=".62" fill="#ffde00"/><circle cx="9.9" cy="3.8" r=".56" fill="#ffde00"/><circle cx="9.9" cy="5.6" r=".5" fill="#ffde00"/><circle cx="8.6" cy="7" r=".44" fill="#ffde00"/></svg>'
+    },
+    fil: {
+      code: 'PH', name: 'Filipino', sub: 'Filipino',
+      flag: '<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="7" fill="#0038a8"/><rect y="7" width="20" height="7" fill="#ce1126"/><path d="M0 0l8.4 7L0 14z" fill="#fff"/><circle cx="2.5" cy="7" r="1.15" fill="#fcd116"/><circle cx="5.4" cy="3.4" r=".5" fill="#fcd116"/><circle cx="5.4" cy="10.6" r=".5" fill="#fcd116"/><circle cx="6.7" cy="7" r=".5" fill="#fcd116"/></svg>'
+    }
+  };
+
   function langSel() {
-
+    var cur = LANG_META[LANG] || LANG_META.vi;
     var opts = LANGS.map(function (l) {
-
-      var n = ((window.I18N || {})[l] || {})['lang.name'] || l;
-
-      return '<option value="' + l + '"' + (l === LANG ? ' selected' : '') + '>' + n + '</option>';
-
+      var m = LANG_META[l] || { code: l, name: l, sub: '', flag: '' };
+      var on = l === LANG;
+      return '<button class="lang-opt' + (on ? ' is-on' : '') + '" role="option" aria-selected="' + (on ? 'true' : 'false') + '" data-lang="' + l + '">' +
+        '<span class="lf">' + m.flag + '</span>' +
+        '<span class="lt"><b>' + m.name + '</b><i>' + m.sub + '</i></span>' +
+        '<span class="ltick">✓</span>' +
+        '</button>';
     }).join('');
-
-    return '<select class="lang-sel" id="langSel" aria-label="Language">' + opts + '</select>';
-
+    return '<div class="lang-dd" id="langDD">' +
+      '<button class="lang-btn" data-act="langopen" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">' +
+        '<span class="lf">' + cur.flag + '</span><span class="lc">' + cur.code + '</span><span class="lcar">▾</span>' +
+      '</button>' +
+      '<div class="lang-menu" role="listbox" aria-label="Language">' + opts + '</div>' +
+    '</div>';
   }
 
   function themeBtn() {
-    var dark = currentTheme() === 'dark';
-    return '<button class="icon-btn" data-act="theme" aria-label="' +
-      (dark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối') + '">' +
-      (dark ? '☀️' : '🌙') + '</button>';
+    var m = themeMode();
+    var icon = m === 'dark' ? '🌙' : m === 'light' ? '☀️' : '🌗';
+    var label = m === 'auto' ? T('th.auto') : m === 'dark' ? T('th.dark') : T('th.light');
+    return '<button class="icon-btn" data-act="theme" aria-label="' + label + '" title="' + label + '">' + icon + '</button>';
   }
 
   function topbar(title, backTo) {
@@ -986,6 +1057,148 @@
     if (!win) { window.location.href = url; }
   }
 
+  /* ---------------- đồng hồ & thời tiết ở hero ---------------- */
+  var WX_KEY = 'gentsuki.wx.v1';
+  var WX_TTL = 30 * 60 * 1000;
+  var WX_BUSY = false;
+
+  function wxRead() {
+    try { return JSON.parse(localStorage.getItem(WX_KEY)); } catch (e) { return null; }
+  }
+  function wxSave(d) {
+    try { localStorage.setItem(WX_KEY, JSON.stringify(d)); } catch (e) { }
+  }
+  function wxIcon(code) {
+    if (code === 0) { return '☀️'; }
+    if (code <= 3) { return '🌤'; }
+    if (code === 45 || code === 48) { return '🌫'; }
+    if (code >= 51 && code <= 67) { return '🌧'; }
+    if (code >= 71 && code <= 77) { return '🌨'; }
+    if (code >= 80 && code <= 82) { return '🌦'; }
+    if (code >= 95) { return '⛈'; }
+    return '🌤';
+  }
+  function pad2(n) { return ('0' + n).slice(-2); }
+  function clockText(d) {
+    var loc = LANG === 'vi' ? 'vi-VN' : LANG === 'zh' ? 'zh-CN' : 'en-PH';
+    var hm = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    var date = '';
+    try {
+      date = d.toLocaleDateString(loc, { weekday: 'short', day: '2-digit', month: '2-digit' });
+    } catch (e) {
+      date = pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1);
+    }
+    return { hm: hm, date: date };
+  }
+  function clockTick() {
+    var hmEl = document.getElementById('hClock');
+    var dEl = document.getElementById('hDate');
+    if (!hmEl) { return; }
+    var o = clockText(new Date());
+    hmEl.textContent = o.hm;
+    if (dEl) { dEl.textContent = o.date; }
+  }
+  function wxPaint(d) {
+    var ico = document.getElementById('wxIco');
+    var tmp = document.getElementById('wxTemp');
+    var city = document.getElementById('wxCity');
+    if (!ico || !tmp || !city) { return; }
+    if (!d || d.temp === undefined) {
+      ico.textContent = '🌤';
+      tmp.textContent = '—';
+      city.textContent = T('wx.off');
+      return;
+    }
+    ico.textContent = wxIcon(d.code);
+    tmp.textContent = Math.round(d.temp) + '°';
+    city.textContent = (d.city || T('wx.here')) +
+      (d.hum !== undefined && d.hum !== null ? ' · ' + T('wx.hum') + ' ' + Math.round(d.hum) + '%' : '');
+  }
+  function wxFetch(lat, lon) {
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+      '&current=temperature_2m,weather_code,relative_humidity_2m&timezone=auto';
+    return fetch(url, { mode: 'cors' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || !j.current) { return null; }
+        return { temp: j.current.temperature_2m, code: j.current.weather_code, hum: j.current.relative_humidity_2m };
+      })
+      .catch(function () { return null; });
+  }
+  function wxReverse(lat, lon) {
+    var url = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat +
+      '&longitude=' + lon + '&localityLanguage=en';
+    return fetch(url, { mode: 'cors' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        return (j && (j.city || j.locality || j.principalSubdivision)) || '';
+      })
+      .catch(function () { return ''; });
+  }
+  function wxIpLocate() {
+    return fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en', { mode: 'cors' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j || j.latitude === undefined || j.longitude === undefined) { return null; }
+        return { lat: j.latitude, lon: j.longitude, city: j.city || j.locality || j.principalSubdivision || '' };
+      })
+      .catch(function () { return null; });
+  }
+
+  function wxLoad(force) {
+    if (WX_BUSY) { return; }
+    var d = wxRead();
+    if (!force && d && d.ts && Date.now() - d.ts < WX_TTL) { wxPaint(d); return; }
+    if (!d && !force) { wxPaint(null); }
+    WX_BUSY = true;
+    var tmp = document.getElementById('wxTemp');
+    if (tmp) { tmp.textContent = '…'; }
+    var guard = setTimeout(function () {
+      if (WX_BUSY) { WX_BUSY = false; wxPaint(wxRead()); }
+    }, 8000);
+
+    function done(lat, lon) {
+      wxFetch(lat, lon).then(function (w) {
+        if (!w) {
+          WX_BUSY = false;
+          wxPaint(wxRead());
+          return;
+        }
+        wxReverse(lat, lon).then(function (city) {
+          var out = { lat: lat, lon: lon, city: city, ts: Date.now(), temp: w.temp, code: w.code, hum: w.hum };
+          wxSave(out);
+          WX_BUSY = false;
+          wxPaint(out);
+        });
+      });
+    }
+
+    if (d && d.lat !== undefined && !force) { done(d.lat, d.lon); return; }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        done(pos.coords.latitude, pos.coords.longitude);
+      }, function () {
+        if (d && d.lat !== undefined) { done(d.lat, d.lon); return; }
+        wxIpLocate().then(function (loc) {
+          if (loc) { done(loc.lat, loc.lon); }
+          else { WX_BUSY = false; wxPaint(null); }
+        });
+      }, { timeout: 8000, maximumAge: 60 * 60 * 1000 });
+    } else if (d && d.lat !== undefined) {
+      done(d.lat, d.lon);
+    } else {
+      WX_BUSY = false;
+      wxPaint(null);
+    }
+  }
+  function wxTick() {
+    clockTick();
+    if (!document.getElementById('wxTemp')) { return; }
+    var d = wxRead();
+    if (!d || !d.ts || Date.now() - d.ts > WX_TTL) { wxLoad(false); }
+    else { wxPaint(d); }
+  }
+
   function homeTiles(wrongN, o) {
     function tile(act, icon, title, sub, extra) {
       return '<button class="tile" data-act="' + act + '"' + (extra || '') + '>' +
@@ -1035,14 +1248,28 @@
       '</header>' +
       '<main class="wrap">' +
         '<section class="hero">' +
-          '<div class="hero-eyebrow">' + T('hero.eyebrow') + '</div>' +
-          '<h1>' + T('hero.title') + '</h1>' +
-          '<p class="hero-sub">' + T('hero.sub') + '</p>' +
-          '<div class="facts">' +
-            '<div class="fact"><b>48</b><span>' + T('fact.q') + '</span></div>' +
-            '<div class="fact"><b>30′</b><span>' + T('fact.t') + '</span></div>' +
-            '<div class="fact"><b>45</b><span>' + T('fact.p') + '</span></div>' +
+          '<div class="hero-main">' +
+            '<div class="hero-eyebrow">' + T('hero.eyebrow') + '</div>' +
+            '<h1>' + T('hero.title') + '</h1>' +
+            '<p class="hero-sub">' + T('hero.sub') + '</p>' +
+            '<div class="facts">' +
+              '<div class="fact"><b>48</b><span>' + T('fact.q') + '</span></div>' +
+              '<div class="fact"><b>30′</b><span>' + T('fact.t') + '</span></div>' +
+              '<div class="fact"><b>45</b><span>' + T('fact.p') + '</span></div>' +
+            '</div>' +
           '</div>' +
+          '<aside class="hero-side">' +
+            '<div class="hw hw-clock">' +
+              '<span class="hw-k">' + T('wx.clock') + '</span>' +
+              '<b id="hClock">' + (function () { var c = clockText(new Date()); return c.hm; })() + '</b>' +
+              '<i id="hDate">' + (function () { var c = clockText(new Date()); return c.date; })() + '</i>' +
+            '</div>' +
+            '<button class="hw hw-wx" data-act="wx" type="button">' +
+              '<span class="hw-k">' + T('wx.title') + '</span>' +
+              '<span class="wx-row"><span class="wx-ico" id="wxIco">🌤</span><b id="wxTemp">—</b></span>' +
+              '<i id="wxCity">' + T('wx.off') + '</i>' +
+            '</button>' +
+          '</aside>' +
         '</section>' +
 
         '<button class="cta" data-act="start-exam">' +
@@ -1064,7 +1291,7 @@
         fxCard() +
         homeRows() +
         '<p class="terms"><b>© 2026 Nghiệm Trần</b>' +
-          T('terms') + ' ' +
+          '<span class="terms-note">' + T('terms.personal') + '</span>' +
           '<span class="ver">v' + APP_VER + '</span></p>' +
       '</main>';
   }
@@ -1980,11 +2207,29 @@
     if (!el) { return; }
     cardPtr = { x: e.clientX, y: e.clientY, t: Date.now() };
   });
-  document.addEventListener('change', function (e) {
-    if (e.target && e.target.id === 'langSel') {
-      applyLang(e.target.value);
-      render(true);
-      try { fxLoad(false); } catch (err) { }
+  document.addEventListener('click', function (e) {
+    var opt = e.target.closest('.lang-opt');
+    if (opt) {
+      var l = opt.getAttribute('data-lang');
+      if (l && l !== LANG) {
+        applyLang(l);
+        render(true);
+        try { fxLoad(false); } catch (err) { }
+      }
+      return;
+    }
+    var btn = e.target.closest('[data-act="langopen"]');
+    if (btn) {
+      var dd = btn.closest('.lang-dd');
+      var open = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      return;
+    }
+    var openDd = document.querySelector('.lang-dd.open');
+    if (openDd && !e.target.closest('.lang-dd')) {
+      openDd.classList.remove('open');
+      var b2 = openDd.querySelector('[data-act="langopen"]');
+      if (b2) { b2.setAttribute('aria-expanded', 'false'); }
     }
   });
 
@@ -2162,6 +2407,8 @@
   }
 
   /* ---------------- render ---------------- */
+  setInterval(wxTick, 1000);
+
   function render(keepScroll) {
     var app = document.getElementById('app');
     var y = window.scrollY || window.pageYOffset || 0;
@@ -2245,8 +2492,13 @@
       startQuoteRotate();
       return;
     }
+    if (act === 'wx') { wxLoad(true); return; }
+
     if (act === 'theme') {
-      applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+      var order = ['auto', 'dark', 'light'];
+      var cur = themeMode();
+      var next = order[(order.indexOf(cur) + 1) % order.length];
+      applyMode(next, true);
       render(true);
       return;
     }
