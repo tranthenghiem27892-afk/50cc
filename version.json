@@ -1,6 +1,6 @@
 {
-  "version": "192",
-  "cache": "gentsuki-v192",
+  "version": "197",
+  "cache": "gentsuki-v197",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v192: changelog cập nhật v173–v191."
+  "note": "v197: chặn zoom (pinch, double-tap, ctrl+wheel)."
 }
