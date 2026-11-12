@@ -1,6 +1,6 @@
 {
-  "version": "197",
-  "cache": "gentsuki-v197",
+  "version": "198",
+  "cache": "gentsuki-v198",
   "questionCount": 619,
   "translations": 681,
   "illustrations": 12,
@@ -11,5 +11,5 @@
     "sw.js": 3.1,
     "version.json": 0.5
   },
-  "note": "v197: chặn zoom (pinch, double-tap, ctrl+wheel)."
+  "note": "v198: chatbox đổi ngôn ngữ theo app."
 }
