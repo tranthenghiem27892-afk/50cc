@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '197';
+  var APP_VER = '198';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -2236,6 +2236,7 @@
         applyLang(l);
         render(true);
         try { fxLoad(false); } catch (err) { }
+        try { chatRefresh(); } catch (err) { }
       }
       return;
     }
@@ -2801,6 +2802,24 @@
       m.el = el;
       if (body) { body.appendChild(el); }
     });
+    chatFabLabel();
+  }
+
+  function chatRefresh() {
+    var panel = document.getElementById('chatPanel');
+    if (!panel) { chatFabLabel(); return; }
+    var wasOpen = panel.classList.contains('open');
+    panel.innerHTML = chatPanelHTML();
+    var body = document.getElementById('chatBody');
+    CHAT.msgs.forEach(function (m) {
+      var el = document.createElement('div');
+      el.className = 'chat-msg ' + m.role;
+      el.innerHTML = m.html;
+      m.el = el;
+      if (body) { body.appendChild(el); }
+    });
+    if (wasOpen) { panel.classList.add('open'); }
+    if (body) { body.scrollTop = body.scrollHeight; }
     chatFabLabel();
   }
 
