@@ -157,6 +157,14 @@ window.CHANGELOG = [
     items: [
       'Hộp thoại xác nhận có nền sáng ở chế độ tối, dễ đọc hơn'
     ]
+  },
+  {
+    v: 'v159 – v162', title: 'Chân trang, chọn ngôn ngữ & theme tự động',
+    items: [
+      'Giữ lại câu “chỉ dùng cá nhân, không sao chép/tái bản” ở chân trang',
+      'Bảng chọn ngôn ngữ mới: nút cờ SVG, menu bo tròn, đánh dấu mục đang chọn',
+      'Đổi ngôn ngữ cập nhật luôn tiêu đề tab và mô tả trang',
+      'Nút sáng/tối có thêm chế độ “Theo máy”; tự đổi khi hệ thống đổi giao diện'
+    ]
   }
-
 ];
