@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '192';
+  var APP_VER = '197';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -373,7 +373,7 @@
     }
   } catch (e) { }
 
-  var LANGS = ['vi', 'zh', 'fil'];
+  var LANGS = ['vi', 'zh', 'fil', 'id', 'ne'];
 
   var LANG = (function () {
 
@@ -403,7 +403,7 @@
 
     try { localStorage.setItem('gentsuki.lang', l); } catch (e) { }
 
-    document.documentElement.setAttribute('lang', l === 'vi' ? 'vi' : l === 'zh' ? 'zh-Hans' : 'fil');
+    document.documentElement.setAttribute('lang', l === 'vi' ? 'vi' : l === 'zh' ? 'zh-Hans' : l === 'fil' ? 'fil' : l === 'id' ? 'id' : 'ne');
     try {
       try { chatMount(); } catch (err) { }
 
@@ -470,6 +470,14 @@
     fil: {
       code: 'PH', name: 'Filipino', sub: 'Filipino',
       flag: '<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="7" fill="#0038a8"/><rect y="7" width="20" height="7" fill="#ce1126"/><path d="M0 0l8.4 7L0 14z" fill="#fff"/><circle cx="2.5" cy="7" r="1.15" fill="#fcd116"/><circle cx="5.4" cy="3.4" r=".5" fill="#fcd116"/><circle cx="5.4" cy="10.6" r=".5" fill="#fcd116"/><circle cx="6.7" cy="7" r=".5" fill="#fcd116"/></svg>'
+    },
+    id: {
+      code: 'ID', name: 'Bahasa Indonesia', sub: 'Indonesian',
+      flag: '<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#fff"/><rect width="20" height="7" fill="#ce1126"/></svg>'
+    },
+    ne: {
+      code: 'NP', name: 'नेपाली', sub: 'Nepali',
+      flag: '<svg viewBox="0 0 20 14" aria-hidden="true"><path d="M2 1L13 7H7l6 6H2z" fill="#dc143c" stroke="#003893" stroke-width="1"/><circle cx="6" cy="10.4" r="1" fill="#fff"/><path d="M4.2 4.2a1.7 1.7 0 0 0 2.8 0 2.2 2.2 0 0 1-2.8 0z" fill="#fff"/></svg>'
     }
   };
 
@@ -559,7 +567,8 @@
   function quoteInner(q) {
     var tr = ((window.QUOTE_I18N || [])[lastQuote]) || null;
     var text = (tr && tr[LANG]) ? tr[LANG] : q.t;
-    var author = q.a && q.a.indexOf('Tục ngữ') >= 0 ? T('quote.jp') : q.a;
+    var qtr = ((window.QUOTE_I18N || [])[lastQuote] || {});
+    var author = q.a && q.a.indexOf('Tục ngữ') >= 0 ? T('quote.jp') : ((LANG !== 'vi' && qtr['a_' + LANG]) ? qtr['a_' + LANG] : q.a);
     return '<div class="quote-emoji">' + q.e + '</div>' +
       '<div class="quote-body">' +
         '<p class="quote-text">' + esc(text) + '</p>' +
@@ -613,9 +622,11 @@
   var FX_CUR = {
     vi: { code: 'VND', sym: '₫', name: 'VND', loc: 'vi-VN', dec: 0, swap: 100000 },
     zh: { code: 'CNY', sym: '元', name: '人民币', loc: 'zh-CN', dec: 2, swap: 1000 },
-    fil: { code: 'PHP', sym: '₱', name: 'PHP', loc: 'en-PH', dec: 2, swap: 1000 }
+    fil: { code: 'PHP', sym: '₱', name: 'PHP', loc: 'en-PH', dec: 2, swap: 1000 },
+    id: { code: 'IDR', sym: 'Rp', name: 'Rupiah', loc: 'id-ID', dec: 0, swap: 100000 },
+    ne: { code: 'NPR', sym: 'रू', name: 'Rupee', loc: 'ne-NP', dec: 2, swap: 1000 }
   };
-  var FX_FALLBACK = { VND: 161.49, CNY: 0.0472, PHP: 0.392 };
+  var FX_FALLBACK = { VND: 161.49, CNY: 0.0472, PHP: 0.392, IDR: 105, NPR: 0.89 };
   function fxCur() { return FX_CUR[LANG] || FX_CUR.vi; }
   function fxKey() {
     var c = fxCur();
@@ -1090,7 +1101,7 @@
   }
   function pad2(n) { return ('0' + n).slice(-2); }
   function clockText(d) {
-    var loc = LANG === 'vi' ? 'vi-VN' : LANG === 'zh' ? 'zh-CN' : 'en-PH';
+    var loc = LANG === 'vi' ? 'vi-VN' : LANG === 'zh' ? 'zh-CN' : LANG === 'fil' ? 'en-PH' : LANG === 'id' ? 'id-ID' : 'ne-NP';
     var hm = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
     var date = '';
     try {
@@ -2418,6 +2429,28 @@
 
   /* ---------------- render ---------------- */
 
+  /* chặn zoom (pinch / double-tap / ctrl+wheel) */
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (ev) {
+    document.addEventListener(ev, function (e) { e.preventDefault(); }, { passive: false });
+  });
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches && e.touches.length > 1 && e.cancelable) { e.preventDefault(); }
+  }, { passive: false });
+  document.addEventListener('touchmove', function (e) {
+    if (e.touches && e.touches.length > 1 && e.cancelable) { e.preventDefault(); }
+  }, { passive: false });
+  document.addEventListener('dblclick', function (e) {
+    if (e.cancelable) { e.preventDefault(); }
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (e.ctrlKey && e.cancelable) { e.preventDefault(); }
+  }, { passive: false });
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && ['+', '-', '=', '0'].indexOf(e.key) >= 0) {
+      e.preventDefault();
+    }
+  });
+
   /* chặn pull-to-refresh của trình duyệt trên màn hình chính */
   var PTR_Y = null;
   document.addEventListener('touchstart', function (e) {
@@ -2454,7 +2487,7 @@
       .replace(/[^a-z0-9\u3040-\u30ff\u4e00-\u9fff]+/g, ' ')
       .replace(/\s+/g, ' ').trim();
   }
-  function chatLang() { return LANG === 'zh' ? 'zh' : LANG === 'fil' ? 'fil' : 'vi'; }
+  function chatLang() { return ['zh', 'fil', 'id', 'ne'].indexOf(LANG) >= 0 ? LANG : 'vi'; }
 
   function chatCjkGrams(n) {
     var out = [];
@@ -2626,7 +2659,7 @@
 
   function chatAI(text) {
     var cfg = aiCfg();
-    var langName = LANG === 'zh' ? 'Simplified Chinese' : LANG === 'fil' ? 'Filipino' : 'Vietnamese';
+    var langName = LANG === 'zh' ? 'Simplified Chinese' : LANG === 'fil' ? 'Filipino' : LANG === 'id' ? 'Indonesian' : LANG === 'ne' ? 'Nepali' : 'Vietnamese';
     var sys = 'You are a study assistant for the Japanese 50cc moped licence (原付免許) exam. ' +
       'Answer in ' + langName + ', max 120 words, practical and specific about Japanese traffic law. ' +
       'If unsure, say so and suggest checking the 免許センター. Never invent article numbers.';
