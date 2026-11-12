@@ -1,4 +1,4 @@
-/* gentsuki-css v158 */
+/* gentsuki-css v165 */
 /* ============================================================
    原付免許 50cc — styles
    ============================================================ */
@@ -1742,21 +1742,6 @@ html.furi .w rt { visibility: visible; }
 .qcard.in-right { animation: fcInR .28s ease both; }
 
 /* ---------- chọn ngôn ngữ ---------- */
-.lang-sel {
-  appearance: none; -webkit-appearance: none;
-  border: 1px solid var(--line); background: var(--card); color: var(--ink-soft);
-  border-radius: 999px; height: 34px; padding: 0 22px 0 11px;
-  font-size: 11.5px; font-weight: 700; letter-spacing: .01em;
-  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
-  background-position: calc(100% - 12px) 14px, calc(100% - 8px) 14px;
-  background-size: 4px 4px, 4px 4px; background-repeat: no-repeat;
-  margin-right: 6px;
-}
-.lang-sel:focus { outline: 2px solid var(--red); outline-offset: 1px; }
-[data-theme="dark"] .lang-sel { background-color: #262220; border-color: #352f2a; color: #c9c3b8; }
-
-.lang-note { font-size: 11px; line-height: 1.6; margin: 2px 2px 10px; }
-
 /* ---------- hộp thoại xác nhận trong app (không lộ URL trình duyệt) ---------- */
 .cfm-wrap {
   position: fixed; inset: 0; z-index: 9999;
@@ -1782,3 +1767,84 @@ html.furi .w rt { visibility: visible; }
 .cfm { background: #ffffff; color: #14120f; border: 1px solid rgba(0,0,0,.08); }
 [data-theme="dark"] .cfm { background: #2b2723; color: #f4f0e8; border-color: #3b352f; }
 [data-theme="dark"] .cfm-btns .btn-ghost { background: #353029; color: #f4f0e8; }
+
+/* ---------- chọn ngôn ngữ: nút cờ + menu ---------- */
+.lang-dd { position: relative; display: inline-flex; margin-right: 6px; }
+.lang-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 9px 0 8px;
+  border: 1px solid var(--line); background: var(--card);
+  border-radius: 999px; cursor: pointer; color: var(--ink-soft);
+  font: inherit; font-size: 11.5px; font-weight: 800; letter-spacing: .02em;
+  transition: background .15s, border-color .15s;
+}
+.lang-btn:hover { background: rgba(0,0,0,.04); }
+.lang-btn .lf svg { width: 18px; height: 13px; display: block; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,.14); }
+.lang-btn .lc { font-size: 11px; }
+.lang-btn .lcar { font-size: 9px; opacity: .55; transition: transform .18s; }
+.lang-dd.open .lang-btn .lcar { transform: rotate(180deg); }
+
+.lang-menu {
+  position: absolute; right: 0; top: calc(100% + 8px);
+  min-width: 196px; padding: 6px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px; box-shadow: 0 16px 38px rgba(0,0,0,.20);
+  opacity: 0; transform: translateY(-5px) scale(.985); pointer-events: none;
+  transition: opacity .16s ease, transform .16s ease; z-index: 80;
+}
+.lang-dd.open .lang-menu { opacity: 1; transform: none; pointer-events: auto; }
+
+.lang-opt {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  padding: 8px 9px; border: 0; background: none; border-radius: 10px;
+  cursor: pointer; text-align: left; color: var(--ink); font: inherit;
+}
+.lang-opt:hover { background: rgba(0,0,0,.05); }
+.lang-opt .lf svg { width: 22px; height: 16px; display: block; border-radius: 2px; box-shadow: 0 0 0 1px rgba(0,0,0,.14); }
+.lang-opt .lt { display: flex; flex-direction: column; line-height: 1.2; }
+.lang-opt .lt b { font-size: 12.5px; font-weight: 700; }
+.lang-opt .lt i { font-size: 10px; font-style: normal; color: var(--muted); }
+.lang-opt .ltick { margin-left: auto; font-size: 12px; color: var(--red); opacity: 0; }
+.lang-opt.is-on { background: rgba(232,70,92,.08); }
+.lang-opt.is-on .ltick { opacity: 1; }
+[data-theme="dark"] .lang-btn:hover,
+[data-theme="dark"] .lang-opt:hover { background: rgba(255,255,255,.07); }
+[data-theme="dark"] .lang-opt.is-on { background: rgba(232,70,92,.16); }
+[data-theme="dark"] .lang-menu { background: #262220; border-color: #3a332d; }
+
+.terms-note { display: block; margin: 3px 0 2px; font-size: 10.5px; line-height: 1.5; color: var(--muted); }
+
+/* ---------- widget đồng hồ & thời tiết trong hero ---------- */
+.hero { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.hero-side { display: flex; gap: 10px; }
+.hw {
+  flex: 1; min-width: 0; text-align: left; font: inherit; color: #fff;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 16px; padding: 9px 11px;
+  backdrop-filter: blur(4px);
+}
+button.hw { cursor: pointer; }
+button.hw:active { background: rgba(255,255,255,.13); }
+.hw-k {
+  display: block; font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+  color: #ff9aa4; font-weight: 800;
+}
+.hw-clock b {
+  display: block; margin-top: 1px;
+  font-size: 25px; font-weight: 800; letter-spacing: .01em;
+  font-variant-numeric: tabular-nums; line-height: 1.1;
+}
+.hw-clock i, .hw-wx i {
+  display: block; font-style: normal; font-size: 10.5px; color: #c6beb5; margin-top: 2px;
+}
+.wx-row { display: flex; align-items: center; gap: 6px; margin-top: 1px; }
+.wx-ico { font-size: 17px; line-height: 1; }
+.hw-wx b { font-size: 21px; font-weight: 800; line-height: 1.1; }
+.hw-wx i { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+@media (min-width: 780px) {
+  .hero { grid-template-columns: minmax(0, 1fr) 200px; align-items: start; }
+  .hero-side { flex-direction: column; }
+  .hw-wx i { white-space: normal; }
+}
