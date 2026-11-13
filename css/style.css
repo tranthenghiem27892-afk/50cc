@@ -1,4 +1,4 @@
-/* gentsuki-css v198 */
+/* gentsuki-css v200 */
 /* ============================================================
    原付免許 50cc — styles
    ============================================================ */
@@ -2027,3 +2027,21 @@ html, body {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
+
+/* ---------- chân trang: bản quyền & cảnh báo SHTT ---------- */
+.terms { max-width: 40em; margin-left: auto; margin-right: auto; }
+.terms-copy {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .01em;
+  color: var(--ink);
+}
+.terms-ip {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.terms .ver { display: block; }
