@@ -13,7 +13,7 @@
   var EXAM_TEXT = 46;
   var EXAM_ILL = 2;
   var PASS = 45;
-  var APP_VER = '198';
+  var APP_VER = '200';
 
   var qById = {};
   Q.forEach(function (q) { qById[q.id] = q; });
@@ -235,6 +235,11 @@
     }
     return a;
   }
+  function footTxt(k) {
+    var f = (window.FOOT || {})[LANG] || (window.FOOT || {}).vi || {};
+    return f[k] || '';
+  }
+
   function esc(s) {
     return String(s).replace(/[&<>"]/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
@@ -1311,9 +1316,11 @@
         quoteBlock() +
         fxCard() +
         homeRows() +
-        '<p class="terms"><b>© 2026 Nghiệm Trần</b>' +
-          '<span class="terms-note">' + T('terms.personal') + '</span>' +
-          '<span class="ver">v' + APP_VER + '</span></p>' +
+        '<footer class="terms">' +
+          '<b class="terms-copy">' + esc(footTxt('copy')) + '</b>' +
+          '<p class="terms-ip">' + esc(footTxt('ip')) + '</p>' +
+          '<span class="ver">v' + APP_VER + '</span>' +
+        '</footer>' +
       '</main>';
   }
 
